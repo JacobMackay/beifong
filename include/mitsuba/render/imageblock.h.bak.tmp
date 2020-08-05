@@ -63,6 +63,20 @@ public:
                bool warn_invalid = true,
                bool border = true,
                bool normalize = false);
+    ImageBlock(const ScalarVector3i &size,
+               size_t channel_count,
+               const ReconstructionFilter *filter = nullptr,
+               bool warn_negative = true,
+               bool warn_invalid = true,
+               bool border = true,
+               bool normalize = false);
+    ImageBlock(const ScalarVector4i &size,
+               size_t channel_count,
+               const ReconstructionFilter *filter = nullptr,
+               bool warn_negative = true,
+               bool warn_invalid = true,
+               bool border = true,
+               bool normalize = false);
 
     /// Accumulate another image block into this one
     void put(const ImageBlock *block);
@@ -116,6 +130,54 @@ public:
         Float values[5] = { xyz.x(), xyz.y(), xyz.z(), alpha, 1.f };
         return put(pos, values, active);
     }
+    Mask put(const Point3f &pos,
+             const Wavelength &wavelengths,
+             const Spectrum &value,
+             const Float &alpha,
+             Mask active = true) {
+        if (unlikely(m_channel_count != 5))
+            Throw("ImageBlock::put(): non-standard image block configuration! (AOVs?)");
+
+        UnpolarizedSpectrum value_u = depolarize(value);
+
+        Color3f xyz;
+        if constexpr (is_monochromatic_v<Spectrum>) {
+            ENOKI_MARK_USED(wavelengths);
+            xyz = value_u.x();
+        } else if constexpr (is_rgb_v<Spectrum>) {
+            ENOKI_MARK_USED(wavelengths);
+            xyz = srgb_to_xyz(value_u, active);
+        } else {
+            static_assert(is_spectral_v<Spectrum>);
+            xyz = spectrum_to_xyz(value_u, wavelengths, active);
+        }
+        Float values[5] = { xyz.x(), xyz.y(), xyz.z(), alpha, 1.f };
+        return put(pos, values, active);
+    }
+    Mask put(const Point4f &pos,
+             const Wavelength &wavelengths,
+             const Spectrum &value,
+             const Float &alpha,
+             Mask active = true) {
+        if (unlikely(m_channel_count != 5))
+            Throw("ImageBlock::put(): non-standard image block configuration! (AOVs?)");
+
+        UnpolarizedSpectrum value_u = depolarize(value);
+
+        Color3f xyz;
+        if constexpr (is_monochromatic_v<Spectrum>) {
+            ENOKI_MARK_USED(wavelengths);
+            xyz = value_u.x();
+        } else if constexpr (is_rgb_v<Spectrum>) {
+            ENOKI_MARK_USED(wavelengths);
+            xyz = srgb_to_xyz(value_u, active);
+        } else {
+            static_assert(is_spectral_v<Spectrum>);
+            xyz = spectrum_to_xyz(value_u, wavelengths, active);
+        }
+        Float values[5] = { xyz.x(), xyz.y(), xyz.z(), alpha, 1.f };
+        return put(pos, values, active);
+    }
 
     /**
      * \brief Store a single sample inside the block.
@@ -137,6 +199,8 @@ public:
      *    or \c m_warn_invalid is enabled.
      */
     Mask put(const Point2f &pos, const Float *value, Mask active = true);
+    Mask put(const Point3f &pos, const Float *value, Mask active = true);
+    Mask put(const Point4f &pos, const Float *value, Mask active = true);
 
     /// Clear everything to zero.
     void clear();
@@ -151,21 +215,35 @@ public:
      * image (e.g. a Film) to the top-left corner of this ImageBlock instance.
      */
     void set_offset(const ScalarPoint2i &offset) { m_offset = offset; }
+    void set_offset(const ScalarPoint3i &offset) { m_offset = offset; }
+    void set_offset(const ScalarPoint4i &offset) { m_offset = offset; }
 
     /// Set the block size. This potentially destroys the block's content.
     void set_size(const ScalarVector2i &size);
+    void set_size(const ScalarVector3i &size);
+    void set_size(const ScalarVector4i &size);
 
     /// Return the current block offset
     const ScalarPoint2i &offset() const { return m_offset; }
+    const ScalarPoint3i &offset() const { return m_offset; }
+    const ScalarPoint4i &offset() const { return m_offset; }
 
     /// Return the current block size
     const ScalarVector2i &size() const { return m_size; }
+    const ScalarVector3i &size() const { return m_size; }
+    const ScalarVector4i &size() const { return m_size; }
 
     /// Return the bitmap's width in pixels
     size_t width() const { return m_size.x(); }
 
     /// Return the bitmap's height in pixels
     size_t height() const { return m_size.y(); }
+
+    /// Return the bitmap's length (time) in pixels
+    size_t length() const { return m_size.z(); }
+
+    /// Return the bitmap's bandwidth (frequency) in pixels
+    size_t bwidth() const { return m_size.w(); }
 
     /// Warn when writing invalid (NaN, +/- infinity) sample values?
     void set_warn_invalid(bool value) { m_warn_invalid = value; }
@@ -203,11 +281,13 @@ protected:
 protected:
     ScalarPoint2i m_offset;
     ScalarVector2i m_size;
+    ScalarVector3i m_size;
+    ScalarVector4i m_size;
     uint32_t m_channel_count;
     int m_border_size;
     DynamicBuffer<Float> m_data;
     const ReconstructionFilter *m_filter;
-    Float *m_weights_x, *m_weights_y;
+    Float *m_weights_x, *m_weights_y, *m_weights_z, *m_weights_w;
     bool m_warn_negative;
     bool m_warn_invalid;
     bool m_normalize;
