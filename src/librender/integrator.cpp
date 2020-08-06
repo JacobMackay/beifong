@@ -258,8 +258,10 @@ SamplingIntegrator<Float, Spectrum>::render_sample(const Scene *scene,
     ray.scale_differential(diff_scale_factor);
 
     const Medium *medium = sensor->medium();
-    std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium, aovs + 5, active);
-    result.first = ray_weight * result.first;
+    // std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium, aovs + 5, active);
+    std::tuple<Spectrum, Mask, Float> result = sample(scene, sampler, ray, medium, aovs + 5, active);
+    // result.first = ray_weight * result.first;
+    result = {ray_weight * get<0>(result), get<1>(result), get<2>(result)};
 
     UnpolarizedSpectrum spec_u = depolarize(result.first);
 
@@ -281,10 +283,19 @@ SamplingIntegrator<Float, Spectrum>::render_sample(const Scene *scene,
 
     block->put(position_sample, aovs, active);
 
+    std::cout<<result.third<<std::endl;
+
     sampler->advance();
 }
 
-MTS_VARIANT std::pair<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask>
+// MTS_VARIANT std::pair<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask>
+// SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
+//                                             Sampler * /* sampler */,
+//                                             const RayDifferential3f & /* ray */,
+//                                             const Medium * /* medium */,
+//                                             Float * /* aovs */,
+//                                             Mask /* active */) const {
+MTS_VARIANT std::tuple<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask,Float>
 SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
                                             Sampler * /* sampler */,
                                             const RayDifferential3f & /* ray */,

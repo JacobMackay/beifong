@@ -111,13 +111,14 @@ public:
      *        (spec, mask, aov) = integrator.sample(scene, sampler, ray, medium, active)
      *    </tt>
      */
-    virtual std::pair<Spectrum, Mask> sample(const Scene *scene,
-                                             Sampler *sampler,
-                                             const RayDifferential3f &ray,
-                                             const Medium *medium = nullptr,
-                                             Float *aovs = nullptr,
-                                             Mask active = true) const;
+    // virtual std::pair<Spectrum, Mask> sample(const Scene *scene,
+    //                                          Sampler *sampler,
+    //                                          const RayDifferential3f &ray,
+    //                                          const Medium *medium = nullptr,
+    //                                          Float *aovs = nullptr,
+    //                                          Mask active = true) const;
 
+    virtual std::tuple<Spectrum, Mask, Float> sample(const Scene *scene, Sampler *sampler, const RayDifferential3f &ray, const Medium *medium = nullptr, Float *aovs = nullptr, Mask active = true) const;
     /**
      * For integrators that return one or more arbitrary output variables
      * (AOVs), this function specifies a list of associated channel names. The

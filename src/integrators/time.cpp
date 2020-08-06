@@ -106,7 +106,7 @@ public:
         // using Int32 = int32_array_t<Value>;
         // Int32 index = arange<Int32>(n * size.y());  // 1:len
 
-        Float dt = 1e-8;
+        Float dt = 1;
 
         auto const &rads = result.first;
         for (int i = 0; i < 10; ++i){
@@ -115,8 +115,9 @@ public:
             // Point1f hi = Float i * dt + dt;
             Point1f lo = (Float)i *dt;
             Point1f hi = (Float)i *dt + dt;
-            rgb = rads[active && all(ray.time>=lo && ray.time<hi)];
-
+            // rgb = rads[active && all(ray.time>=lo && ray.time<hi)];
+            rgb = rads[all(ray.time>=lo && ray.time<hi)];
+            // std::cout<<ray.time<<std::endl;
             // rgb = rads
             *aovs++ = rgb.r(); *aovs++ = rgb.g(); *aovs++ = rgb.b();
         }
