@@ -22,6 +22,7 @@ NAMESPACE_BEGIN(mitsuba)
 // -----------------------------------------------------------------------------
 
 MTS_VARIANT SamplingIntegrator<Float, Spectrum>::SamplingIntegrator(const Properties &props)
+// MTS_VARIANT SamplingIntegrator<Float, Float, Spectrum>::SamplingIntegrator(const Properties &props)
     : Base(props) {
 
     m_block_size = (uint32_t) props.size_("block_size", 0);
@@ -40,16 +41,23 @@ MTS_VARIANT SamplingIntegrator<Float, Spectrum>::SamplingIntegrator(const Proper
 }
 
 MTS_VARIANT SamplingIntegrator<Float, Spectrum>::~SamplingIntegrator() { }
+// MTS_VARIANT SamplingIntegrator<Float, Float, Spectrum>::~SamplingIntegrator() { }
 
-MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::cancel() {
+MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::cancel()
+// MTS_VARIANT void SamplingIntegrator<Float, Float, Spectrum>::cancel()
+{
     m_stop = true;
 }
 
-MTS_VARIANT std::vector<std::string> SamplingIntegrator<Float, Spectrum>::aov_names() const {
+MTS_VARIANT std::vector<std::string> SamplingIntegrator<Float, Spectrum>::aov_names() const
+// MTS_VARIANT std::vector<std::string> SamplingIntegrator<Float, Float, Spectrum>::aov_names() const
+{
     return { };
 }
 
-MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::render(Scene *scene, Sensor *sensor) {
+MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::render(Scene *scene, Sensor *sensor)
+// MTS_VARIANT bool SamplingIntegrator<Float, Float, Spectrum>::render(Scene *scene, Sensor *sensor)
+{
     ScopedPhase sp(ProfilerPhase::Render);
     m_stop = false;
 
@@ -182,6 +190,13 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::render_block(const Scene *
                                                                    Float *aovs,
                                                                    size_t sample_count_,
                                                                    size_t block_id) const {
+// MTS_VARIANT void SamplingIntegrator<Float, Float, Spectrum>::render_block(const Scene *scene,
+//                                                                    const Sensor *sensor,
+//                                                                    Sampler *sampler,
+//                                                                    ImageBlock *block,
+//                                                                    Float *aovs,
+//                                                                    size_t sample_count_,
+//                                                                    size_t block_id) const {
     block->clear();
     uint32_t pixel_count  = (uint32_t)(m_block_size * m_block_size),
              sample_count = (uint32_t)(sample_count_ == (size_t) -1
@@ -227,8 +242,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::render_block(const Scene *
     }
 }
 
-MTS_VARIANT void
-SamplingIntegrator<Float, Spectrum>::render_sample(const Scene *scene,
+MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::render_sample(const Scene *scene,
                                                    const Sensor *sensor,
                                                    Sampler *sampler,
                                                    ImageBlock *block,
@@ -236,6 +250,14 @@ SamplingIntegrator<Float, Spectrum>::render_sample(const Scene *scene,
                                                    const Vector2f &pos,
                                                    ScalarFloat diff_scale_factor,
                                                    Mask active) const {
+// MTS_VARIANT void SamplingIntegrator<Float, Float, Spectrum>::render_sample(const Scene *scene,
+//                                                    const Sensor *sensor,
+//                                                    Sampler *sampler,
+//                                                    ImageBlock *block,
+//                                                    Float *aovs,
+//                                                    const Vector2f &pos,
+//                                                    ScalarFloat diff_scale_factor,
+//                                                    Mask active) const {
     Vector2f position_sample = pos + sampler->next_2d(active);
 
     Point2f aperture_sample(.5f);
@@ -258,12 +280,17 @@ SamplingIntegrator<Float, Spectrum>::render_sample(const Scene *scene,
     ray.scale_differential(diff_scale_factor);
 
     const Medium *medium = sensor->medium();
-    // std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium, aovs + 5, active);
-    std::tuple<Spectrum, Mask, Float> result = sample(scene, sampler, ray, medium, aovs + 5, active);
-    // result.first = ray_weight * result.first;
-    result = {ray_weight * get<0>(result), get<1>(result), get<2>(result)};
+    std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium, aovs + 5, active);
+    // std::pair<std::pair<Spectrum, Mask>, Float> result = sample(scene, sampler, ray, medium, aovs + 5, active);
+    // std::tuple<Spectrum, Mask, Float> result = sample(scene, sampler, ray, medium, aovs + 5, active);
+
+    result.first = ray_weight * result.first;
+    // result.first.first = ray_weight * result.first.first;
+    // std::get<0>(result) = ray_weight * std::get<0>(result);
 
     UnpolarizedSpectrum spec_u = depolarize(result.first);
+    // UnpolarizedSpectrum spec_u = depolarize(result.first.first);
+    // UnpolarizedSpectrum spec_u = depolarize(std::get<0>(result));
 
     Color3f xyz;
     if constexpr (is_monochromatic_v<Spectrum>) {
@@ -279,35 +306,45 @@ SamplingIntegrator<Float, Spectrum>::render_sample(const Scene *scene,
     aovs[1] = xyz.y();
     aovs[2] = xyz.z();
     aovs[3] = select(result.second, Float(1.f), Float(0.f));
+    // aovs[3] = select(result.first.second, Float(1.f), Float(0.f));
+    // aovs[3] = select(std::get<1>(result), Float(1.f), Float(0.f));
     aovs[4] = 1.f;
 
     block->put(position_sample, aovs, active);
 
-    std::cout<<result.third<<std::endl;
+    // std::cout<<result.third<<std::endl;
 
     sampler->advance();
 }
 
-// MTS_VARIANT std::pair<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask>
-// SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
-//                                             Sampler * /* sampler */,
-//                                             const RayDifferential3f & /* ray */,
-//                                             const Medium * /* medium */,
-//                                             Float * /* aovs */,
-//                                             Mask /* active */) const {
-MTS_VARIANT std::tuple<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask,Float>
+MTS_VARIANT std::pair<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask>
 SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
                                             Sampler * /* sampler */,
                                             const RayDifferential3f & /* ray */,
                                             const Medium * /* medium */,
                                             Float * /* aovs */,
                                             Mask /* active */) const {
+// MTS_VARIANT std::pair<std::pair<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask>, Float>
+// SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
+//                                             Sampler * /* sampler */,
+//                                             const RayDifferential3f & /* ray */,
+//                                             const Medium * /* medium */,
+//                                             Float * /* aovs */,
+//                                             Mask /* active */) const {
+// MTS_VARIANT std::tuple<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask, Float>
+// SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
+//                                             Sampler * /* sampler */,
+//                                             const RayDifferential3f & /* ray */,
+//                                             const Medium * /* medium */,
+//                                             Float * /* aovs */,
+//                                             Mask /* active */) const {
     NotImplementedError("sample");
 }
 
 // -----------------------------------------------------------------------------
 
 MTS_VARIANT MonteCarloIntegrator<Float, Spectrum>::MonteCarloIntegrator(const Properties &props)
+// MTS_VARIANT MonteCarloIntegrator<Float, Float, Spectrum>::MonteCarloIntegrator(const Properties &props)
     : Base(props) {
     /// Depth to begin using russian roulette
     m_rr_depth = props.int_("rr_depth", 5);
@@ -322,7 +359,8 @@ MTS_VARIANT MonteCarloIntegrator<Float, Spectrum>::MonteCarloIntegrator(const Pr
         Throw("\"max_depth\" must be set to -1 (infinite) or a value >= 0");
 }
 
-MTS_VARIANT MonteCarloIntegrator<Float, Spectrum>::~MonteCarloIntegrator() { }
+MTS_VARIANT MonteCarloIntegrator<Float, Spectrum>::~MonteCarloIntegrator() {} 
+// MTS_VARIANT MonteCarloIntegrator<Float, Float, Spectrum>::~MonteCarloIntegrator() { } }
 
 MTS_IMPLEMENT_CLASS_VARIANT(Integrator, Object, "integrator")
 MTS_IMPLEMENT_CLASS_VARIANT(SamplingIntegrator, Integrator)

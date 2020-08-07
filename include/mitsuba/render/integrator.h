@@ -34,6 +34,7 @@ NAMESPACE_BEGIN(mitsuba)
  * implementations.
  */
 template <typename Float, typename Spectrum>
+// template <typename Float, typename Float, typename Spectrum>
 class MTS_EXPORT_RENDER Integrator : public Object {
 public:
     MTS_IMPORT_TYPES(Scene, Sensor)
@@ -68,6 +69,8 @@ protected:
  */
 template <typename Float, typename Spectrum>
 class MTS_EXPORT_RENDER SamplingIntegrator : public Integrator<Float, Spectrum> {
+// class MTS_EXPORT_RENDER SamplingIntegrator : public Integrator<Float, Float, Spectrum>
+// template <typename Float, typename Float, typename Spectrum> {
 public:
     MTS_IMPORT_BASE(Integrator)
     MTS_IMPORT_TYPES(Scene, Sensor, Film, ImageBlock, Medium, Sampler)
@@ -111,14 +114,17 @@ public:
      *        (spec, mask, aov) = integrator.sample(scene, sampler, ray, medium, active)
      *    </tt>
      */
-    // virtual std::pair<Spectrum, Mask> sample(const Scene *scene,
-    //                                          Sampler *sampler,
-    //                                          const RayDifferential3f &ray,
-    //                                          const Medium *medium = nullptr,
-    //                                          Float *aovs = nullptr,
-    //                                          Mask active = true) const;
+    virtual std::pair<Spectrum, Mask> sample(const Scene *scene,
+                                             Sampler *sampler,
+                                             const RayDifferential3f &ray,
+                                             const Medium *medium = nullptr,
+                                             Float *aovs = nullptr,
+                                             Mask active = true) const;
 
-    virtual std::tuple<Spectrum, Mask, Float> sample(const Scene *scene, Sampler *sampler, const RayDifferential3f &ray, const Medium *medium = nullptr, Float *aovs = nullptr, Mask active = true) const;
+    // virtual std::pair<std::pair<Spectrum, Mask>, Float> sample(const Scene *scene, Sampler *sampler, const RayDifferential3f &ray, const Medium *medium = nullptr, Float *aovs = nullptr, Mask active = true) const;
+
+    // virtual std::tuple<Spectrum, Mask, Float> sample(const Scene *scene, Sampler *sampler, const RayDifferential3f &ray, const Medium *medium = nullptr, Float *aovs = nullptr, Mask active = true) const;
+
     /**
      * For integrators that return one or more arbitrary output variables
      * (AOVs), this function specifies a list of associated channel names. The
@@ -207,6 +213,8 @@ protected:
  */
 template <typename Float, typename Spectrum>
 class MTS_EXPORT_RENDER MonteCarloIntegrator : public SamplingIntegrator<Float, Spectrum> {
+// template <typename Float, typename Float, typename Spectrum>
+// class MTS_EXPORT_RENDER MonteCarloIntegrator : public SamplingIntegrator<Float, Float, Spectrum> {
 public:
     MTS_IMPORT_BASE(SamplingIntegrator)
 

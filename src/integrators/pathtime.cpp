@@ -91,26 +91,34 @@ both direct and indirect illumination.
 
 template <typename Float, typename Spectrum>
 class PathTimeIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
+// template <typename Float, typename Float, typename Spectrum>
+// class PathTimeIntegrator : public MonteCarloIntegrator<Float, Float, Spectrum> {
 public:
     MTS_IMPORT_BASE(MonteCarloIntegrator, m_max_depth, m_rr_depth)
     MTS_IMPORT_TYPES(Scene, Sampler, Medium, Emitter, EmitterPtr, BSDF, BSDFPtr)
 
     PathTimeIntegrator(const Properties &props) : Base(props) { }
 
-    // std::pair<Spectrum, Mask> sample(const Scene *scene,
-    //                                  Sampler *sampler,
-    //                                  const RayDifferential3f &ray_,
-    //                                  const Medium * /* medium */,
-    //                                  Float * aovs ,
-    //                                  Mask active) const override {
-    //     MTS_MASKED_FUNCTION(ProfilerPhase::SamplingIntegratorSample, active);
-
-    std::tuple<Spectrum, Mask> sample(const Scene *scene,
+    std::pair<Spectrum, Mask> sample(const Scene *scene,
                                      Sampler *sampler,
                                      const RayDifferential3f &ray_,
                                      const Medium * /* medium */,
                                      Float * aovs ,
                                      Mask active) const override {
+
+    // std::pair<std::pair<Spectrum, Mask>, Float> sample(const Scene *scene,
+    //                                  Sampler *sampler,
+    //                                  const RayDifferential3f &ray_,
+    //                                  const Medium * /* medium */,
+    //                                  Float * aovs ,
+    //                                  Mask active) const override {
+
+    // std::tuple<Spectrum, Mask, Float> sample(const Scene *scene,
+    //                                  Sampler *sampler,
+    //                                  const RayDifferential3f &ray_,
+    //                                  const Medium * /* medium */,
+    //                                  Float * aovs ,
+    //                                  Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::SamplingIntegratorSample, active);
 
         RayDifferential3f ray = ray_;
@@ -217,11 +225,11 @@ public:
             si = std::move(si_bsdf);
             resulttime += select(si.is_valid(), si.t/((Float)3.0e8)*(Float)10.0e9, 0.f);
         }
-        // return { result, valid_ray };
+        return { result, valid_ray };
         // std::pair result2 = {result, resulttime};
         // std::cout<<result<<std::endl;
-        return { result, valid_ray, resulttime};
-        return {result, valid_ray}
+        // return { result, valid_ray, resulttime};
+        // return {{result, valid_ray}, resulttime};
         // probably better to change the return definition... instead of tuple, do nested pairs.
     }
 
@@ -245,5 +253,5 @@ public:
 };
 
 MTS_IMPLEMENT_CLASS_VARIANT(PathTimeIntegrator, MonteCarloIntegrator)
-MTS_EXPORT_PLUGIN(PathTimeIntegrator, "Path Tracer + Time integrator");
+MTS_EXPORT_PLUGIN(PathTimeIntegrator, "PathTracerTimeintegrator");
 NAMESPACE_END(mitsuba)
