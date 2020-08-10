@@ -76,7 +76,14 @@ public:
             Throw("Must specify a sub-integrator!");
     }
 
-    std::pair<Spectrum, Mask> sample(const Scene *scene,
+    // std::pair<Spectrum, Mask> sample(const Scene *scene,
+    //                                  Sampler * sampler,
+    //                                  const RayDifferential3f &ray,
+    //                                  const Medium *medium,
+    //                                  Float *aovs,
+    //                                  Mask active) const override {
+    //     MTS_MASKED_FUNCTION(ProfilerPhase::SamplingIntegratorSample, active);
+    std::tuple<Spectrum, Mask, Float> sample(const Scene *scene,
                                      Sampler * sampler,
                                      const RayDifferential3f &ray,
                                      const Medium *medium,
@@ -85,7 +92,7 @@ public:
         MTS_MASKED_FUNCTION(ProfilerPhase::SamplingIntegratorSample, active);
 
         // auto result = m_integrator->sample(scene, sampler, ray, medium, aovs + 12, active);
-        auto result = m_integrator->sample(scene, sampler, ray, medium, aovs + 10, active);
+        auto result = m_integrator->sample(scene, sampler, ray, medium, aovs + 50, active);
         // Lets say 10 bins for now, get it from input later
 
         // ------------- from image block ----------------------------------
@@ -106,20 +113,26 @@ public:
         // using Int32 = int32_array_t<Value>;
         // Int32 index = arange<Int32>(n * size.y());  // 1:len
 
-        Float dt = 1;
+        // Float dt = 200.0e-6;
+        Float dt = 0.5e-9;
 
-        auto const &rads = result.first;
-        for (int i = 0; i < 10; ++i){
+        auto const &times = std::get<2>(result);
+        auto const &rads = std::get<0>(result);
+        for (int i = 0; i < 50; ++i){
             Color3f rgb;
+            // Point3f rgb;
             // Point1f lo = Float i * dt;
             // Point1f hi = Float i * dt + dt;
             Point1f lo = (Float)i *dt;
             Point1f hi = (Float)i *dt + dt;
             // rgb = rads[active && all(ray.time>=lo && ray.time<hi)];
-            rgb = rads[all(ray.time>=lo && ray.time<hi)];
+            // rgb = rads[all(ray.time>=lo && ray.time<hi)];
+            // rgb = select(all(ray.time>=lo && ray.time<hi), rads, 0.f);
+            rgb = select(all(times>=lo && times<hi), rads, 0.f);
             // std::cout<<ray.time<<std::endl;
             // rgb = rads
             *aovs++ = rgb.r(); *aovs++ = rgb.g(); *aovs++ = rgb.b();
+            // *aovs++ = rgb.x(); *aovs++ = rgb.y(); *aovs++ = rgb.z();
         }
 
         // if constexpr (is_polarized_v<Spectrum>) {
@@ -155,7 +168,7 @@ public:
 
     std::vector<std::string> aov_names() const override {
         std::vector<std::string> result = m_integrator->aov_names();
-        for (int i = 0; i < 10; ++i)
+        for (int i = 0; i < 50; ++i)
             for (int j = 0; j < 3; ++j)
                 result.insert(result.begin() + 3*i + j, "S" + std::to_string(i) + "." + ("RGB"[j]));
         return result;

@@ -33,6 +33,7 @@ template <typename Point_, typename Spectrum_> struct Ray {
     Float mint = math::RayEpsilon<Float>; ///< Minimum position on the ray segment
     Float maxt = math::Infinity<Float>;   ///< Maximum position on the ray segment
     Float time = 0.f;                     ///< Time value associated with this ray
+    // Float traveltime = 0.f;               ///< Travel Time value associated with this ray
     Wavelength wavelengths;               ///< Wavelength packet associated with the ray
 
     /// Construct a new ray (o, d) at time 'time'
@@ -40,23 +41,38 @@ template <typename Point_, typename Spectrum_> struct Ray {
         const Wavelength &wavelengths)
         : o(o), d(d), d_rcp(rcp(d)), time(time),
           wavelengths(wavelengths) { }
+    // Ray(const Point &o, const Vector &d, Float time,
+    //     const Wavelength &wavelengths)
+    //     : o(o), d(d), d_rcp(rcp(d)), time(time), traveltime(time),
+    //       wavelengths(wavelengths) { }
 
     /// Construct a new ray (o, d) with time
     Ray(const Point &o, const Vector &d, const Float &t)
         : o(o), d(d), time(t) {
         update();
     }
+    // Ray(const Point &o, const Vector &d, const Float &t)
+    //     : o(o), d(d), time(t), traveltime(t) {
+    //     update();
+    // }
 
     /// Construct a new ray (o, d) with bounds
     Ray(const Point &o, const Vector &d, Float mint, Float maxt,
         Float time, const Wavelength &wavelengths)
         : o(o), d(d), d_rcp(rcp(d)), mint(mint), maxt(maxt),
           time(time), wavelengths(wavelengths) { }
+    // Ray(const Point &o, const Vector &d, Float mint, Float maxt,
+    //     Float time, const Wavelength &wavelengths)
+    //     : o(o), d(d), d_rcp(rcp(d)), mint(mint), maxt(maxt),
+    //       time(time), traveltime(time), wavelengths(wavelengths) { }
 
     /// Copy a ray, but change the [mint, maxt] interval
     Ray(const Ray &r, Float mint, Float maxt)
         : o(r.o), d(r.d), d_rcp(r.d_rcp), mint(mint), maxt(maxt),
           time(r.time), wavelengths(r.wavelengths) { }
+    // Ray(const Ray &r, Float mint, Float maxt)
+    //     : o(r.o), d(r.d), d_rcp(r.d_rcp), mint(mint), maxt(maxt),
+    //       time(r.time), traveltime(r.time), wavelengths(r.wavelengths) { }
 
     /// Update the reciprocal ray directions after changing 'd'
     void update() { d_rcp = rcp(d); }
@@ -73,16 +89,18 @@ template <typename Point_, typename Spectrum_> struct Ray {
         result.mint        = mint;
         result.maxt        = maxt;
         result.time        = time;
+        // result.traveltime  = time;
         result.wavelengths = wavelengths;
         return result;
     }
 
     ENOKI_STRUCT(Ray, o, d, d_rcp, mint, maxt, time, wavelengths)
+    // ENOKI_STRUCT(Ray, o, d, d_rcp, mint, maxt, time, traveltime, wavelengths)
 };
 
 /**
  * \brief Ray differential -- enhances the basic ray class with
- * offset rays for two adjacent pixels on the view plane
+ * offset rays for two adjacent pixels on the view plane. Good to extend this to include traveltime
  */
 template <typename Point_, typename Spectrum_>
 struct RayDifferential : Ray<Point_, Spectrum_> {

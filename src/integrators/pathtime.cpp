@@ -91,20 +91,18 @@ both direct and indirect illumination.
 
 template <typename Float, typename Spectrum>
 class PathTimeIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
-// template <typename Float, typename Float, typename Spectrum>
-// class PathTimeIntegrator : public MonteCarloIntegrator<Float, Float, Spectrum> {
 public:
     MTS_IMPORT_BASE(MonteCarloIntegrator, m_max_depth, m_rr_depth)
     MTS_IMPORT_TYPES(Scene, Sampler, Medium, Emitter, EmitterPtr, BSDF, BSDFPtr)
 
     PathTimeIntegrator(const Properties &props) : Base(props) { }
 
-    std::pair<Spectrum, Mask> sample(const Scene *scene,
-                                     Sampler *sampler,
-                                     const RayDifferential3f &ray_,
-                                     const Medium * /* medium */,
-                                     Float * aovs ,
-                                     Mask active) const override {
+    // std::pair<Spectrum, Mask> sample(const Scene *scene,
+    //                                  Sampler *sampler,
+    //                                  const RayDifferential3f &ray_,
+    //                                  const Medium * /* medium */,
+    //                                  Float *aovs ,
+    //                                  Mask active) const override {
 
     // std::pair<std::pair<Spectrum, Mask>, Float> sample(const Scene *scene,
     //                                  Sampler *sampler,
@@ -113,12 +111,12 @@ public:
     //                                  Float * aovs ,
     //                                  Mask active) const override {
 
-    // std::tuple<Spectrum, Mask, Float> sample(const Scene *scene,
-    //                                  Sampler *sampler,
-    //                                  const RayDifferential3f &ray_,
-    //                                  const Medium * /* medium */,
-    //                                  Float * aovs ,
-    //                                  Mask active) const override {
+    std::tuple<Spectrum, Mask, Float> sample(const Scene *scene,
+                                     Sampler *sampler,
+                                     const RayDifferential3f &ray_,
+                                     const Medium * /* medium */,
+                                     Float * aovs ,
+                                     Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::SamplingIntegratorSample, active);
 
         RayDifferential3f ray = ray_;
@@ -129,7 +127,8 @@ public:
         // MIS weight for intersected emitters (set by prev. iteration)
         Float emission_weight(1.f);
 
-        Spectrum throughput(1.f), result(0.f), resulttime(0.f);
+        Spectrum throughput(1.f), result(0.f);
+        Float pathtime(0.f);
 
         // ---------------------- First intersection ----------------------
 
@@ -137,7 +136,8 @@ public:
         Mask valid_ray = si.is_valid();
         EmitterPtr emitter = si.emitter(scene);
 
-        resulttime = select(si.is_valid(), si.t/((Float)3.0e8)*(Float)10.0e9, 0.f);
+        pathtime = select(si.is_valid(), si.t/((Float)3.0e8), 0.f);
+        // pathtime = select(si.is_valid(), si.time, 0.f);
 
         for (int depth = 1;; ++depth) {
 
@@ -223,13 +223,59 @@ public:
             }
 
             si = std::move(si_bsdf);
-            resulttime += select(si.is_valid(), si.t/((Float)3.0e8)*(Float)10.0e9, 0.f);
+            pathtime += select(si.is_valid(), si.t/((Float)3.0e8), 0.f);
+            // pathtime += select(si.is_valid(), si.time, 0.f);
         }
-        return { result, valid_ray };
-        // std::pair result2 = {result, resulttime};
+
+        // UnpolarizedSpectrum spec_u = depolarize(result);
+        //
+        // Color3f rgb;
+        // if constexpr (is_monochromatic_v<Spectrum>) {
+        //     rgb = spec_u.x();
+        // } else if constexpr (is_rgb_v<Spectrum>) {
+        //     rgb = spec_u;
+        // } else {
+        //     static_assert(is_spectral_v<Spectrum>);
+        //     /// Note: this assumes that sensor used sample_rgb_spectrum() to generate 'ray.wavelengths'
+        //     auto pdf = pdf_rgb_spectrum(ray.wavelengths);
+        //     spec_u *= select(neq(pdf, 0.f), rcp(pdf), 0.f);
+        //     rgb = xyz_to_srgb(spectrum_to_xyz(spec_u, ray.wavelengths, active));
+        // }
+
+        // Float dt = 0.5e-10;
+        //
+        // // aovs+=50;
+        //
+        // // auto const &rads = result;
+        // for (int i = 0; i < 9; ++i){
+        //     // Spectrum rgb;
+        //     Color3f rgb_v;
+        //     // Point3f rgb;
+        //     // Point1f lo = Float i * dt;
+        //     // Point1f hi = Float i * dt + dt;
+        //     Point1f lo = (Float)i *dt;
+        //     Point1f hi = (Float)i *dt + dt;
+        //     // rgb = rads[active && all(ray.time>=lo && ray.time<hi)];
+        //     // rgb = rads[all(ray.time>=lo && ray.time<hi)];
+        //     // rgb = select(all(ray.time>=lo && ray.time<hi), rads, 0.f);
+        //     rgb_v = select(all(pathtime>=lo && pathtime<hi), result, 0.f);
+        //     // std::cout<<ray.time<<std::endl;
+        //     // rgb = rads
+        //     // std::cout<<i<<std::endl;
+        //     // *aovs++ = rgb_v.r(); *aovs++ = rgb_v.g(); *aovs++ = rgb_v.b();
+        //     // *aovs++ = 0.f; *aovs++ = 0.f; *aovs++ = 0.f;
+        //     // *aovs[6+i] += rgb_v.r(); *aovs[7+i] += rgb_v.g(); *aovs[8+i] += rgb_v.b();
+        //     // *aovs++ = rgb.x(); *aovs++ = rgb.y(); *aovs++ = rgb.z();
+        // }
+
+        // std::cout<<aovs++<<std::endl;
+
+        // return { result, valid_ray };
+        // return { pathtime, valid_ray };
+        // std::pair result2 = {result, pathtime};
         // std::cout<<result<<std::endl;
-        // return { result, valid_ray, resulttime};
-        // return {{result, valid_ray}, resulttime};
+        return { result, valid_ray, pathtime};
+        // return {{result, valid_ray}, pathtime};
         // probably better to change the return definition... instead of tuple, do nested pairs.
     }
 
@@ -249,7 +295,18 @@ public:
         return select(pdf_a > 0.f, pdf_a / (pdf_a + pdf_b), 0.f);
     }
 
+    // std::vector<std::string> aov_names() const override {
+    //     std::vector<std::string> result = m_integrator->aov_names();
+    //     for (int i = 0; i < 50; ++i)
+    //         for (int j = 0; j < 3; ++j)
+    //             result.insert(result.begin() + 3*i + j, "S" + std::to_string(i) + "." + ("RGB"[j]));
+    //     return result;
+    // }
+
     MTS_DECLARE_CLASS()
+
+// private:
+    // ref<Base> m_integrator;
 };
 
 MTS_IMPLEMENT_CLASS_VARIANT(PathTimeIntegrator, MonteCarloIntegrator)

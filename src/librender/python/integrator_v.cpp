@@ -27,39 +27,39 @@ public:
 
     PySamplingIntegrator(const Properties &props) : SamplingIntegrator(props) { }
 
-    std::pair<Spectrum, Mask> sample(const Scene *scene,
-                                     Sampler *sampler,
-                                     const RayDifferential3f &ray,
-                                     const Medium *medium,
-                                     Float *aovs,
-                                     Mask active) const override {
+    // std::pair<Spectrum, Mask> sample(const Scene *scene,
+    //                                  Sampler *sampler,
+    //                                  const RayDifferential3f &ray,
+    //                                  const Medium *medium,
+    //                                  Float *aovs,
+    //                                  Mask active) const override {
     // std::pair<std::pair<Spectrum, Mask>, Float> sample(const Scene *scene,
     //                                  Sampler *sampler,
     //                                  const RayDifferential3f &ray,
     //                                  const Medium *medium,
     //                                  Float *aovs,
     //                                  Mask active) const override {
-    // std::tuple<Spectrum, Mask, Float> sample(const Scene *scene,
-    //                                  Sampler *sampler,
-    //                                  const RayDifferential3f &ray,
-    //                                  const Medium *medium,
-    //                                  Float *aovs,
-    //                                  Mask active) const override {
+    std::tuple<Spectrum, Mask, Float> sample(const Scene *scene,
+                                     Sampler *sampler,
+                                     const RayDifferential3f &ray,
+                                     const Medium *medium,
+                                     Float *aovs,
+                                     Mask active) const override {
         py::gil_scoped_acquire gil;
         py::function overload = py::get_overload(this, "sample");
 
         if (overload) {
-            using PyReturn = std::tuple<Spectrum, Mask, std::vector<Float>>;
-            auto [spec, mask, aovs_]
-                = overload(scene, sampler, ray, medium, active).template cast<PyReturn>();
-            // using PyReturn = std::tuple<Spectrum, Mask, Float, std::vector<Float>>;
-            // auto [spec, mask, flt, aovs_]
+            // using PyReturn = std::tuple<Spectrum, Mask, std::vector<Float>>;
+            // auto [spec, mask, aovs_]
             //     = overload(scene, sampler, ray, medium, active).template cast<PyReturn>();
+            using PyReturn = std::tuple<Spectrum, Mask, Float, std::vector<Float>>;
+            auto [spec, mask, flt, aovs_]
+                = overload(scene, sampler, ray, medium, active).template cast<PyReturn>();
 
             std::copy(aovs_.begin(), aovs_.end(), aovs);
-            return { spec, mask };
+            // return { spec, mask };
             // return { {spec, mask}, flt };
-            // return { spec, mask, flt };
+            return { spec, mask, flt };
         } else {
             Throw("SamplingIntegrator doesn't overload the method \"sample\"");
         }
@@ -87,13 +87,13 @@ void bind_integrator_sample(Class &integrator) {
            const RayDifferential3f &ray, const Medium *medium, Mask active) {
             py::gil_scoped_release release;
             std::vector<Float> aovs(integrator->aov_names().size(), 0.f);
-            auto [spec, mask] = integrator->sample(scene, sampler, ray, medium, aovs.data(), active);
+            // auto [spec, mask] = integrator->sample(scene, sampler, ray, medium, aovs.data(), active);
             // auto [sm, flt] = integrator->sample(scene, sampler, ray, medium, aovs.data(), active);
-            // auto [spec, mask, flt] = integrator->sample(scene, sampler, ray, medium, aovs.data(), active);
+            auto [spec, mask, flt] = integrator->sample(scene, sampler, ray, medium, aovs.data(), active);
 
-            return std::make_tuple(spec, mask, aovs);
+            // return std::make_tuple(spec, mask, aovs);
             // return std::make_tuple(sm, flt, aovs);
-            // return std::make_tuple(spec, mask, flt, aovs);
+            return std::make_tuple(spec, mask, flt, aovs);
         },
         "scene"_a, "sampler"_a, "ray"_a, "medium"_a = nullptr, "active"_a = true,
         D(SamplingIntegrator, sample));
@@ -117,31 +117,31 @@ void bind_integrator_sample(Class &integrator) {
             std::vector<FloatP> aovs_packet(result_aovs.size());
             Spectrum result_spec;
             Mask result_mask;
-            // Float result_flt;
+            Float result_flt;
 
             set_slices(result_spec, slices(ray));
             set_slices(result_mask, slices(ray));
-            // set_slices(result_flt, slices(ray));
+            set_slices(result_flt, slices(ray));
             set_slices(active, slices(ray));
             for (size_t j = 0; j < result_aovs.size(); ++j)
                 set_slices(result_aovs[j], slices(ray));
 
             for (size_t i = 0; i < packets(ray); ++i) {
-                auto [spec, mask] = integrator->sample(scene, sampler, packet(ray, i), medium,
-                                                       aovs_packet.data(),
-                                                       packet(active, i));
-                // auto [spec, mask, flt] = integrator->sample(scene, sampler, packet(ray, i), medium,
+                // auto [spec, mask] = integrator->sample(scene, sampler, packet(ray, i), medium,
                 //                                        aovs_packet.data(),
                 //                                        packet(active, i));
+                auto [spec, mask, flt] = integrator->sample(scene, sampler, packet(ray, i), medium,
+                                                       aovs_packet.data(),
+                                                       packet(active, i));
                 packet(result_spec, i) = spec;
                 packet(result_mask, i) = mask;
-                // packet(result_flt, i) = flt;
+                packet(result_flt, i) = flt;
                 for (size_t j = 0; j < result_aovs.size(); ++i)
                     packet(result_aovs[j], i) = aovs_packet[j];
             }
 
-            return std::make_tuple(result_spec, result_mask, result_aovs);
-            // return std::make_tuple(result_spec, result_mask, result_flt, result_aovs);
+            // return std::make_tuple(result_spec, result_mask, result_aovs);
+            return std::make_tuple(result_spec, result_mask, result_flt, result_aovs);
         },
         "scene"_a, "sampler"_a, "ray"_a, "medium"_a, "active"_a = true, D(SamplingIntegrator, sample));
 }

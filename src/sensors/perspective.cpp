@@ -145,7 +145,7 @@ public:
 
         auto [wavelengths, wav_weight] = sample_wavelength<Float, Spectrum>(wavelength_sample);
         Ray3f ray;
-        ray.time = time;
+        ray.time = time;    // the random sample[0,1]*opentime
         ray.wavelengths = wavelengths;
 
         // Compute the sample position on the near plane (local camera space).

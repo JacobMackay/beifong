@@ -265,10 +265,14 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::render_sample(const Scene 
         aperture_sample = sampler->next_2d(active);
 
     Float time = sensor->shutter_open();
-    if (sensor->shutter_open_time() > 0.f)
-        time += sampler->next_1d(active) * sensor->shutter_open_time();
+    if (sensor->shutter_open_time() > 0.f){
+        time += sampler->next_1d(active) * sensor->shutter_open_time();} // time += 1drand[0,1]*total open time
+    else{
+        time = 0.f;
+    }
 
-    Float wavelength_sample = sampler->next_1d(active);
+
+    Float wavelength_sample = sampler->next_1d(active); // 1drand[0,1]
 
     Vector2f adjusted_position =
         (position_sample - sensor->film()->crop_offset()) /
@@ -280,17 +284,21 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::render_sample(const Scene 
     ray.scale_differential(diff_scale_factor);
 
     const Medium *medium = sensor->medium();
-    std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium, aovs + 5, active);
+    // std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium, aovs + 5, active);
     // std::pair<std::pair<Spectrum, Mask>, Float> result = sample(scene, sampler, ray, medium, aovs + 5, active);
-    // std::tuple<Spectrum, Mask, Float> result = sample(scene, sampler, ray, medium, aovs + 5, active);
+    std::tuple<Spectrum, Mask, Float> result = sample(scene, sampler, ray, medium, aovs + 5, active);
 
-    result.first = ray_weight * result.first;
+    // std::cout<<result.first<<std::endl;
+
+    // result.first = ray_weight * result.first;
+
     // result.first.first = ray_weight * result.first.first;
-    // std::get<0>(result) = ray_weight * std::get<0>(result);
+    std::get<0>(result) = ray_weight * std::get<0>(result);
 
-    UnpolarizedSpectrum spec_u = depolarize(result.first);
+    // UnpolarizedSpectrum spec_u = depolarize(result.first);
+
     // UnpolarizedSpectrum spec_u = depolarize(result.first.first);
-    // UnpolarizedSpectrum spec_u = depolarize(std::get<0>(result));
+    UnpolarizedSpectrum spec_u = depolarize(std::get<0>(result));
 
     Color3f xyz;
     if constexpr (is_monochromatic_v<Spectrum>) {
@@ -305,25 +313,25 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::render_sample(const Scene 
     aovs[0] = xyz.x();
     aovs[1] = xyz.y();
     aovs[2] = xyz.z();
-    aovs[3] = select(result.second, Float(1.f), Float(0.f));
+    // aovs[3] = select(result.second, Float(1.f), Float(0.f));
     // aovs[3] = select(result.first.second, Float(1.f), Float(0.f));
-    // aovs[3] = select(std::get<1>(result), Float(1.f), Float(0.f));
+    aovs[3] = select(std::get<1>(result), Float(1.f), Float(0.f));
     aovs[4] = 1.f;
 
     block->put(position_sample, aovs, active);
 
-    // std::cout<<result.third<<std::endl;
+    // std::cout<<std::get<2>(result)<<std::endl;
 
     sampler->advance();
 }
 
-MTS_VARIANT std::pair<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask>
-SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
-                                            Sampler * /* sampler */,
-                                            const RayDifferential3f & /* ray */,
-                                            const Medium * /* medium */,
-                                            Float * /* aovs */,
-                                            Mask /* active */) const {
+// MTS_VARIANT std::pair<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask>
+// SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
+//                                             Sampler * /* sampler */,
+//                                             const RayDifferential3f & /* ray */,
+//                                             const Medium * /* medium */,
+//                                             Float * /* aovs */,
+//                                             Mask /* active */) const {
 // MTS_VARIANT std::pair<std::pair<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask>, Float>
 // SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
 //                                             Sampler * /* sampler */,
@@ -331,13 +339,13 @@ SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
 //                                             const Medium * /* medium */,
 //                                             Float * /* aovs */,
 //                                             Mask /* active */) const {
-// MTS_VARIANT std::tuple<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask, Float>
-// SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
-//                                             Sampler * /* sampler */,
-//                                             const RayDifferential3f & /* ray */,
-//                                             const Medium * /* medium */,
-//                                             Float * /* aovs */,
-//                                             Mask /* active */) const {
+MTS_VARIANT std::tuple<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask, Float>
+SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
+                                            Sampler * /* sampler */,
+                                            const RayDifferential3f & /* ray */,
+                                            const Medium * /* medium */,
+                                            Float * /* aovs */,
+                                            Mask /* active */) const {
     NotImplementedError("sample");
 }
 
@@ -359,7 +367,7 @@ MTS_VARIANT MonteCarloIntegrator<Float, Spectrum>::MonteCarloIntegrator(const Pr
         Throw("\"max_depth\" must be set to -1 (infinite) or a value >= 0");
 }
 
-MTS_VARIANT MonteCarloIntegrator<Float, Spectrum>::~MonteCarloIntegrator() {} 
+MTS_VARIANT MonteCarloIntegrator<Float, Spectrum>::~MonteCarloIntegrator() {}
 // MTS_VARIANT MonteCarloIntegrator<Float, Float, Spectrum>::~MonteCarloIntegrator() { } }
 
 MTS_IMPLEMENT_CLASS_VARIANT(Integrator, Object, "integrator")
