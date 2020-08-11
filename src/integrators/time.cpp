@@ -83,7 +83,7 @@ public:
     //                                  Float *aovs,
     //                                  Mask active) const override {
     //     MTS_MASKED_FUNCTION(ProfilerPhase::SamplingIntegratorSample, active);
-    std::tuple<Spectrum, Mask, Float> sample(const Scene *scene,
+    std::tuple<Spectrum, Mask, Float, Float> sample(const Scene *scene,
                                      Sampler * sampler,
                                      const RayDifferential3f &ray,
                                      const Medium *medium,
@@ -115,6 +115,16 @@ public:
 
         // Float dt = 200.0e-6;
         Float dt = 0.5e-9;
+
+        // Color3f xyz;
+        // if constexpr (is_monochromatic_v<Spectrum>) {
+        //     xyz = spec_u.x();
+        // } else if constexpr (is_rgb_v<Spectrum>) {
+        //     xyz = srgb_to_xyz(spec_u, active);
+        // } else {
+        //     static_assert(is_spectral_v<Spectrum>);
+        //     xyz = spectrum_to_xyz(spec_u, ray.wavelengths, active);
+        // }
 
         auto const &times = std::get<2>(result);
         auto const &rads = std::get<0>(result);

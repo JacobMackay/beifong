@@ -286,9 +286,9 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::render_sample(const Scene 
     const Medium *medium = sensor->medium();
     // std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium, aovs + 5, active);
     // std::pair<std::pair<Spectrum, Mask>, Float> result = sample(scene, sampler, ray, medium, aovs + 5, active);
-    std::tuple<Spectrum, Mask, Float> result = sample(scene, sampler, ray, medium, aovs + 5, active);
+    std::tuple<Spectrum, Mask, Float, Float> result = sample(scene, sampler, ray, medium, aovs + 5, active);
 
-    // std::cout<<result.first<<std::endl;
+    // std::cout<<std::get<0>(result)<<std::endl;
 
     // result.first = ray_weight * result.first;
 

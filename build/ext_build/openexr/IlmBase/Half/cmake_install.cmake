@@ -1,4 +1,4 @@
-# Install script for directory: /home/jacob/src/beifong/ext/openexr/IlmBase/Half
+# Install script for directory: /home/jacobacfr/src/beifong/ext/openexr/IlmBase/Half
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -44,7 +44,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libHalf.so"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES "/home/jacob/src/beifong/build/ext_build/openexr/IlmBase/Half/libHalf.so")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES "/home/jacobacfr/src/beifong/build/ext_build/openexr/IlmBase/Half/libHalf.so")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libHalf.so" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libHalf.so")
     if(CMAKE_INSTALL_DO_STRIP)
@@ -58,10 +58,10 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/OpenEXR" TYPE FILE FILES
-    "/home/jacob/src/beifong/ext/openexr/IlmBase/Half/half.h"
-    "/home/jacob/src/beifong/ext/openexr/IlmBase/Half/halfFunction.h"
-    "/home/jacob/src/beifong/ext/openexr/IlmBase/Half/halfExport.h"
-    "/home/jacob/src/beifong/ext/openexr/IlmBase/Half/halfLimits.h"
+    "/home/jacobacfr/src/beifong/ext/openexr/IlmBase/Half/half.h"
+    "/home/jacobacfr/src/beifong/ext/openexr/IlmBase/Half/halfFunction.h"
+    "/home/jacobacfr/src/beifong/ext/openexr/IlmBase/Half/halfExport.h"
+    "/home/jacobacfr/src/beifong/ext/openexr/IlmBase/Half/halfLimits.h"
     )
 endif()
 

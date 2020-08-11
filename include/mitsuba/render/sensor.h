@@ -131,7 +131,7 @@ protected:
     ref<Sampler> m_sampler;
     ScalarVector2f m_resolution;
     ScalarFloat m_shutter_open;
-    ScalarFloat m_shutter_open_time;
+    ScalarFloat m_shutter_open_time; // Ignoring the tx, when does the receiver start measuring and for how long. This should correspond to the adc collection window. So if we're doing high res, long range it will be the whole thing. If we're doing high res, particular region we have this as well.
 };
 
 

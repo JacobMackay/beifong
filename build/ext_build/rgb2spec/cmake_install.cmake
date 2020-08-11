@@ -1,4 +1,4 @@
-# Install script for directory: /home/jacob/src/beifong/ext/rgb2spec
+# Install script for directory: /home/jacobacfr/src/beifong/ext/rgb2spec
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
