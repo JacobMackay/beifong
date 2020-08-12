@@ -22,7 +22,6 @@ NAMESPACE_BEGIN(mitsuba)
 // -----------------------------------------------------------------------------
 
 MTS_VARIANT SamplingIntegrator<Float, Spectrum>::SamplingIntegrator(const Properties &props)
-// MTS_VARIANT SamplingIntegrator<Float, Float, Spectrum>::SamplingIntegrator(const Properties &props)
     : Base(props) {
 
     m_block_size = (uint32_t) props.size_("block_size", 0);
@@ -41,22 +40,18 @@ MTS_VARIANT SamplingIntegrator<Float, Spectrum>::SamplingIntegrator(const Proper
 }
 
 MTS_VARIANT SamplingIntegrator<Float, Spectrum>::~SamplingIntegrator() { }
-// MTS_VARIANT SamplingIntegrator<Float, Float, Spectrum>::~SamplingIntegrator() { }
 
 MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::cancel()
-// MTS_VARIANT void SamplingIntegrator<Float, Float, Spectrum>::cancel()
 {
     m_stop = true;
 }
 
 MTS_VARIANT std::vector<std::string> SamplingIntegrator<Float, Spectrum>::aov_names() const
-// MTS_VARIANT std::vector<std::string> SamplingIntegrator<Float, Float, Spectrum>::aov_names() const
 {
     return { };
 }
 
 MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::render(Scene *scene, Sensor *sensor)
-// MTS_VARIANT bool SamplingIntegrator<Float, Float, Spectrum>::render(Scene *scene, Sensor *sensor)
 {
     ScopedPhase sp(ProfilerPhase::Render);
     m_stop = false;
@@ -190,13 +185,6 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::render_block(const Scene *
                                                                    Float *aovs,
                                                                    size_t sample_count_,
                                                                    size_t block_id) const {
-// MTS_VARIANT void SamplingIntegrator<Float, Float, Spectrum>::render_block(const Scene *scene,
-//                                                                    const Sensor *sensor,
-//                                                                    Sampler *sampler,
-//                                                                    ImageBlock *block,
-//                                                                    Float *aovs,
-//                                                                    size_t sample_count_,
-//                                                                    size_t block_id) const {
     block->clear();
     uint32_t pixel_count  = (uint32_t)(m_block_size * m_block_size),
              sample_count = (uint32_t)(sample_count_ == (size_t) -1
@@ -250,14 +238,6 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::render_sample(const Scene 
                                                    const Vector2f &pos,
                                                    ScalarFloat diff_scale_factor,
                                                    Mask active) const {
-// MTS_VARIANT void SamplingIntegrator<Float, Float, Spectrum>::render_sample(const Scene *scene,
-//                                                    const Sensor *sensor,
-//                                                    Sampler *sampler,
-//                                                    ImageBlock *block,
-//                                                    Float *aovs,
-//                                                    const Vector2f &pos,
-//                                                    ScalarFloat diff_scale_factor,
-//                                                    Mask active) const {
     Vector2f position_sample = pos + sampler->next_2d(active);
 
     Point2f aperture_sample(.5f);
@@ -286,7 +266,9 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::render_sample(const Scene 
     const Medium *medium = sensor->medium();
     // std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium, aovs + 5, active);
     // std::pair<std::pair<Spectrum, Mask>, Float> result = sample(scene, sampler, ray, medium, aovs + 5, active);
-    std::tuple<Spectrum, Mask, Float, Float> result = sample(scene, sampler, ray, medium, aovs + 5, active);
+    std::tuple<Spectrum, Mask, Float> result = sample(scene, sampler, ray, medium, aovs + 5, active);
+
+    //result should be the radiance?? at a wavelength/r,g,b/uniform
 
     // std::cout<<std::get<0>(result)<<std::endl;
 
@@ -294,11 +276,15 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::render_sample(const Scene 
 
     // result.first.first = ray_weight * result.first.first;
     std::get<0>(result) = ray_weight * std::get<0>(result);
-
+    // std::cout<<std::get<0>(result)<<std::endl;
     // UnpolarizedSpectrum spec_u = depolarize(result.first);
 
     // UnpolarizedSpectrum spec_u = depolarize(result.first.first);
     UnpolarizedSpectrum spec_u = depolarize(std::get<0>(result));
+    // std::cout<<std::get<0>(result)<<std::endl;
+
+    // std::cout<<spec_u<<std::endl;
+    // std::cout<<ray.wavelengths<<std::endl;
 
     Color3f xyz;
     if constexpr (is_monochromatic_v<Spectrum>) {

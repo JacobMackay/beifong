@@ -9,46 +9,46 @@ NAMESPACE_BEGIN(mitsuba)
 
 /**!
 
-.. _sensor-irradiancemeter:
+.. _sensor-fluxmeter:
 
-Irradiance meter (:monosp:`irradiancemeter`)
+Flux meter (:monosp:`fluxmeter`)
 --------------------------------------------
 
 .. pluginparameters::
 
  * - none
 
-This sensor plugin implements an irradiance meter, which measures
-the incident power per unit area over a shape which it is attached to.
+This sensor plugin implements an flux meter, which measures
+the incident power over a shape which it is attached to.
 This sensor is used with films of 1 by 1 pixels.
 
-If the irradiance meter is attached to a mesh-type shape, it will measure the
-irradiance over all triangles in the mesh.
+If the flux meter is attached to a mesh-type shape, it will measure the
+flux over all triangles in the mesh.
 
 This sensor is not instantiated on its own but must be defined as a child
-object to a shape in a scene. To create an irradiance meter,
+object to a shape in a scene. To create an flux meter,
 simply instantiate the desired sensor shape and specify an
-:monosp:`irradiancemeter` instance as its child:
+:monosp:`fluxmeter` instance as its child:
 
 .. code-block:: xml
     :name: sphere-meter
 
     <shape type="sphere">
-        <sensor type="irradiancemeter">
+        <sensor type="fluxmeter">
             <!-- film -->
         </sensor>
     </shape>
 */
 
-MTS_VARIANT class IrradianceMeter final : public Sensor<Float, Spectrum> {
+MTS_VARIANT class FluxMeter final : public Sensor<Float, Spectrum> {
 public:
     MTS_IMPORT_BASE(Sensor, m_film, m_world_transform, m_shape)
     MTS_IMPORT_TYPES(Shape)
 
-    IrradianceMeter(const Properties &props) : Base(props) {
+    FluxMeter(const Properties &props) : Base(props) {
         if (props.has_property("to_world"))
             Throw("Found a 'to_world' transformation -- this is not allowed. "
-                  "The irradiance meter inherits this transformation from its parent "
+                  "The flux meter inherits this transformation from its parent "
                   "shape.");
 
         if (m_film->size() != ScalarPoint2i(1, 1))
@@ -77,9 +77,10 @@ public:
         // 3. Sample spectrum
         auto [wavelengths, wav_weight] = sample_wavelength<Float, Spectrum>(wavelength_sample);
 
+        // std::cout<<m_shape->surface_area()<<std::endl;
         return std::make_pair(
             RayDifferential3f(ps.p, Frame3f(ps.n).to_world(local), time, wavelengths),
-            unpolarized<Spectrum>(wav_weight) * math::Pi<ScalarFloat> / m_shape->surface_area()
+            unpolarized<Spectrum>(wav_weight) * math::Pi<ScalarFloat>
         );
     }
 
@@ -94,14 +95,16 @@ public:
     }
 
     Spectrum eval(const SurfaceInteraction3f &/*si*/, Mask /*active*/) const override {
-        return math::Pi<ScalarFloat> / m_shape->surface_area();
+        // return math::Pi<ScalarFloat> / m_shape->surface_area();
+        // std::cout<<m_shape->surface_area()<<std::endl;
+        return math::Pi<ScalarFloat>;
     }
 
     ScalarBoundingBox3f bbox() const override { return m_shape->bbox(); }
 
     std::string to_string() const override {
         std::ostringstream oss;
-        oss << "IrradianceMeter[" << std::endl
+        oss << "FluxMeter[" << std::endl
             << "  shape = " << m_shape << "," << std::endl
             << "  film = " << m_film << "," << std::endl
             << "]";
@@ -111,6 +114,6 @@ public:
     MTS_DECLARE_CLASS()
 };
 
-MTS_IMPLEMENT_CLASS_VARIANT(IrradianceMeter, Sensor)
-MTS_EXPORT_PLUGIN(IrradianceMeter, "IrradianceMeter");
+MTS_IMPLEMENT_CLASS_VARIANT(FluxMeter, Sensor)
+MTS_EXPORT_PLUGIN(FluxMeter, "FluxMeter");
 NAMESPACE_END(mitsuba)

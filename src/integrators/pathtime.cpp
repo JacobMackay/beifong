@@ -111,11 +111,11 @@ public:
     //                                  Float * aovs ,
     //                                  Mask active) const override {
 
-    std::tuple<Spectrum, Mask, Float, Float> sample(const Scene *scene,
+    std::tuple<Spectrum, Mask, Float> sample(const Scene *scene,
                                      Sampler *sampler,
                                      const RayDifferential3f &ray_,
                                      const Medium * /* medium */,
-                                     Float * aovs ,
+                                     Float * /* aovs*/ ,
                                      Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::SamplingIntegratorSample, active);
 
@@ -128,7 +128,8 @@ public:
         Float emission_weight(1.f);
 
         Spectrum throughput(1.f), result(0.f);
-        Float pathtime(0.f), wlength(ray.wavelengths);
+        // Float pathtime(0.f), wlength(ray.wavelengths);
+        Float pathtime(0.f);
 
         // ---------------------- First intersection ----------------------
 
@@ -274,7 +275,9 @@ public:
         // return { pathtime, valid_ray };
         // std::pair result2 = {result, pathtime};
         // std::cout<<result<<std::endl;
-        return { result, valid_ray, pathtime, wlength};
+        // return { result, valid_ray, pathtime, wlength};
+        // result should be spectrum: wavelength, power/contribution?
+        return { result, valid_ray, pathtime};
         // return {{result, valid_ray}, pathtime};
         // probably better to change the return definition... instead of tuple, do nested pairs.
     }

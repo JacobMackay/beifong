@@ -83,7 +83,7 @@ public:
     //                                  Float *aovs,
     //                                  Mask active) const override {
     //     MTS_MASKED_FUNCTION(ProfilerPhase::SamplingIntegratorSample, active);
-    std::tuple<Spectrum, Mask, Float, Float> sample(const Scene *scene,
+    std::tuple<Spectrum, Mask, Float> sample(const Scene *scene,
                                      Sampler * sampler,
                                      const RayDifferential3f &ray,
                                      const Medium *medium,
@@ -127,21 +127,33 @@ public:
         // }
 
         auto const &times = std::get<2>(result);
-        auto const &rads = std::get<0>(result);
+        auto const &spec_u = depolarize(std::get<0>(result));
         for (int i = 0; i < 50; ++i){
-            Color3f rgb;
+            // Color3f rgb;
+            Point1f lo = (Float)i *dt;
+            Point1f hi = (Float)i *dt + dt;
+            Color3f xyz;
+            if constexpr (is_monochromatic_v<Spectrum>) {
+                // xyz = spec_u.x();
+                xyz = select(all(times>=lo && times<hi), spec_u.x(), 0.f);
+                *aovs++ = xyz.x(); *aovs++ = xyz.y(); *aovs++ = xyz.z();
+            } else if constexpr (is_rgb_v<Spectrum>) {
+                xyz = select(all(times>=lo && times<hi), srgb_to_xyz(spec_u, active), 0.f);
+                *aovs++ = xyz.x(); *aovs++ = xyz.y(); *aovs++ = xyz.z();
+            } else {
+                static_assert(is_spectral_v<Spectrum>);
+                xyz = select(all(times>=lo && times<hi), spectrum_to_xyz(spec_u, ray.wavelengths, active), 0.f);
+                *aovs++ = xyz.x(); *aovs++ = xyz.y(); *aovs++ = xyz.z();
+            }
             // Point3f rgb;
             // Point1f lo = Float i * dt;
             // Point1f hi = Float i * dt + dt;
-            Point1f lo = (Float)i *dt;
-            Point1f hi = (Float)i *dt + dt;
+
             // rgb = rads[active && all(ray.time>=lo && ray.time<hi)];
             // rgb = rads[all(ray.time>=lo && ray.time<hi)];
             // rgb = select(all(ray.time>=lo && ray.time<hi), rads, 0.f);
-            rgb = select(all(times>=lo && times<hi), rads, 0.f);
             // std::cout<<ray.time<<std::endl;
             // rgb = rads
-            *aovs++ = rgb.r(); *aovs++ = rgb.g(); *aovs++ = rgb.b();
             // *aovs++ = rgb.x(); *aovs++ = rgb.y(); *aovs++ = rgb.z();
         }
 

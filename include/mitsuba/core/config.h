@@ -11,6 +11,7 @@
 #define MTS_VARIANTS                                                            \
     "scalar_rgb\n"                                                              \
     "scalar_spectral\n"                                                         \
+    "scalar_mono\n"                                                             \
 
 /// Default variant to be used by the "mitsuba" executable
 #define MTS_DEFAULT_VARIANT "scalar_spectral"                                   \
@@ -19,31 +20,37 @@
 #define MTS_EXTERN_STRUCT_CORE(Name)                                            \
     MTS_EXTERN_CORE template struct MTS_EXPORT_CORE Name<float, Color<float, 3>>; \
     MTS_EXTERN_CORE template struct MTS_EXPORT_CORE Name<float, Spectrum<float, 4>>; \
+    MTS_EXTERN_CORE template struct MTS_EXPORT_CORE Name<float, Color<float, 1>>; \
 
 /// Declare that a "class" template is to be imported and not instantiated
 #define MTS_EXTERN_CLASS_CORE(Name)                                             \
     MTS_EXTERN_CORE template class MTS_EXPORT_CORE Name<float, Color<float, 3>>; \
     MTS_EXTERN_CORE template class MTS_EXPORT_CORE Name<float, Spectrum<float, 4>>; \
+    MTS_EXTERN_CORE template class MTS_EXPORT_CORE Name<float, Color<float, 1>>; \
 
 /// Declare that a "struct" template is to be imported and not instantiated
 #define MTS_EXTERN_STRUCT_RENDER(Name)                                          \
     MTS_EXTERN_RENDER template struct MTS_EXPORT_RENDER Name<float, Color<float, 3>>; \
     MTS_EXTERN_RENDER template struct MTS_EXPORT_RENDER Name<float, Spectrum<float, 4>>; \
+    MTS_EXTERN_RENDER template struct MTS_EXPORT_RENDER Name<float, Color<float, 1>>; \
 
 /// Declare that a "class" template is to be imported and not instantiated
 #define MTS_EXTERN_CLASS_RENDER(Name)                                           \
     MTS_EXTERN_RENDER template class MTS_EXPORT_RENDER Name<float, Color<float, 3>>; \
     MTS_EXTERN_RENDER template class MTS_EXPORT_RENDER Name<float, Spectrum<float, 4>>; \
+    MTS_EXTERN_RENDER template class MTS_EXPORT_RENDER Name<float, Color<float, 1>>; \
 
 /// Explicitly instantiate all variants of a "struct" template
 #define MTS_INSTANTIATE_STRUCT(Name)                                            \
     template struct MTS_EXPORT Name<float, Color<float, 3>>;                    \
     template struct MTS_EXPORT Name<float, Spectrum<float, 4>>;                 \
+    template struct MTS_EXPORT Name<float, Color<float, 1>>;                    \
 
 /// Explicitly instantiate all variants of a "class" template
 #define MTS_INSTANTIATE_CLASS(Name)                                             \
     template class MTS_EXPORT Name<float, Color<float, 3>>;                     \
     template class MTS_EXPORT Name<float, Spectrum<float, 4>>;                  \
+    template class MTS_EXPORT Name<float, Color<float, 1>>;                     \
 
 /// Call the variant function "func" for a specific variant "variant"
 #define MTS_INVOKE_VARIANT(variant, func, ...)                                  \
@@ -52,6 +59,8 @@
             return func<float, Color<float, 3>>(__VA_ARGS__);                   \
         else if (variant == "scalar_spectral")                                  \
             return func<float, Spectrum<float, 4>>(__VA_ARGS__);                \
+        else if (variant == "scalar_mono")                                      \
+            return func<float, Color<float, 1>>(__VA_ARGS__);                   \
         else                                                                    \
             Throw("Unsupported variant: %s", variant);                          \
     }()                                                                         \
@@ -66,6 +75,9 @@ template <typename Float_, typename Spectrum_> constexpr const char *get_variant
     else if constexpr (std::is_same_v<Float_, float> &&
                        std::is_same_v<Spectrum_, Spectrum<float, 4>>)
         return "scalar_spectral";
+    else if constexpr (std::is_same_v<Float_, float> &&
+                       std::is_same_v<Spectrum_, Color<float, 1>>)
+        return "scalar_mono";
     else
         return "";
 }
