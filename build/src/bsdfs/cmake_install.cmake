@@ -1,4 +1,4 @@
-# Install script for directory: /home/jacobacfr/src/beifong/src/bsdfs
+# Install script for directory: /home/jacob/src/beifong/src/bsdfs
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

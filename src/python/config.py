@@ -4,4 +4,4 @@
 
 PYTHON_EXECUTABLE = r"/usr/bin/python3.8"
 MTS_DEFAULT_VARIANT = ''
-MTS_VARIANTS = ['scalar_rgb', 'scalar_spectral', 'scalar_mono']
+MTS_VARIANTS = ['scalar_rgb', 'scalar_spectral']

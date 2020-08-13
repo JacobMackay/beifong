@@ -1,4 +1,4 @@
-# Install script for directory: /home/jacobacfr/src/beifong/ext
+# Install script for directory: /home/jacob/src/beifong/ext
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,11 +39,11 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/jacobacfr/src/beifong/build/ext_build/enoki/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/ext_build/openexr/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/ext_build/tbb/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/ext_build/asmjit/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/ext_build/rgb2spec/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/ext_build/enoki/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/ext_build/openexr/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/ext_build/tbb/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/ext_build/asmjit/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/ext_build/rgb2spec/cmake_install.cmake")
 
 endif()
 

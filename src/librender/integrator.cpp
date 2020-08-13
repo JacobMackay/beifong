@@ -306,7 +306,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::render_sample(const Scene 
 
     block->put(position_sample, aovs, active);
 
-    // std::cout<<std::get<2>(result)<<std::endl;
+    // std::cout<<std::get<222>(result)<<std::endl;
 
     sampler->advance();
 }
