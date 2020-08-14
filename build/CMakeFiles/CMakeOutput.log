@@ -1,6 +1,6 @@
-The system is: Linux - 5.4.0-42-generic - x86_64
+The system is: Linux - 5.4.0-7634-generic - x86_64
 Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
-Compiler: /usr/bin/clang-9 
+Compiler: /usr/bin/clang-10 
 Build flags: 
 Id flags:  
 
@@ -10,10 +10,10 @@ The output was:
 
 Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
 
-The C compiler identification is Clang, found in "/home/jacob/src/beifong/build/CMakeFiles/3.16.3/CompilerIdC/a.out"
+The C compiler identification is Clang, found in "/home/jacobacfr/src/beifong/build/CMakeFiles/3.16.3/CompilerIdC/a.out"
 
 Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
-Compiler: /usr/bin/clang++-9 
+Compiler: /usr/bin/clang++-10 
 Build flags: 
 Id flags:  
 
@@ -23,21 +23,21 @@ The output was:
 
 Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
 
-The CXX compiler identification is Clang, found in "/home/jacob/src/beifong/build/CMakeFiles/3.16.3/CompilerIdCXX/a.out"
+The CXX compiler identification is Clang, found in "/home/jacobacfr/src/beifong/build/CMakeFiles/3.16.3/CompilerIdCXX/a.out"
 
 Determining if the C compiler works passed with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_b5733 && [1/2] Building C object CMakeFiles/cmTC_b5733.dir/testCCompiler.c.o
-[2/2] Linking C executable cmTC_b5733
+Run Build Command(s):/usr/bin/ninja cmTC_b11c5 && [1/2] Building C object CMakeFiles/cmTC_b11c5.dir/testCCompiler.c.o
+[2/2] Linking C executable cmTC_b11c5
 
 
 
 Detecting C compiler ABI info compiled with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_e8e80 && [1/2] Building C object CMakeFiles/cmTC_e8e80.dir/CMakeCCompilerABI.c.o
-clang version 9.0.1-12 
+Run Build Command(s):/usr/bin/ninja cmTC_b8cbc && [1/2] Building C object CMakeFiles/cmTC_b8cbc.dir/CMakeCCompilerABI.c.o
+clang version 10.0.0-4ubuntu1 
 Target: x86_64-pc-linux-gnu
 Thread model: posix
 InstalledDir: /usr/bin
@@ -47,22 +47,21 @@ Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/8
 Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/9
 Selected GCC installation: /usr/bin/../lib/gcc/x86_64-linux-gnu/9
 Candidate multilib: .;@m64
-Candidate multilib: 32;@m32
-Candidate multilib: x32;@mx32
 Selected multilib: .;@m64
-Found CUDA installation: /usr/lib/cuda, version 10.1
- "/usr/lib/llvm-9/bin/clang" -cc1 -triple x86_64-pc-linux-gnu -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model static -mthread-model posix -mdisable-fp-elim -fmath-errno -masm-verbose -mconstructor-aliases -munwind-tables -fuse-init-array -target-cpu x86-64 -dwarf-column-info -debugger-tuning=gdb -v -coverage-notes-file /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp/CMakeFiles/cmTC_e8e80.dir/CMakeCCompilerABI.c.gcno -resource-dir /usr/lib/llvm-9/lib/clang/9.0.1 -internal-isystem /usr/local/include -internal-isystem /usr/lib/llvm-9/lib/clang/9.0.1/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdebug-compilation-dir /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp -ferror-limit 19 -fmessage-length 0 -fobjc-runtime=gcc -fdiagnostics-show-option -faddrsig -o CMakeFiles/cmTC_e8e80.dir/CMakeCCompilerABI.c.o -x c /usr/share/cmake-3.16/Modules/CMakeCCompilerABI.c
-clang -cc1 version 9.0.1 based upon LLVM 9.0.1 default target x86_64-pc-linux-gnu
+Found CUDA installation: /usr/local/cuda, version 10.1
+ (in-process)
+ "/usr/lib/llvm-10/bin/clang" -cc1 -triple x86_64-pc-linux-gnu -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model static -mthread-model posix -mframe-pointer=all -fmath-errno -fno-rounding-math -masm-verbose -mconstructor-aliases -munwind-tables -target-cpu x86-64 -dwarf-column-info -fno-split-dwarf-inlining -debugger-tuning=gdb -v -resource-dir /usr/lib/llvm-10/lib/clang/10.0.0 -internal-isystem /usr/local/include -internal-isystem /usr/lib/llvm-10/lib/clang/10.0.0/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdebug-compilation-dir /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp -ferror-limit 19 -fmessage-length 0 -fgnuc-version=4.2.1 -fobjc-runtime=gcc -fdiagnostics-show-option -faddrsig -o CMakeFiles/cmTC_b8cbc.dir/CMakeCCompilerABI.c.o -x c /usr/share/cmake-3.16/Modules/CMakeCCompilerABI.c
+clang -cc1 version 10.0.0 based upon LLVM 10.0.0 default target x86_64-pc-linux-gnu
 ignoring nonexistent directory "/include"
 #include "..." search starts here:
 #include <...> search starts here:
  /usr/local/include
- /usr/lib/llvm-9/lib/clang/9.0.1/include
+ /usr/lib/llvm-10/lib/clang/10.0.0/include
  /usr/include/x86_64-linux-gnu
  /usr/include
 End of search list.
-[2/2] Linking C executable cmTC_e8e80
-clang version 9.0.1-12 
+[2/2] Linking C executable cmTC_b8cbc
+clang version 10.0.0-4ubuntu1 
 Target: x86_64-pc-linux-gnu
 Thread model: posix
 InstalledDir: /usr/bin
@@ -72,11 +71,9 @@ Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/8
 Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/9
 Selected GCC installation: /usr/bin/../lib/gcc/x86_64-linux-gnu/9
 Candidate multilib: .;@m64
-Candidate multilib: 32;@m32
-Candidate multilib: x32;@mx32
 Selected multilib: .;@m64
-Found CUDA installation: /usr/lib/cuda, version 10.1
- "/usr/bin/ld" --hash-style=both --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_e8e80 /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crt1.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtbegin.o -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/usr/lib/x86_64-linux-gnu/../../lib64 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../.. -L/usr/lib/llvm-9/bin/../lib -L/lib -L/usr/lib CMakeFiles/cmTC_e8e80.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtend.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crtn.o
+Found CUDA installation: /usr/local/cuda, version 10.1
+ "/usr/bin/ld" -z relro --hash-style=gnu --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_b8cbc /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crt1.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtbegin.o -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/usr/lib/x86_64-linux-gnu/../../lib64 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../.. -L/usr/lib/llvm-10/bin/../lib -L/lib -L/usr/lib CMakeFiles/cmTC_b8cbc.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtend.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crtn.o
 
 
 
@@ -84,23 +81,23 @@ Parsed C implicit include dir info from above output: rv=done
   found start of include info
   found start of implicit include info
     add: [/usr/local/include]
-    add: [/usr/lib/llvm-9/lib/clang/9.0.1/include]
+    add: [/usr/lib/llvm-10/lib/clang/10.0.0/include]
     add: [/usr/include/x86_64-linux-gnu]
     add: [/usr/include]
   end of search list found
   collapse include dir [/usr/local/include] ==> [/usr/local/include]
-  collapse include dir [/usr/lib/llvm-9/lib/clang/9.0.1/include] ==> [/usr/lib/llvm-9/lib/clang/9.0.1/include]
+  collapse include dir [/usr/lib/llvm-10/lib/clang/10.0.0/include] ==> [/usr/lib/llvm-10/lib/clang/10.0.0/include]
   collapse include dir [/usr/include/x86_64-linux-gnu] ==> [/usr/include/x86_64-linux-gnu]
   collapse include dir [/usr/include] ==> [/usr/include]
-  implicit include dirs: [/usr/local/include;/usr/lib/llvm-9/lib/clang/9.0.1/include;/usr/include/x86_64-linux-gnu;/usr/include]
+  implicit include dirs: [/usr/local/include;/usr/lib/llvm-10/lib/clang/10.0.0/include;/usr/include/x86_64-linux-gnu;/usr/include]
 
 
 Parsed C implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
-  ignore line: [Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp]
+  ignore line: [Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp]
   ignore line: []
-  ignore line: [Run Build Command(s):/usr/bin/ninja cmTC_e8e80 && [1/2] Building C object CMakeFiles/cmTC_e8e80.dir/CMakeCCompilerABI.c.o]
-  ignore line: [clang version 9.0.1-12 ]
+  ignore line: [Run Build Command(s):/usr/bin/ninja cmTC_b8cbc && [1/2] Building C object CMakeFiles/cmTC_b8cbc.dir/CMakeCCompilerABI.c.o]
+  ignore line: [clang version 10.0.0-4ubuntu1 ]
   ignore line: [Target: x86_64-pc-linux-gnu]
   ignore line: [Thread model: posix]
   ignore line: [InstalledDir: /usr/bin]
@@ -111,25 +108,22 @@ Parsed C implicit link information from above output:
   ignore line: [Selected GCC installation: /usr/bin/../lib/gcc/x86_64-linux-gnu/9]
   ignore line: [Candidate multilib: .]
   ignore line: [@m64]
-  ignore line: [Candidate multilib: 32]
-  ignore line: [@m32]
-  ignore line: [Candidate multilib: x32]
-  ignore line: [@mx32]
   ignore line: [Selected multilib: .]
   ignore line: [@m64]
-  ignore line: [Found CUDA installation: /usr/lib/cuda  version 10.1]
-  ignore line: [ "/usr/lib/llvm-9/bin/clang" -cc1 -triple x86_64-pc-linux-gnu -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model static -mthread-model posix -mdisable-fp-elim -fmath-errno -masm-verbose -mconstructor-aliases -munwind-tables -fuse-init-array -target-cpu x86-64 -dwarf-column-info -debugger-tuning=gdb -v -coverage-notes-file /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp/CMakeFiles/cmTC_e8e80.dir/CMakeCCompilerABI.c.gcno -resource-dir /usr/lib/llvm-9/lib/clang/9.0.1 -internal-isystem /usr/local/include -internal-isystem /usr/lib/llvm-9/lib/clang/9.0.1/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdebug-compilation-dir /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp -ferror-limit 19 -fmessage-length 0 -fobjc-runtime=gcc -fdiagnostics-show-option -faddrsig -o CMakeFiles/cmTC_e8e80.dir/CMakeCCompilerABI.c.o -x c /usr/share/cmake-3.16/Modules/CMakeCCompilerABI.c]
-  ignore line: [clang -cc1 version 9.0.1 based upon LLVM 9.0.1 default target x86_64-pc-linux-gnu]
+  ignore line: [Found CUDA installation: /usr/local/cuda  version 10.1]
+  ignore line: [ (in-process)]
+  ignore line: [ "/usr/lib/llvm-10/bin/clang" -cc1 -triple x86_64-pc-linux-gnu -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model static -mthread-model posix -mframe-pointer=all -fmath-errno -fno-rounding-math -masm-verbose -mconstructor-aliases -munwind-tables -target-cpu x86-64 -dwarf-column-info -fno-split-dwarf-inlining -debugger-tuning=gdb -v -resource-dir /usr/lib/llvm-10/lib/clang/10.0.0 -internal-isystem /usr/local/include -internal-isystem /usr/lib/llvm-10/lib/clang/10.0.0/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdebug-compilation-dir /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp -ferror-limit 19 -fmessage-length 0 -fgnuc-version=4.2.1 -fobjc-runtime=gcc -fdiagnostics-show-option -faddrsig -o CMakeFiles/cmTC_b8cbc.dir/CMakeCCompilerABI.c.o -x c /usr/share/cmake-3.16/Modules/CMakeCCompilerABI.c]
+  ignore line: [clang -cc1 version 10.0.0 based upon LLVM 10.0.0 default target x86_64-pc-linux-gnu]
   ignore line: [ignoring nonexistent directory "/include"]
   ignore line: [#include "..." search starts here:]
   ignore line: [#include <...> search starts here:]
   ignore line: [ /usr/local/include]
-  ignore line: [ /usr/lib/llvm-9/lib/clang/9.0.1/include]
+  ignore line: [ /usr/lib/llvm-10/lib/clang/10.0.0/include]
   ignore line: [ /usr/include/x86_64-linux-gnu]
   ignore line: [ /usr/include]
   ignore line: [End of search list.]
-  ignore line: [[2/2] Linking C executable cmTC_e8e80]
-  ignore line: [clang version 9.0.1-12 ]
+  ignore line: [[2/2] Linking C executable cmTC_b8cbc]
+  ignore line: [clang version 10.0.0-4ubuntu1 ]
   ignore line: [Target: x86_64-pc-linux-gnu]
   ignore line: [Thread model: posix]
   ignore line: [InstalledDir: /usr/bin]
@@ -140,16 +134,13 @@ Parsed C implicit link information from above output:
   ignore line: [Selected GCC installation: /usr/bin/../lib/gcc/x86_64-linux-gnu/9]
   ignore line: [Candidate multilib: .]
   ignore line: [@m64]
-  ignore line: [Candidate multilib: 32]
-  ignore line: [@m32]
-  ignore line: [Candidate multilib: x32]
-  ignore line: [@mx32]
   ignore line: [Selected multilib: .]
   ignore line: [@m64]
-  ignore line: [Found CUDA installation: /usr/lib/cuda  version 10.1]
-  link line: [ "/usr/bin/ld" --hash-style=both --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_e8e80 /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crt1.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtbegin.o -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/usr/lib/x86_64-linux-gnu/../../lib64 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../.. -L/usr/lib/llvm-9/bin/../lib -L/lib -L/usr/lib CMakeFiles/cmTC_e8e80.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtend.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crtn.o]
+  ignore line: [Found CUDA installation: /usr/local/cuda  version 10.1]
+  link line: [ "/usr/bin/ld" -z relro --hash-style=gnu --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_b8cbc /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crt1.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtbegin.o -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/usr/lib/x86_64-linux-gnu/../../lib64 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../.. -L/usr/lib/llvm-10/bin/../lib -L/lib -L/usr/lib CMakeFiles/cmTC_b8cbc.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtend.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crtn.o]
     arg [/usr/bin/ld] ==> ignore
-    arg [--hash-style=both] ==> ignore
+    arg [-zrelro] ==> ignore
+    arg [--hash-style=gnu] ==> ignore
     arg [--build-id] ==> ignore
     arg [--eh-frame-hdr] ==> ignore
     arg [-m] ==> ignore
@@ -157,7 +148,7 @@ Parsed C implicit link information from above output:
     arg [-dynamic-linker] ==> ignore
     arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_e8e80] ==> ignore
+    arg [cmTC_b8cbc] ==> ignore
     arg [/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crt1.o] ==> ignore
     arg [/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o] ==> ignore
     arg [/usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtbegin.o] ==> ignore
@@ -170,10 +161,10 @@ Parsed C implicit link information from above output:
     arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
     arg [-L/usr/lib/x86_64-linux-gnu/../../lib64] ==> dir [/usr/lib/x86_64-linux-gnu/../../lib64]
     arg [-L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../..] ==> dir [/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../..]
-    arg [-L/usr/lib/llvm-9/bin/../lib] ==> dir [/usr/lib/llvm-9/bin/../lib]
+    arg [-L/usr/lib/llvm-10/bin/../lib] ==> dir [/usr/lib/llvm-10/bin/../lib]
     arg [-L/lib] ==> dir [/lib]
     arg [-L/usr/lib] ==> dir [/usr/lib]
-    arg [CMakeFiles/cmTC_e8e80.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [CMakeFiles/cmTC_b8cbc.dir/CMakeCCompilerABI.c.o] ==> ignore
     arg [-lgcc] ==> lib [gcc]
     arg [--as-needed] ==> ignore
     arg [-lgcc_s] ==> lib [gcc_s]
@@ -194,27 +185,27 @@ Parsed C implicit link information from above output:
   collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
   collapse library dir [/usr/lib/x86_64-linux-gnu/../../lib64] ==> [/usr/lib64]
   collapse library dir [/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../..] ==> [/usr/lib]
-  collapse library dir [/usr/lib/llvm-9/bin/../lib] ==> [/usr/lib/llvm-9/lib]
+  collapse library dir [/usr/lib/llvm-10/bin/../lib] ==> [/usr/lib/llvm-10/lib]
   collapse library dir [/lib] ==> [/lib]
   collapse library dir [/usr/lib] ==> [/usr/lib]
   implicit libs: [gcc;gcc_s;c;gcc;gcc_s]
-  implicit dirs: [/usr/lib/gcc/x86_64-linux-gnu/9;/usr/lib/x86_64-linux-gnu;/usr/lib64;/lib/x86_64-linux-gnu;/lib64;/usr/lib;/usr/lib/llvm-9/lib;/lib]
+  implicit dirs: [/usr/lib/gcc/x86_64-linux-gnu/9;/usr/lib/x86_64-linux-gnu;/usr/lib64;/lib/x86_64-linux-gnu;/lib64;/usr/lib;/usr/lib/llvm-10/lib;/lib]
   implicit fwks: []
 
 
 Determining if the CXX compiler works passed with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_458f5 && [1/2] Building CXX object CMakeFiles/cmTC_458f5.dir/testCXXCompiler.cxx.o
-[2/2] Linking CXX executable cmTC_458f5
+Run Build Command(s):/usr/bin/ninja cmTC_4e553 && [1/2] Building CXX object CMakeFiles/cmTC_4e553.dir/testCXXCompiler.cxx.o
+[2/2] Linking CXX executable cmTC_4e553
 
 
 
 Detecting CXX compiler ABI info compiled with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_5190e && [1/2] Building CXX object CMakeFiles/cmTC_5190e.dir/CMakeCXXCompilerABI.cpp.o
-clang version 9.0.1-12 
+Run Build Command(s):/usr/bin/ninja cmTC_2e24e && [1/2] Building CXX object CMakeFiles/cmTC_2e24e.dir/CMakeCXXCompilerABI.cpp.o
+clang version 10.0.0-4ubuntu1 
 Target: x86_64-pc-linux-gnu
 Thread model: posix
 InstalledDir: /usr/bin
@@ -224,12 +215,11 @@ Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/8
 Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/9
 Selected GCC installation: /usr/bin/../lib/gcc/x86_64-linux-gnu/9
 Candidate multilib: .;@m64
-Candidate multilib: 32;@m32
-Candidate multilib: x32;@mx32
 Selected multilib: .;@m64
-Found CUDA installation: /usr/lib/cuda, version 10.1
- "/usr/lib/llvm-9/bin/clang" -cc1 -triple x86_64-pc-linux-gnu -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model static -mthread-model posix -mdisable-fp-elim -fmath-errno -masm-verbose -mconstructor-aliases -munwind-tables -fuse-init-array -target-cpu x86-64 -dwarf-column-info -debugger-tuning=gdb -v -coverage-notes-file /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp/CMakeFiles/cmTC_5190e.dir/CMakeCXXCompilerABI.cpp.gcno -resource-dir /usr/lib/llvm-9/lib/clang/9.0.1 -internal-isystem /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9 -internal-isystem /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9 -internal-isystem /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9 -internal-isystem /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward -internal-isystem /usr/local/include -internal-isystem /usr/lib/llvm-9/lib/clang/9.0.1/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdeprecated-macro -fdebug-compilation-dir /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp -ferror-limit 19 -fmessage-length 0 -fobjc-runtime=gcc -fcxx-exceptions -fexceptions -fdiagnostics-show-option -faddrsig -o CMakeFiles/cmTC_5190e.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/share/cmake-3.16/Modules/CMakeCXXCompilerABI.cpp
-clang -cc1 version 9.0.1 based upon LLVM 9.0.1 default target x86_64-pc-linux-gnu
+Found CUDA installation: /usr/local/cuda, version 10.1
+ (in-process)
+ "/usr/lib/llvm-10/bin/clang" -cc1 -triple x86_64-pc-linux-gnu -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model static -mthread-model posix -mframe-pointer=all -fmath-errno -fno-rounding-math -masm-verbose -mconstructor-aliases -munwind-tables -target-cpu x86-64 -dwarf-column-info -fno-split-dwarf-inlining -debugger-tuning=gdb -v -resource-dir /usr/lib/llvm-10/lib/clang/10.0.0 -internal-isystem /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9 -internal-isystem /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9 -internal-isystem /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9 -internal-isystem /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward -internal-isystem /usr/local/include -internal-isystem /usr/lib/llvm-10/lib/clang/10.0.0/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdeprecated-macro -fdebug-compilation-dir /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp -ferror-limit 19 -fmessage-length 0 -fgnuc-version=4.2.1 -fobjc-runtime=gcc -fcxx-exceptions -fexceptions -fdiagnostics-show-option -faddrsig -o CMakeFiles/cmTC_2e24e.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/share/cmake-3.16/Modules/CMakeCXXCompilerABI.cpp
+clang -cc1 version 10.0.0 based upon LLVM 10.0.0 default target x86_64-pc-linux-gnu
 ignoring nonexistent directory "/include"
 ignoring duplicate directory "/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9"
 #include "..." search starts here:
@@ -238,12 +228,12 @@ ignoring duplicate directory "/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../..
  /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9
  /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward
  /usr/local/include
- /usr/lib/llvm-9/lib/clang/9.0.1/include
+ /usr/lib/llvm-10/lib/clang/10.0.0/include
  /usr/include/x86_64-linux-gnu
  /usr/include
 End of search list.
-[2/2] Linking CXX executable cmTC_5190e
-clang version 9.0.1-12 
+[2/2] Linking CXX executable cmTC_2e24e
+clang version 10.0.0-4ubuntu1 
 Target: x86_64-pc-linux-gnu
 Thread model: posix
 InstalledDir: /usr/bin
@@ -253,11 +243,9 @@ Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/8
 Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/9
 Selected GCC installation: /usr/bin/../lib/gcc/x86_64-linux-gnu/9
 Candidate multilib: .;@m64
-Candidate multilib: 32;@m32
-Candidate multilib: x32;@mx32
 Selected multilib: .;@m64
-Found CUDA installation: /usr/lib/cuda, version 10.1
- "/usr/bin/ld" --hash-style=both --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_5190e /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crt1.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtbegin.o -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/usr/lib/x86_64-linux-gnu/../../lib64 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../.. -L/usr/lib/llvm-9/bin/../lib -L/lib -L/usr/lib CMakeFiles/cmTC_5190e.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtend.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crtn.o
+Found CUDA installation: /usr/local/cuda, version 10.1
+ "/usr/bin/ld" -z relro --hash-style=gnu --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_2e24e /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crt1.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtbegin.o -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/usr/lib/x86_64-linux-gnu/../../lib64 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../.. -L/usr/lib/llvm-10/bin/../lib -L/lib -L/usr/lib CMakeFiles/cmTC_2e24e.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtend.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crtn.o
 
 
 
@@ -268,7 +256,7 @@ Parsed CXX implicit include dir info from above output: rv=done
     add: [/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9]
     add: [/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward]
     add: [/usr/local/include]
-    add: [/usr/lib/llvm-9/lib/clang/9.0.1/include]
+    add: [/usr/lib/llvm-10/lib/clang/10.0.0/include]
     add: [/usr/include/x86_64-linux-gnu]
     add: [/usr/include]
   end of search list found
@@ -276,18 +264,18 @@ Parsed CXX implicit include dir info from above output: rv=done
   collapse include dir [/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9] ==> [/usr/include/x86_64-linux-gnu/c++/9]
   collapse include dir [/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward] ==> [/usr/include/c++/9/backward]
   collapse include dir [/usr/local/include] ==> [/usr/local/include]
-  collapse include dir [/usr/lib/llvm-9/lib/clang/9.0.1/include] ==> [/usr/lib/llvm-9/lib/clang/9.0.1/include]
+  collapse include dir [/usr/lib/llvm-10/lib/clang/10.0.0/include] ==> [/usr/lib/llvm-10/lib/clang/10.0.0/include]
   collapse include dir [/usr/include/x86_64-linux-gnu] ==> [/usr/include/x86_64-linux-gnu]
   collapse include dir [/usr/include] ==> [/usr/include]
-  implicit include dirs: [/usr/include/c++/9;/usr/include/x86_64-linux-gnu/c++/9;/usr/include/c++/9/backward;/usr/local/include;/usr/lib/llvm-9/lib/clang/9.0.1/include;/usr/include/x86_64-linux-gnu;/usr/include]
+  implicit include dirs: [/usr/include/c++/9;/usr/include/x86_64-linux-gnu/c++/9;/usr/include/c++/9/backward;/usr/local/include;/usr/lib/llvm-10/lib/clang/10.0.0/include;/usr/include/x86_64-linux-gnu;/usr/include]
 
 
 Parsed CXX implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
-  ignore line: [Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp]
+  ignore line: [Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp]
   ignore line: []
-  ignore line: [Run Build Command(s):/usr/bin/ninja cmTC_5190e && [1/2] Building CXX object CMakeFiles/cmTC_5190e.dir/CMakeCXXCompilerABI.cpp.o]
-  ignore line: [clang version 9.0.1-12 ]
+  ignore line: [Run Build Command(s):/usr/bin/ninja cmTC_2e24e && [1/2] Building CXX object CMakeFiles/cmTC_2e24e.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [clang version 10.0.0-4ubuntu1 ]
   ignore line: [Target: x86_64-pc-linux-gnu]
   ignore line: [Thread model: posix]
   ignore line: [InstalledDir: /usr/bin]
@@ -298,15 +286,12 @@ Parsed CXX implicit link information from above output:
   ignore line: [Selected GCC installation: /usr/bin/../lib/gcc/x86_64-linux-gnu/9]
   ignore line: [Candidate multilib: .]
   ignore line: [@m64]
-  ignore line: [Candidate multilib: 32]
-  ignore line: [@m32]
-  ignore line: [Candidate multilib: x32]
-  ignore line: [@mx32]
   ignore line: [Selected multilib: .]
   ignore line: [@m64]
-  ignore line: [Found CUDA installation: /usr/lib/cuda  version 10.1]
-  ignore line: [ "/usr/lib/llvm-9/bin/clang" -cc1 -triple x86_64-pc-linux-gnu -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model static -mthread-model posix -mdisable-fp-elim -fmath-errno -masm-verbose -mconstructor-aliases -munwind-tables -fuse-init-array -target-cpu x86-64 -dwarf-column-info -debugger-tuning=gdb -v -coverage-notes-file /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp/CMakeFiles/cmTC_5190e.dir/CMakeCXXCompilerABI.cpp.gcno -resource-dir /usr/lib/llvm-9/lib/clang/9.0.1 -internal-isystem /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9 -internal-isystem /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9 -internal-isystem /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9 -internal-isystem /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward -internal-isystem /usr/local/include -internal-isystem /usr/lib/llvm-9/lib/clang/9.0.1/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdeprecated-macro -fdebug-compilation-dir /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp -ferror-limit 19 -fmessage-length 0 -fobjc-runtime=gcc -fcxx-exceptions -fexceptions -fdiagnostics-show-option -faddrsig -o CMakeFiles/cmTC_5190e.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/share/cmake-3.16/Modules/CMakeCXXCompilerABI.cpp]
-  ignore line: [clang -cc1 version 9.0.1 based upon LLVM 9.0.1 default target x86_64-pc-linux-gnu]
+  ignore line: [Found CUDA installation: /usr/local/cuda  version 10.1]
+  ignore line: [ (in-process)]
+  ignore line: [ "/usr/lib/llvm-10/bin/clang" -cc1 -triple x86_64-pc-linux-gnu -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model static -mthread-model posix -mframe-pointer=all -fmath-errno -fno-rounding-math -masm-verbose -mconstructor-aliases -munwind-tables -target-cpu x86-64 -dwarf-column-info -fno-split-dwarf-inlining -debugger-tuning=gdb -v -resource-dir /usr/lib/llvm-10/lib/clang/10.0.0 -internal-isystem /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9 -internal-isystem /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9 -internal-isystem /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9 -internal-isystem /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward -internal-isystem /usr/local/include -internal-isystem /usr/lib/llvm-10/lib/clang/10.0.0/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdeprecated-macro -fdebug-compilation-dir /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp -ferror-limit 19 -fmessage-length 0 -fgnuc-version=4.2.1 -fobjc-runtime=gcc -fcxx-exceptions -fexceptions -fdiagnostics-show-option -faddrsig -o CMakeFiles/cmTC_2e24e.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/share/cmake-3.16/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [clang -cc1 version 10.0.0 based upon LLVM 10.0.0 default target x86_64-pc-linux-gnu]
   ignore line: [ignoring nonexistent directory "/include"]
   ignore line: [ignoring duplicate directory "/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9"]
   ignore line: [#include "..." search starts here:]
@@ -315,12 +300,12 @@ Parsed CXX implicit link information from above output:
   ignore line: [ /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9]
   ignore line: [ /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward]
   ignore line: [ /usr/local/include]
-  ignore line: [ /usr/lib/llvm-9/lib/clang/9.0.1/include]
+  ignore line: [ /usr/lib/llvm-10/lib/clang/10.0.0/include]
   ignore line: [ /usr/include/x86_64-linux-gnu]
   ignore line: [ /usr/include]
   ignore line: [End of search list.]
-  ignore line: [[2/2] Linking CXX executable cmTC_5190e]
-  ignore line: [clang version 9.0.1-12 ]
+  ignore line: [[2/2] Linking CXX executable cmTC_2e24e]
+  ignore line: [clang version 10.0.0-4ubuntu1 ]
   ignore line: [Target: x86_64-pc-linux-gnu]
   ignore line: [Thread model: posix]
   ignore line: [InstalledDir: /usr/bin]
@@ -331,16 +316,13 @@ Parsed CXX implicit link information from above output:
   ignore line: [Selected GCC installation: /usr/bin/../lib/gcc/x86_64-linux-gnu/9]
   ignore line: [Candidate multilib: .]
   ignore line: [@m64]
-  ignore line: [Candidate multilib: 32]
-  ignore line: [@m32]
-  ignore line: [Candidate multilib: x32]
-  ignore line: [@mx32]
   ignore line: [Selected multilib: .]
   ignore line: [@m64]
-  ignore line: [Found CUDA installation: /usr/lib/cuda  version 10.1]
-  link line: [ "/usr/bin/ld" --hash-style=both --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_5190e /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crt1.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtbegin.o -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/usr/lib/x86_64-linux-gnu/../../lib64 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../.. -L/usr/lib/llvm-9/bin/../lib -L/lib -L/usr/lib CMakeFiles/cmTC_5190e.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtend.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crtn.o]
+  ignore line: [Found CUDA installation: /usr/local/cuda  version 10.1]
+  link line: [ "/usr/bin/ld" -z relro --hash-style=gnu --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_2e24e /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crt1.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtbegin.o -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/usr/lib/x86_64-linux-gnu/../../lib64 -L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../.. -L/usr/lib/llvm-10/bin/../lib -L/lib -L/usr/lib CMakeFiles/cmTC_2e24e.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtend.o /usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crtn.o]
     arg [/usr/bin/ld] ==> ignore
-    arg [--hash-style=both] ==> ignore
+    arg [-zrelro] ==> ignore
+    arg [--hash-style=gnu] ==> ignore
     arg [--build-id] ==> ignore
     arg [--eh-frame-hdr] ==> ignore
     arg [-m] ==> ignore
@@ -348,7 +330,7 @@ Parsed CXX implicit link information from above output:
     arg [-dynamic-linker] ==> ignore
     arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_5190e] ==> ignore
+    arg [cmTC_2e24e] ==> ignore
     arg [/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crt1.o] ==> ignore
     arg [/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o] ==> ignore
     arg [/usr/bin/../lib/gcc/x86_64-linux-gnu/9/crtbegin.o] ==> ignore
@@ -361,10 +343,10 @@ Parsed CXX implicit link information from above output:
     arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
     arg [-L/usr/lib/x86_64-linux-gnu/../../lib64] ==> dir [/usr/lib/x86_64-linux-gnu/../../lib64]
     arg [-L/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../..] ==> dir [/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../..]
-    arg [-L/usr/lib/llvm-9/bin/../lib] ==> dir [/usr/lib/llvm-9/bin/../lib]
+    arg [-L/usr/lib/llvm-10/bin/../lib] ==> dir [/usr/lib/llvm-10/bin/../lib]
     arg [-L/lib] ==> dir [/lib]
     arg [-L/usr/lib] ==> dir [/usr/lib]
-    arg [CMakeFiles/cmTC_5190e.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [CMakeFiles/cmTC_2e24e.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
     arg [-lstdc++] ==> lib [stdc++]
     arg [-lm] ==> lib [m]
     arg [-lgcc_s] ==> lib [gcc_s]
@@ -383,19 +365,19 @@ Parsed CXX implicit link information from above output:
   collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
   collapse library dir [/usr/lib/x86_64-linux-gnu/../../lib64] ==> [/usr/lib64]
   collapse library dir [/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../..] ==> [/usr/lib]
-  collapse library dir [/usr/lib/llvm-9/bin/../lib] ==> [/usr/lib/llvm-9/lib]
+  collapse library dir [/usr/lib/llvm-10/bin/../lib] ==> [/usr/lib/llvm-10/lib]
   collapse library dir [/lib] ==> [/lib]
   collapse library dir [/usr/lib] ==> [/usr/lib]
   implicit libs: [stdc++;m;gcc_s;gcc;c;gcc_s;gcc]
-  implicit dirs: [/usr/lib/gcc/x86_64-linux-gnu/9;/usr/lib/x86_64-linux-gnu;/usr/lib64;/lib/x86_64-linux-gnu;/lib64;/usr/lib;/usr/lib/llvm-9/lib;/lib]
+  implicit dirs: [/usr/lib/gcc/x86_64-linux-gnu/9;/usr/lib/x86_64-linux-gnu;/usr/lib64;/lib/x86_64-linux-gnu;/lib64;/usr/lib;/usr/lib/llvm-10/lib;/lib]
   implicit fwks: []
 
 
 Performing C++ SOURCE FILE Test HAS_LIBCPP succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_29c3e && [1/2] Building CXX object CMakeFiles/cmTC_29c3e.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_29c3e
+Run Build Command(s):/usr/bin/ninja cmTC_21bd5 && [1/2] Building CXX object CMakeFiles/cmTC_21bd5.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_21bd5
 
 
 ...and run output:
@@ -405,19 +387,19 @@ Source file was:
 #include <iostream>
 int main(int argc, char **argv) { std::cout << "test"; return 0; }
 Performing C++ SOURCE FILE Test HAS_FLTO_THIN succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_f50ae && [1/2] Building CXX object CMakeFiles/cmTC_f50ae.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_f50ae
+Run Build Command(s):/usr/bin/ninja cmTC_1886c && [1/2] Building CXX object CMakeFiles/cmTC_1886c.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_1886c
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test HAVE_GCC_INLINE_ASM_AVX succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_c5627 && [1/2] Building CXX object CMakeFiles/cmTC_c5627.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_c5627
+Run Build Command(s):/usr/bin/ninja cmTC_4c782 && [1/2] Building CXX object CMakeFiles/cmTC_4c782.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_4c782
 
 
 Source file was:
@@ -438,10 +420,10 @@ Source file was:
 	}
 	
 Performing C++ SOURCE FILE Test HAVE_SYSCONF_NPROCESSORS_ONLN succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_9fc13 && [1/2] Building CXX object CMakeFiles/cmTC_9fc13.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_9fc13
+Run Build Command(s):/usr/bin/ninja cmTC_42dfc && [1/2] Building CXX object CMakeFiles/cmTC_42dfc.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_42dfc
 
 
 Source file was:
@@ -453,231 +435,231 @@ Source file was:
     }
     
 Performing C++ SOURCE FILE Test SUPPORTS_STDCXX11 succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_e74f6 && [1/2] Building CXX object CMakeFiles/cmTC_e74f6.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_e74f6
+Run Build Command(s):/usr/bin/ninja cmTC_f0b75 && [1/2] Building CXX object CMakeFiles/cmTC_f0b75.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_f0b75
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test SUPPORTS_MRTM succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_475ca && [1/2] Building CXX object CMakeFiles/cmTC_475ca.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_475ca
+Run Build Command(s):/usr/bin/ninja cmTC_587e5 && [1/2] Building CXX object CMakeFiles/cmTC_587e5.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_587e5
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__msse succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_50575 && [1/2] Building CXX object CMakeFiles/cmTC_50575.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_50575
+Run Build Command(s):/usr/bin/ninja cmTC_90373 && [1/2] Building CXX object CMakeFiles/cmTC_90373.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_90373
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__msse2 succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_9c820 && [1/2] Building CXX object CMakeFiles/cmTC_9c820.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_9c820
+Run Build Command(s):/usr/bin/ninja cmTC_c40d5 && [1/2] Building CXX object CMakeFiles/cmTC_c40d5.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_c40d5
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__msse3 succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_53063 && [1/2] Building CXX object CMakeFiles/cmTC_53063.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_53063
+Run Build Command(s):/usr/bin/ninja cmTC_20cfb && [1/2] Building CXX object CMakeFiles/cmTC_20cfb.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_20cfb
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__mssse3 succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_a61e9 && [1/2] Building CXX object CMakeFiles/cmTC_a61e9.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_a61e9
+Run Build Command(s):/usr/bin/ninja cmTC_8c9e0 && [1/2] Building CXX object CMakeFiles/cmTC_8c9e0.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_8c9e0
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__msse4_1 succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_6d3a2 && [1/2] Building CXX object CMakeFiles/cmTC_6d3a2.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_6d3a2
+Run Build Command(s):/usr/bin/ninja cmTC_78631 && [1/2] Building CXX object CMakeFiles/cmTC_78631.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_78631
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__msse4_2 succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_ad13e && [1/2] Building CXX object CMakeFiles/cmTC_ad13e.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_ad13e
+Run Build Command(s):/usr/bin/ninja cmTC_08cfe && [1/2] Building CXX object CMakeFiles/cmTC_08cfe.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_08cfe
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__mavx succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_37769 && [1/2] Building CXX object CMakeFiles/cmTC_37769.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_37769
+Run Build Command(s):/usr/bin/ninja cmTC_e94fa && [1/2] Building CXX object CMakeFiles/cmTC_e94fa.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_e94fa
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__mavx2 succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_79d37 && [1/2] Building CXX object CMakeFiles/cmTC_79d37.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_79d37
+Run Build Command(s):/usr/bin/ninja cmTC_2eb13 && [1/2] Building CXX object CMakeFiles/cmTC_2eb13.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_2eb13
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__std_c__17 succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_5d8f6 && [1/2] Building CXX object CMakeFiles/cmTC_5d8f6.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_5d8f6
+Run Build Command(s):/usr/bin/ninja cmTC_f8af7 && [1/2] Building CXX object CMakeFiles/cmTC_f8af7.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_f8af7
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__std_c__14 succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_c383f && [1/2] Building CXX object CMakeFiles/cmTC_c383f.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_c383f
+Run Build Command(s):/usr/bin/ninja cmTC_ef364 && [1/2] Building CXX object CMakeFiles/cmTC_ef364.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_ef364
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__std_c__11 succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_11dd7 && [1/2] Building CXX object CMakeFiles/cmTC_11dd7.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_11dd7
+Run Build Command(s):/usr/bin/ninja cmTC_58898 && [1/2] Building CXX object CMakeFiles/cmTC_58898.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_58898
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__std_c__0x succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_d0c0c && [1/2] Building CXX object CMakeFiles/cmTC_d0c0c.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_d0c0c
+Run Build Command(s):/usr/bin/ninja cmTC_72282 && [1/2] Building CXX object CMakeFiles/cmTC_72282.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_72282
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__fno_tree_vectorize succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_167ad && [1/2] Building CXX object CMakeFiles/cmTC_167ad.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_167ad
+Run Build Command(s):/usr/bin/ninja cmTC_b4372 && [1/2] Building CXX object CMakeFiles/cmTC_b4372.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_b4372
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__fvisibility_hidden succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_512b6 && [1/2] Building CXX object CMakeFiles/cmTC_512b6.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_512b6
+Run Build Command(s):/usr/bin/ninja cmTC_9fa48 && [1/2] Building CXX object CMakeFiles/cmTC_9fa48.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_9fa48
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__Winconsistent_missing_override succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_0be3f && [1/2] Building CXX object CMakeFiles/cmTC_0be3f.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_0be3f
+Run Build Command(s):/usr/bin/ninja cmTC_fd053 && [1/2] Building CXX object CMakeFiles/cmTC_fd053.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_fd053
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__O2 succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_30b3d && [1/2] Building CXX object CMakeFiles/cmTC_30b3d.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_30b3d
+Run Build Command(s):/usr/bin/ninja cmTC_85022 && [1/2] Building CXX object CMakeFiles/cmTC_85022.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_85022
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test __CxxFlag__fmerge_all_constants succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_3d5d9 && [1/2] Building CXX object CMakeFiles/cmTC_3d5d9.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_3d5d9
+Run Build Command(s):/usr/bin/ninja cmTC_bf4b1 && [1/2] Building CXX object CMakeFiles/cmTC_bf4b1.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_bf4b1
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test HAS_GNUPP17_FLAG succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_970e1 && [1/2] Building CXX object CMakeFiles/cmTC_970e1.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_970e1
+Run Build Command(s):/usr/bin/ninja cmTC_5540d && [1/2] Building CXX object CMakeFiles/cmTC_5540d.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_5540d
 
 
 Source file was:
 int main() { return 0; }
 Performing C++ SOURCE FILE Test HAS_CPP17_FLAG succeeded with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_f7dc5 && [1/2] Building CXX object CMakeFiles/cmTC_f7dc5.dir/src.cxx.o
-[2/2] Linking CXX executable cmTC_f7dc5
+Run Build Command(s):/usr/bin/ninja cmTC_4abc5 && [1/2] Building CXX object CMakeFiles/cmTC_4abc5.dir/src.cxx.o
+[2/2] Linking CXX executable cmTC_4abc5
 
 
 Source file was:
 int main() { return 0; }
 Determining if the include file sys/types.h exists passed with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_f307e && [1/2] Building C object CMakeFiles/cmTC_f307e.dir/CheckIncludeFile.c.o
-[2/2] Linking C executable cmTC_f307e
+Run Build Command(s):/usr/bin/ninja cmTC_0d949 && [1/2] Building C object CMakeFiles/cmTC_0d949.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_0d949
 
 
 
 Determining if the include file stdint.h exists passed with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_9fc01 && [1/2] Building C object CMakeFiles/cmTC_9fc01.dir/CheckIncludeFile.c.o
-[2/2] Linking C executable cmTC_9fc01
+Run Build Command(s):/usr/bin/ninja cmTC_19a7e && [1/2] Building C object CMakeFiles/cmTC_19a7e.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_19a7e
 
 
 
 Determining if the include file stddef.h exists passed with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_8cc4f && [1/2] Building C object CMakeFiles/cmTC_8cc4f.dir/CheckIncludeFile.c.o
-[2/2] Linking C executable cmTC_8cc4f
+Run Build Command(s):/usr/bin/ninja cmTC_0bda3 && [1/2] Building C object CMakeFiles/cmTC_0bda3.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_0bda3
 
 
 
 Determining size of unsigned short passed with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_d51ea && [1/2] Building C object CMakeFiles/cmTC_d51ea.dir/CMAKE_SIZEOF_UNSIGNED_SHORT.c.o
-[2/2] Linking C executable cmTC_d51ea
+Run Build Command(s):/usr/bin/ninja cmTC_4a90e && [1/2] Building C object CMakeFiles/cmTC_4a90e.dir/CMAKE_SIZEOF_UNSIGNED_SHORT.c.o
+[2/2] Linking C executable cmTC_4a90e
 
 
 
 Determining if the system is big endian passed with the following output:
-Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_f8257 && [1/2] Building C object CMakeFiles/cmTC_f8257.dir/TestEndianess.c.o
-[2/2] Linking C executable cmTC_f8257
+Run Build Command(s):/usr/bin/ninja cmTC_f9a65 && [1/2] Building C object CMakeFiles/cmTC_f9a65.dir/TestEndianess.c.o
+[2/2] Linking C executable cmTC_f9a65
 
 
 TestEndianess.c:

@@ -1,4 +1,4 @@
-# Install script for directory: /home/jacob/src/beifong/ext/openexr
+# Install script for directory: /home/jacobacfr/src/beifong/ext/openexr
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,8 +39,8 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/jacob/src/beifong/build/ext_build/openexr/IlmBase/cmake_install.cmake")
-  include("/home/jacob/src/beifong/build/ext_build/openexr/OpenEXR/cmake_install.cmake")
+  include("/home/jacobacfr/src/beifong/build/ext_build/openexr/IlmBase/cmake_install.cmake")
+  include("/home/jacobacfr/src/beifong/build/ext_build/openexr/OpenEXR/cmake_install.cmake")
 
 endif()
 

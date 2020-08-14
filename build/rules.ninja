@@ -25,7 +25,7 @@ rule CUSTOM_COMMAND
 rule CXX_COMPILER__pugixml
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -33,7 +33,7 @@ rule CXX_COMPILER__pugixml
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__pugixml
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -44,7 +44,7 @@ rule CXX_SHARED_LIBRARY_LINKER__pugixml
 rule CXX_COMPILER__enoki-python-dynamic
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -52,7 +52,7 @@ rule CXX_COMPILER__enoki-python-dynamic
 # Rule for linking CXX shared module.
 
 rule CXX_MODULE_LIBRARY_LINKER__enoki-python-dynamic
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared module $TARGET_FILE
   restat = $RESTAT
 
@@ -63,7 +63,7 @@ rule CXX_MODULE_LIBRARY_LINKER__enoki-python-dynamic
 rule CXX_COMPILER__enoki-python-scalar
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -71,7 +71,7 @@ rule CXX_COMPILER__enoki-python-scalar
 # Rule for linking CXX shared module.
 
 rule CXX_MODULE_LIBRARY_LINKER__enoki-python-scalar
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared module $TARGET_FILE
   restat = $RESTAT
 
@@ -82,7 +82,7 @@ rule CXX_MODULE_LIBRARY_LINKER__enoki-python-scalar
 rule CXX_COMPILER__enoki-python-core
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -90,7 +90,7 @@ rule CXX_COMPILER__enoki-python-core
 # Rule for linking CXX shared module.
 
 rule CXX_MODULE_LIBRARY_LINKER__enoki-python-core
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared module $TARGET_FILE
   restat = $RESTAT
 
@@ -101,7 +101,7 @@ rule CXX_MODULE_LIBRARY_LINKER__enoki-python-core
 rule CXX_COMPILER__Half
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -109,7 +109,7 @@ rule CXX_COMPILER__Half
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__Half
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -120,7 +120,7 @@ rule CXX_SHARED_LIBRARY_LINKER__Half
 rule CXX_COMPILER__toFloat
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -128,7 +128,7 @@ rule CXX_COMPILER__toFloat
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_LINKER__toFloat
-  command = $PRE_LINK && /usr/bin/clang++-9  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -139,7 +139,7 @@ rule CXX_EXECUTABLE_LINKER__toFloat
 rule CXX_COMPILER__eLut
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -147,7 +147,7 @@ rule CXX_COMPILER__eLut
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_LINKER__eLut
-  command = $PRE_LINK && /usr/bin/clang++-9  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -158,7 +158,7 @@ rule CXX_EXECUTABLE_LINKER__eLut
 rule CXX_COMPILER__Iex
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -166,7 +166,7 @@ rule CXX_COMPILER__Iex
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__Iex
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -177,7 +177,7 @@ rule CXX_SHARED_LIBRARY_LINKER__Iex
 rule CXX_COMPILER__IexMath
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -185,7 +185,7 @@ rule CXX_COMPILER__IexMath
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__IexMath
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -196,7 +196,7 @@ rule CXX_SHARED_LIBRARY_LINKER__IexMath
 rule CXX_COMPILER__Imath
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -204,7 +204,7 @@ rule CXX_COMPILER__Imath
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__Imath
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -215,7 +215,7 @@ rule CXX_SHARED_LIBRARY_LINKER__Imath
 rule CXX_COMPILER__IlmThread
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -223,7 +223,7 @@ rule CXX_COMPILER__IlmThread
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__IlmThread
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -234,7 +234,7 @@ rule CXX_SHARED_LIBRARY_LINKER__IlmThread
 rule CXX_COMPILER__IlmImf
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -242,7 +242,7 @@ rule CXX_COMPILER__IlmImf
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__IlmImf
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -253,7 +253,7 @@ rule CXX_SHARED_LIBRARY_LINKER__IlmImf
 rule CXX_COMPILER__IlmImf-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -263,7 +263,7 @@ rule CXX_COMPILER__IlmImf-obj
 rule CXX_COMPILER__dwaLookups
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -271,7 +271,7 @@ rule CXX_COMPILER__dwaLookups
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_LINKER__dwaLookups
-  command = $PRE_LINK && /usr/bin/clang++-9  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -282,7 +282,7 @@ rule CXX_EXECUTABLE_LINKER__dwaLookups
 rule CXX_COMPILER__b44ExpLogTable
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -290,7 +290,7 @@ rule CXX_COMPILER__b44ExpLogTable
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_LINKER__b44ExpLogTable
-  command = $PRE_LINK && /usr/bin/clang++-9  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -301,7 +301,7 @@ rule CXX_EXECUTABLE_LINKER__b44ExpLogTable
 rule CXX_COMPILER__tbb
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -309,7 +309,7 @@ rule CXX_COMPILER__tbb
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__tbb
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -320,7 +320,7 @@ rule CXX_SHARED_LIBRARY_LINKER__tbb
 rule CXX_COMPILER__asmjit
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -328,7 +328,7 @@ rule CXX_COMPILER__asmjit
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__asmjit
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -339,7 +339,7 @@ rule CXX_SHARED_LIBRARY_LINKER__asmjit
 rule C_COMPILER__rgb2spec
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang-9 $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out   -c $in
+  command = /usr/bin/clang-10 $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out   -c $in
   description = Building C object $out
 
 
@@ -358,7 +358,7 @@ rule C_STATIC_LIBRARY_LINKER__rgb2spec
 rule CXX_COMPILER__rgb2spec_opt
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -366,7 +366,7 @@ rule CXX_COMPILER__rgb2spec_opt
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_LINKER__rgb2spec_opt
-  command = $PRE_LINK && /usr/bin/clang++-9  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -375,7 +375,7 @@ rule CXX_EXECUTABLE_LINKER__rgb2spec_opt
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__mitsuba-core
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -386,7 +386,7 @@ rule CXX_SHARED_LIBRARY_LINKER__mitsuba-core
 rule CXX_COMPILER__mitsuba-core-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -396,7 +396,7 @@ rule CXX_COMPILER__mitsuba-core-obj
 rule CXX_COMPILER__core_scalar_rgb_ext-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -404,7 +404,7 @@ rule CXX_COMPILER__core_scalar_rgb_ext-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__core_ext
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -415,7 +415,7 @@ rule CXX_SHARED_LIBRARY_LINKER__core_ext
 rule CXX_COMPILER__core_ext-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -425,7 +425,7 @@ rule CXX_COMPILER__core_ext-obj
 rule CXX_COMPILER__core_scalar_spectral_ext-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -433,7 +433,7 @@ rule CXX_COMPILER__core_scalar_spectral_ext-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__core_scalar_spectral_ext
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -442,7 +442,7 @@ rule CXX_SHARED_LIBRARY_LINKER__core_scalar_spectral_ext
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__core_scalar_rgb_ext
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -451,7 +451,7 @@ rule CXX_SHARED_LIBRARY_LINKER__core_scalar_rgb_ext
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__mitsuba-render
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -462,7 +462,7 @@ rule CXX_SHARED_LIBRARY_LINKER__mitsuba-render
 rule CXX_COMPILER__mitsuba-render-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -472,7 +472,7 @@ rule CXX_COMPILER__mitsuba-render-obj
 rule CXX_COMPILER__render_scalar_rgb_ext-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -480,7 +480,7 @@ rule CXX_COMPILER__render_scalar_rgb_ext-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__render_scalar_spectral_ext
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -489,7 +489,7 @@ rule CXX_SHARED_LIBRARY_LINKER__render_scalar_spectral_ext
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__render_scalar_rgb_ext
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -500,7 +500,7 @@ rule CXX_SHARED_LIBRARY_LINKER__render_scalar_rgb_ext
 rule CXX_COMPILER__render_ext-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -510,7 +510,7 @@ rule CXX_COMPILER__render_ext-obj
 rule CXX_COMPILER__render_scalar_spectral_ext-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -518,7 +518,7 @@ rule CXX_COMPILER__render_scalar_spectral_ext-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__render_ext
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -529,7 +529,7 @@ rule CXX_SHARED_LIBRARY_LINKER__render_ext
 rule CXX_COMPILER__mitsuba
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -537,7 +537,7 @@ rule CXX_COMPILER__mitsuba
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_LINKER__mitsuba
-  command = $PRE_LINK && /usr/bin/clang++-9  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -546,7 +546,7 @@ rule CXX_EXECUTABLE_LINKER__mitsuba
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__retarder
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -557,7 +557,7 @@ rule CXX_SHARED_LIBRARY_LINKER__retarder
 rule CXX_COMPILER__retarder-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -565,7 +565,7 @@ rule CXX_COMPILER__retarder-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__polarizer
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -576,7 +576,7 @@ rule CXX_SHARED_LIBRARY_LINKER__polarizer
 rule CXX_COMPILER__polarizer-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -584,7 +584,7 @@ rule CXX_COMPILER__polarizer-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__twosided
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -595,7 +595,7 @@ rule CXX_SHARED_LIBRARY_LINKER__twosided
 rule CXX_COMPILER__measured-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -603,7 +603,7 @@ rule CXX_COMPILER__measured-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__mask
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -614,7 +614,7 @@ rule CXX_SHARED_LIBRARY_LINKER__mask
 rule CXX_COMPILER__plastic-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -624,7 +624,7 @@ rule CXX_COMPILER__plastic-obj
 rule CXX_COMPILER__diffuse-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -632,7 +632,7 @@ rule CXX_COMPILER__diffuse-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__conductor
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -641,7 +641,7 @@ rule CXX_SHARED_LIBRARY_LINKER__conductor
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__dielectric
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -650,7 +650,7 @@ rule CXX_SHARED_LIBRARY_LINKER__dielectric
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__diffuse
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -661,7 +661,7 @@ rule CXX_SHARED_LIBRARY_LINKER__diffuse
 rule CXX_COMPILER__conductor-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -671,7 +671,7 @@ rule CXX_COMPILER__conductor-obj
 rule CXX_COMPILER__blendbsdf-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -681,7 +681,7 @@ rule CXX_COMPILER__blendbsdf-obj
 rule CXX_COMPILER__bumpmap-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -689,7 +689,7 @@ rule CXX_COMPILER__bumpmap-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__measured
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -700,7 +700,7 @@ rule CXX_SHARED_LIBRARY_LINKER__measured
 rule CXX_COMPILER__twosided-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -710,7 +710,7 @@ rule CXX_COMPILER__twosided-obj
 rule CXX_COMPILER__roughplastic-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -718,7 +718,7 @@ rule CXX_COMPILER__roughplastic-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__bumpmap
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -727,7 +727,7 @@ rule CXX_SHARED_LIBRARY_LINKER__bumpmap
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__blendbsdf
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -736,7 +736,7 @@ rule CXX_SHARED_LIBRARY_LINKER__blendbsdf
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__roughdielectric
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -747,7 +747,7 @@ rule CXX_SHARED_LIBRARY_LINKER__roughdielectric
 rule CXX_COMPILER__null-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -755,7 +755,7 @@ rule CXX_COMPILER__null-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__plastic
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -766,7 +766,7 @@ rule CXX_SHARED_LIBRARY_LINKER__plastic
 rule CXX_COMPILER__roughconductor-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -776,7 +776,7 @@ rule CXX_COMPILER__roughconductor-obj
 rule CXX_COMPILER__dielectric-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -784,7 +784,7 @@ rule CXX_COMPILER__dielectric-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__roughconductor
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -795,7 +795,7 @@ rule CXX_SHARED_LIBRARY_LINKER__roughconductor
 rule CXX_COMPILER__roughdielectric-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -805,7 +805,7 @@ rule CXX_COMPILER__roughdielectric-obj
 rule CXX_COMPILER__normalmap-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -813,7 +813,7 @@ rule CXX_COMPILER__normalmap-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__normalmap
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -824,7 +824,7 @@ rule CXX_SHARED_LIBRARY_LINKER__normalmap
 rule CXX_COMPILER__thindielectric-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -832,7 +832,7 @@ rule CXX_COMPILER__thindielectric-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__roughplastic
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -843,7 +843,7 @@ rule CXX_SHARED_LIBRARY_LINKER__roughplastic
 rule CXX_COMPILER__mask-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -851,7 +851,7 @@ rule CXX_COMPILER__mask-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__null
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -860,7 +860,7 @@ rule CXX_SHARED_LIBRARY_LINKER__null
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__thindielectric
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -869,7 +869,7 @@ rule CXX_SHARED_LIBRARY_LINKER__thindielectric
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__projector
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -880,7 +880,7 @@ rule CXX_SHARED_LIBRARY_LINKER__projector
 rule CXX_COMPILER__area-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -888,7 +888,7 @@ rule CXX_COMPILER__area-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__point
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -897,7 +897,7 @@ rule CXX_SHARED_LIBRARY_LINKER__point
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__envmap
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -906,7 +906,7 @@ rule CXX_SHARED_LIBRARY_LINKER__envmap
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__area
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -915,7 +915,7 @@ rule CXX_SHARED_LIBRARY_LINKER__area
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__spot
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -926,7 +926,7 @@ rule CXX_SHARED_LIBRARY_LINKER__spot
 rule CXX_COMPILER__point-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -936,7 +936,7 @@ rule CXX_COMPILER__point-obj
 rule CXX_COMPILER__constant-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -946,7 +946,7 @@ rule CXX_COMPILER__constant-obj
 rule CXX_COMPILER__envmap-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -956,7 +956,7 @@ rule CXX_COMPILER__envmap-obj
 rule CXX_COMPILER__projector-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -964,7 +964,7 @@ rule CXX_COMPILER__projector-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__constant
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -975,7 +975,7 @@ rule CXX_SHARED_LIBRARY_LINKER__constant
 rule CXX_COMPILER__directional-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -983,7 +983,7 @@ rule CXX_COMPILER__directional-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__directional
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -994,7 +994,7 @@ rule CXX_SHARED_LIBRARY_LINKER__directional
 rule CXX_COMPILER__spot-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1002,7 +1002,7 @@ rule CXX_COMPILER__spot-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__hdrfilm
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1013,7 +1013,7 @@ rule CXX_SHARED_LIBRARY_LINKER__hdrfilm
 rule CXX_COMPILER__hdrfilm-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1021,7 +1021,7 @@ rule CXX_COMPILER__hdrfilm-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__time
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1032,7 +1032,7 @@ rule CXX_SHARED_LIBRARY_LINKER__time
 rule CXX_COMPILER__time-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1040,7 +1040,7 @@ rule CXX_COMPILER__time-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__pathtime
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1051,7 +1051,7 @@ rule CXX_SHARED_LIBRARY_LINKER__pathtime
 rule CXX_COMPILER__pathtime-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1059,7 +1059,7 @@ rule CXX_COMPILER__pathtime-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__heterogeneous
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1070,7 +1070,7 @@ rule CXX_SHARED_LIBRARY_LINKER__heterogeneous
 rule CXX_COMPILER__heterogeneous-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1078,7 +1078,7 @@ rule CXX_COMPILER__heterogeneous-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__homogeneous
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1089,7 +1089,7 @@ rule CXX_SHARED_LIBRARY_LINKER__homogeneous
 rule CXX_COMPILER__homogeneous-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1097,7 +1097,7 @@ rule CXX_COMPILER__homogeneous-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__isotropic
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1106,7 +1106,7 @@ rule CXX_SHARED_LIBRARY_LINKER__isotropic
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__hg
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1117,7 +1117,7 @@ rule CXX_SHARED_LIBRARY_LINKER__hg
 rule CXX_COMPILER__isotropic-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1127,7 +1127,7 @@ rule CXX_COMPILER__isotropic-obj
 rule CXX_COMPILER__hg-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1137,7 +1137,7 @@ rule CXX_COMPILER__hg-obj
 rule CXX_COMPILER__box-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1145,7 +1145,7 @@ rule CXX_COMPILER__box-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__box
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1154,7 +1154,7 @@ rule CXX_SHARED_LIBRARY_LINKER__box
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__catmullrom
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1165,7 +1165,7 @@ rule CXX_SHARED_LIBRARY_LINKER__catmullrom
 rule CXX_COMPILER__tent-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1173,7 +1173,7 @@ rule CXX_COMPILER__tent-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__tent
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1182,7 +1182,7 @@ rule CXX_SHARED_LIBRARY_LINKER__tent
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__mitchell
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1193,7 +1193,7 @@ rule CXX_SHARED_LIBRARY_LINKER__mitchell
 rule CXX_COMPILER__mitchell-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1203,7 +1203,7 @@ rule CXX_COMPILER__mitchell-obj
 rule CXX_COMPILER__catmullrom-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1213,7 +1213,7 @@ rule CXX_COMPILER__catmullrom-obj
 rule CXX_COMPILER__gaussian-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1221,7 +1221,7 @@ rule CXX_COMPILER__gaussian-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__gaussian
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1232,7 +1232,7 @@ rule CXX_SHARED_LIBRARY_LINKER__gaussian
 rule CXX_COMPILER__lanczos-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1240,7 +1240,7 @@ rule CXX_COMPILER__lanczos-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__lanczos
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1249,7 +1249,7 @@ rule CXX_SHARED_LIBRARY_LINKER__lanczos
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__independent
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1258,7 +1258,7 @@ rule CXX_SHARED_LIBRARY_LINKER__independent
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__ldsampler
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1269,7 +1269,7 @@ rule CXX_SHARED_LIBRARY_LINKER__ldsampler
 rule CXX_COMPILER__stratified-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1279,7 +1279,7 @@ rule CXX_COMPILER__stratified-obj
 rule CXX_COMPILER__independent-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1287,7 +1287,7 @@ rule CXX_COMPILER__independent-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__stratified
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1298,7 +1298,7 @@ rule CXX_SHARED_LIBRARY_LINKER__stratified
 rule CXX_COMPILER__multijitter-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1306,7 +1306,7 @@ rule CXX_COMPILER__multijitter-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__multijitter
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1317,7 +1317,7 @@ rule CXX_SHARED_LIBRARY_LINKER__multijitter
 rule CXX_COMPILER__orthogonal-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1325,7 +1325,7 @@ rule CXX_COMPILER__orthogonal-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__orthogonal
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1336,7 +1336,7 @@ rule CXX_SHARED_LIBRARY_LINKER__orthogonal
 rule CXX_COMPILER__ldsampler-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1346,7 +1346,7 @@ rule CXX_COMPILER__ldsampler-obj
 rule CXX_COMPILER__perspective-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1354,7 +1354,7 @@ rule CXX_COMPILER__perspective-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__perspective
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1365,7 +1365,7 @@ rule CXX_SHARED_LIBRARY_LINKER__perspective
 rule CXX_COMPILER__radiancemeter-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1375,7 +1375,7 @@ rule CXX_COMPILER__radiancemeter-obj
 rule CXX_COMPILER__thinlens-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1385,7 +1385,7 @@ rule CXX_COMPILER__thinlens-obj
 rule CXX_COMPILER__irradiancemeter-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1393,7 +1393,7 @@ rule CXX_COMPILER__irradiancemeter-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__radiancemeter
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1402,7 +1402,7 @@ rule CXX_SHARED_LIBRARY_LINKER__radiancemeter
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__irradiancemeter
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1413,7 +1413,7 @@ rule CXX_SHARED_LIBRARY_LINKER__irradiancemeter
 rule CXX_COMPILER__fluxmeter-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1421,7 +1421,7 @@ rule CXX_COMPILER__fluxmeter-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__fluxmeter
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1430,7 +1430,7 @@ rule CXX_SHARED_LIBRARY_LINKER__fluxmeter
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__thinlens
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1439,7 +1439,7 @@ rule CXX_SHARED_LIBRARY_LINKER__thinlens
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__sphere
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1450,7 +1450,7 @@ rule CXX_SHARED_LIBRARY_LINKER__sphere
 rule CXX_COMPILER__sphere-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1460,7 +1460,7 @@ rule CXX_COMPILER__sphere-obj
 rule CXX_COMPILER__instance-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1468,7 +1468,7 @@ rule CXX_COMPILER__instance-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__rectangle
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1479,7 +1479,7 @@ rule CXX_SHARED_LIBRARY_LINKER__rectangle
 rule CXX_COMPILER__obj-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1487,7 +1487,7 @@ rule CXX_COMPILER__obj-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__instance
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1496,7 +1496,7 @@ rule CXX_SHARED_LIBRARY_LINKER__instance
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__obj
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1505,7 +1505,7 @@ rule CXX_SHARED_LIBRARY_LINKER__obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__blender
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1516,7 +1516,7 @@ rule CXX_SHARED_LIBRARY_LINKER__blender
 rule CXX_COMPILER__ply-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1524,7 +1524,7 @@ rule CXX_COMPILER__ply-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__ply
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1535,7 +1535,7 @@ rule CXX_SHARED_LIBRARY_LINKER__ply
 rule CXX_COMPILER__blender-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1545,7 +1545,7 @@ rule CXX_COMPILER__blender-obj
 rule CXX_COMPILER__rectangle-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1555,7 +1555,7 @@ rule CXX_COMPILER__rectangle-obj
 rule CXX_COMPILER__disk-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1563,7 +1563,7 @@ rule CXX_COMPILER__disk-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__serialized
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1572,7 +1572,7 @@ rule CXX_SHARED_LIBRARY_LINKER__serialized
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__shapegroup
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1583,7 +1583,7 @@ rule CXX_SHARED_LIBRARY_LINKER__shapegroup
 rule CXX_COMPILER__shapegroup-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1591,7 +1591,7 @@ rule CXX_COMPILER__shapegroup-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__cylinder
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1602,7 +1602,7 @@ rule CXX_SHARED_LIBRARY_LINKER__cylinder
 rule CXX_COMPILER__cylinder-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1612,7 +1612,7 @@ rule CXX_COMPILER__cylinder-obj
 rule CXX_COMPILER__serialized-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1620,7 +1620,7 @@ rule CXX_COMPILER__serialized-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__disk
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1629,7 +1629,7 @@ rule CXX_SHARED_LIBRARY_LINKER__disk
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__srgb_d65
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1638,7 +1638,7 @@ rule CXX_SHARED_LIBRARY_LINKER__srgb_d65
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__irregular
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1647,7 +1647,7 @@ rule CXX_SHARED_LIBRARY_LINKER__irregular
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__blackbody
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1658,7 +1658,7 @@ rule CXX_SHARED_LIBRARY_LINKER__blackbody
 rule CXX_COMPILER__irregular-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1668,7 +1668,7 @@ rule CXX_COMPILER__irregular-obj
 rule CXX_COMPILER__d65-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1676,7 +1676,7 @@ rule CXX_COMPILER__d65-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__uniform
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1687,7 +1687,7 @@ rule CXX_SHARED_LIBRARY_LINKER__uniform
 rule CXX_COMPILER__regular-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1697,7 +1697,7 @@ rule CXX_COMPILER__regular-obj
 rule CXX_COMPILER__uniform-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1705,7 +1705,7 @@ rule CXX_COMPILER__uniform-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__regular
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1714,7 +1714,7 @@ rule CXX_SHARED_LIBRARY_LINKER__regular
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__d65
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1725,7 +1725,7 @@ rule CXX_SHARED_LIBRARY_LINKER__d65
 rule CXX_COMPILER__srgb-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1733,7 +1733,7 @@ rule CXX_COMPILER__srgb-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__srgb
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1744,7 +1744,7 @@ rule CXX_SHARED_LIBRARY_LINKER__srgb
 rule CXX_COMPILER__blackbody-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1754,7 +1754,7 @@ rule CXX_COMPILER__blackbody-obj
 rule CXX_COMPILER__srgb_d65-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1762,7 +1762,7 @@ rule CXX_COMPILER__srgb_d65-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__bitmap
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1771,7 +1771,7 @@ rule CXX_SHARED_LIBRARY_LINKER__bitmap
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__checkerboard
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1782,7 +1782,7 @@ rule CXX_SHARED_LIBRARY_LINKER__checkerboard
 rule CXX_COMPILER__constvolume-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1790,7 +1790,7 @@ rule CXX_COMPILER__constvolume-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__constvolume
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1801,7 +1801,7 @@ rule CXX_SHARED_LIBRARY_LINKER__constvolume
 rule CXX_COMPILER__bitmap-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1811,7 +1811,7 @@ rule CXX_COMPILER__bitmap-obj
 rule CXX_COMPILER__checkerboard-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1821,7 +1821,7 @@ rule CXX_COMPILER__checkerboard-obj
 rule CXX_COMPILER__gridvolume-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1829,7 +1829,7 @@ rule CXX_COMPILER__gridvolume-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__gridvolume
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1840,7 +1840,7 @@ rule CXX_SHARED_LIBRARY_LINKER__gridvolume
 rule CXX_COMPILER__mesh_attribute-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-9  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -1848,7 +1848,7 @@ rule CXX_COMPILER__mesh_attribute-obj
 # Rule for linking CXX shared library.
 
 rule CXX_SHARED_LIBRARY_LINKER__mesh_attribute
-  command = $PRE_LINK && /usr/bin/clang++-9 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
   restat = $RESTAT
 
@@ -1857,7 +1857,7 @@ rule CXX_SHARED_LIBRARY_LINKER__mesh_attribute
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = /usr/bin/cmake -S/home/jacob/src/beifong -B/home/jacob/src/beifong/build
+  command = /usr/bin/cmake -S/home/jacobacfr/src/beifong -B/home/jacobacfr/src/beifong/build
   description = Re-running CMake...
   generator = 1
 

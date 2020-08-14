@@ -1,4 +1,4 @@
-# Install script for directory: /home/jacob/src/beifong/ext/openexr/OpenEXR
+# Install script for directory: /home/jacobacfr/src/beifong/ext/openexr/OpenEXR
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -46,12 +46,12 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/usr/local/include/OpenEXR" TYPE FILE FILES "/home/jacob/src/beifong/build/ext_build/openexr/OpenEXR/config/OpenEXRConfig.h")
+file(INSTALL DESTINATION "/usr/local/include/OpenEXR" TYPE FILE FILES "/home/jacobacfr/src/beifong/build/ext_build/openexr/OpenEXR/config/OpenEXRConfig.h")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/jacob/src/beifong/build/ext_build/openexr/OpenEXR/IlmImf/cmake_install.cmake")
+  include("/home/jacobacfr/src/beifong/build/ext_build/openexr/OpenEXR/IlmImf/cmake_install.cmake")
 
 endif()
 
