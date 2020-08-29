@@ -144,6 +144,7 @@ public:
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointSampleRay, active);
 
         auto [wavelengths, wav_weight] = sample_wavelength<Float, Spectrum>(wavelength_sample);
+
         Ray3f ray;
         ray.time = time;    // the random sample[0,1]*opentime
         ray.wavelengths = wavelengths;
@@ -173,6 +174,7 @@ public:
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointSampleRay, active);
 
         auto [wavelengths, wav_weight] = sample_wavelength<Float, Spectrum>(wavelength_sample);
+
         RayDifferential3f ray;
         ray.time = time;
         ray.wavelengths = wavelengths;

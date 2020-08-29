@@ -56,8 +56,8 @@ public:
 
         if (m_film->reconstruction_filter()->radius() >
             0.5f + math::RayEpsilon<Float>)
-            Log(Warn, "This sensor should only be used with a reconstruction filter"
-               "of radius 0.5 or lower(e.g. default box)");
+            Log(Warn, "This sensor should only be used with a reconstruction"
+                "filter of radius 0.5 or lower(e.g. default box)");
     }
 
     std::pair<RayDifferential3f, Spectrum>
@@ -65,7 +65,6 @@ public:
                             const Point2f & sample2,
                             const Point2f & sample3,
                             Mask active) const override {
-
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointSampleRay, active);
 
         // 1. Sample spatial component
@@ -75,18 +74,21 @@ public:
         Vector3f local = warp::square_to_cosine_hemisphere(sample3);
 
         // 3. Sample spectrum
-        auto [wavelengths, wav_weight] = sample_wavelength<Float, Spectrum>(wavelength_sample);
+        auto [wavelengths, wav_weight] =
+            sample_wavelength<Float, Spectrum>(wavelength_sample);
 
-        // std::cout<<m_shape->surface_area()<<std::endl;
         return std::make_pair(
-            RayDifferential3f(ps.p, Frame3f(ps.n).to_world(local), time, wavelengths),
-            unpolarized<Spectrum>(wav_weight) * math::Pi<ScalarFloat>
-        );
+            RayDifferential3f(ps.p, Frame3f(ps.n).to_world(local),
+                time, wavelengths),
+            unpolarized<Spectrum>(wav_weight) * math::Pi<ScalarFloat>);
     }
 
     std::pair<DirectionSample3f, Spectrum>
-    sample_direction(const Interaction3f &it, const Point2f &sample, Mask active) const override {
-        return std::make_pair(m_shape->sample_direction(it, sample, active), math::Pi<ScalarFloat>);
+    sample_direction(const Interaction3f &it,
+        const Point2f &sample, Mask active) const override {
+            return std::make_pair(
+                m_shape->sample_direction(it, sample, active),
+                math::Pi<ScalarFloat>);
     }
 
     Float pdf_direction(const Interaction3f &it, const DirectionSample3f &ds,
@@ -94,10 +96,11 @@ public:
         return m_shape->pdf_direction(it, ds, active);
     }
 
-    Spectrum eval(const SurfaceInteraction3f &/*si*/, Mask /*active*/) const override {
-        // return math::Pi<ScalarFloat> / m_shape->surface_area();
-        // std::cout<<m_shape->surface_area()<<std::endl;
-        return math::Pi<ScalarFloat>;
+    Spectrum eval(const SurfaceInteraction3f &/*si*/, Mask /*active*/)
+      const override {
+          // return math::Pi<ScalarFloat> / m_shape->surface_area();
+          // std::cout<<m_shape->surface_area()<<std::endl;
+          return math::Pi<ScalarFloat>;
     }
 
     ScalarBoundingBox3f bbox() const override { return m_shape->bbox(); }
