@@ -174,6 +174,15 @@ protected:
                        ScalarFloat diff_scale_factor,
                        Mask active = true) const;
 
+    void receive_sample(const Scene *scene,
+                      const Sensor *sensor,
+                      Sampler *sampler,
+                      ImageBlock *block,
+                      Float *aovs,
+                      const Vector2f &pos,
+                      ScalarFloat diff_scale_factor,
+                      Mask active = true) const;
+
 protected:
     /// Integrators should stop all work when this flag is set to true.
     bool m_stop;
@@ -201,6 +210,10 @@ protected:
 
     /// Flag for disabling direct visibility of emitters
     bool m_hide_emitters;
+
+    // /// Jacobs mess
+    // float m_dr;
+    // float m_bins;
 };
 
 /*

@@ -38,6 +38,9 @@ MTS_VARIANT SamplingIntegrator<Float, Spectrum>::
 
       /// Disable direct visibility of emitters if needed
       m_hide_emitters = props.bool_("hide_emitters", false);
+
+      // m_dr = props.float_("dr", -1.f);
+      // m_bins = props.int_("bins", -1);
 }
 
 MTS_VARIANT SamplingIntegrator<Float, Spectrum>::
@@ -218,7 +221,9 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 
             pos += block->offset();
             for (uint32_t j = 0; j < sample_count && !should_stop(); ++j) {
-                render_sample(scene, sensor, sampler, block, aovs,
+                // render_sample(scene, sensor, sampler, block, aovs,
+                //               pos, diff_scale_factor);
+                receive_sample(scene, sensor, sampler, block, aovs,
                               pos, diff_scale_factor);
             }
         }
@@ -234,8 +239,10 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
                 (index / UInt32(sample_count));
             active &= !any(pos >= block->size());
             pos += block->offset();
-            render_sample(scene, sensor, sampler, block, aovs,
-                pos, diff_scale_factor, active);
+            // render_sample(scene, sensor, sampler, block, aovs,
+            //     pos, diff_scale_factor, active);
+            receive_sample(scene, sensor, sampler, block, aovs,
+                          pos, diff_scale_factor);
         }
     } else {
         ENOKI_MARK_USED(scene);
@@ -291,7 +298,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       std::get<0>(result) = ray_weight * std::get<0>(result);
       UnpolarizedSpectrum spec_u = depolarize(std::get<0>(result));
 
-      std::cout<<spec_u<<std::endl;
+      // std::cout<<spec_u<<std::endl;
       // spec_u should be like radiances at wavelengths
 
       Color3f xyz;
@@ -303,7 +310,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
           static_assert(is_spectral_v<Spectrum>);
           // xyz = spectrum_to_xyz(spec_u, ray.wavelengths, active);
           xyz = spec_u.x();
-          std::cout<<xyz<<std::endl;
+          // std::cout<<xyz<<std::endl;
       }
       // if constexpr (is_wigner_v<Spectrum>){}
 
@@ -317,6 +324,94 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       aovs[4] = 1.f;
 
       block->put(position_sample, aovs, active);
+
+      sampler->advance();
+}
+
+MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
+  receive_sample(const Scene *scene, const Sensor *sensor, Sampler *sampler,
+                    ImageBlock *block, Float *aovs, const Vector2f &pos,
+                    ScalarFloat diff_scale_factor, Mask active) const {
+      Vector2f position_sample = pos + sampler->next_2d(active);
+
+      // std::cout << position_sample << std::endl;
+
+      Point2f aperture_sample(.5f);
+      if (sensor->needs_aperture_sample()) {
+          aperture_sample = sampler->next_2d(active);
+      }
+
+      Float time = sensor->shutter_open();
+      if (sensor->shutter_open_time() > 0.f) {
+          time += sampler->next_1d(active) * sensor->shutter_open_time();
+      } else {
+          time = 0.f;
+      }
+
+      // two different ranges
+      // 1) the overall range of the sim, ie wideband/94GHZ +- BW
+      // 2) the ranges of frequency that each element has their radiance/
+      // reflectivity/absorption defined at.
+
+      Float wavelength_sample = sampler->next_1d(active);
+
+      Vector2f adjusted_position =
+        (position_sample - sensor->film()->crop_offset()) /
+        sensor->film()->crop_size();
+
+      // ray_weight will be like the bsdf of the sensor. I can also use it to
+      // apply my phase shift. Maybe not, this more relates to the wavelength
+      auto [ray, ray_weight] = sensor->sample_ray_differential(
+          time, wavelength_sample, adjusted_position, aperture_sample);
+
+      ray.scale_differential(diff_scale_factor);
+
+      // std::cout << ray << std::endl;
+
+      const Medium *medium = sensor->medium();
+      std::tuple<Spectrum, Mask, Float> result =
+        sample(scene, sampler, ray, medium, aovs+1, active);
+
+        // std::cout << std::get<0>(result) << std::endl;
+
+      std::get<0>(result) = ray_weight * std::get<0>(result);
+      UnpolarizedSpectrum spec_u = depolarize(std::get<0>(result));
+
+      // std::cout<<spec_u<<std::endl;
+      // spec_u should be like radiances at wavelengths
+
+      // This should return a simple power at 1 distance. The accumulated power
+      // of the entire sim
+
+      Color3f xyz;
+      if constexpr (is_monochromatic_v<Spectrum>) {
+          xyz = spec_u.x();
+      } else if constexpr (is_rgb_v<Spectrum>) {
+          xyz = srgb_to_xyz(spec_u, active);
+      } else {
+          static_assert(is_spectral_v<Spectrum>);
+          // xyz = spectrum_to_xyz(spec_u, ray.wavelengths, active);
+          xyz = spec_u.x();
+          // std::cout<<xyz<<std::endl;
+      }
+      // if constexpr (is_wigner_v<Spectrum>){}
+
+      // What should I output?
+      // I have wavelength
+
+      // float freq = 94E9;
+      // float lambda = math::CVac/freq;
+
+      aovs[0] = xyz.x();
+      // aovs[1] = lambda;
+      // aovs[1] = select(std::get<1>(result), Float(1.f), Float(0.f));
+      // aovs[1] = xyz.y();
+      // aovs[2] = xyz.z();
+      // aovs[3] = select(std::get<1>(result), Float(1.f), Float(0.f));
+      // aovs[4] = 1.f;
+
+      block->put(position_sample, aovs, active);
+      // block->put(position_sample, time_bin (as a fraction of the span), frequency_bin, aovs, active);
 
       sampler->advance();
 }

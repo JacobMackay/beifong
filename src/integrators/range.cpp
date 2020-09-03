@@ -55,12 +55,12 @@ integrator:
  */
 
 template <typename Float, typename Spectrum>
-class TimeIntegrator final : public SamplingIntegrator<Float, Spectrum> {
+class RangeIntegrator final : public SamplingIntegrator<Float, Spectrum> {
 public:
     MTS_IMPORT_BASE(SamplingIntegrator)
     MTS_IMPORT_TYPES(Scene, Sampler, Medium)
 
-    TimeIntegrator(const Properties &props) : Base(props) {
+    RangeIntegrator(const Properties &props) : Base(props) {
         // if constexpr (!is_polarized_v<Spectrum>)
         //     Throw("This integrator should only be used in polarized mode!");
         for (auto &kv : props.objects()) {
@@ -70,6 +70,9 @@ public:
             if (m_integrator)
                 Throw("More than one sub-integrator specified!");
             m_integrator = integrator;
+
+            m_dr = props.float_("dr", -1.f);
+            m_bins = props.int_("bins", -1);
         }
 
         if (!m_integrator)
@@ -115,7 +118,10 @@ public:
         // Int32 index = arange<Int32>(n * size.y());  // 1:len
 
         // Float dt = 200.0e-6;
-        Float dt = 0.5e-9;
+        // Float dt = 0.5e-9;
+        // Float dr = 0.1;
+
+        // std::cout << m_bins <<std::endl;
 
         // Color3f xyz;
         // if constexpr (is_monochromatic_v<Spectrum>) {
@@ -127,28 +133,28 @@ public:
         //     xyz = spectrum_to_xyz(spec_u, ray.wavelengths, active);
         // }
 
-        auto const &times = std::get<2>(result);
+        auto const &ranges = std::get<2>(result);
         auto const &spec_u = depolarize(std::get<0>(result));
         // auto const &rads = depolarize(std::get<0>(result));
         // auto const &rads = std::get<0>(result);
-        for (int i = 0; i < 50; ++i){
+        for (int i = 0; i < m_bins; ++i){
 
-            Point1f lo = (Float)i *dt;
-            Point1f hi = (Float)i *dt + dt;
+            Point1f lo = (Float)i *m_dr;
+            Point1f hi = (Float)i *m_dr + m_dr;
 
             Color3f xyz;
             if constexpr (is_monochromatic_v<Spectrum>) {
                 // xyz = spec_u.x();
-                xyz = select(all(times>=lo && times<hi), spec_u.x(), 0.f);
+                xyz = select(all(ranges>=lo && ranges<hi), spec_u.x(), 0.f);
                 *aovs++ = xyz.x(); *aovs++ = xyz.y(); *aovs++ = xyz.z();
             } else if constexpr (is_rgb_v<Spectrum>) {
-                xyz = select(all(times>=lo && times<hi), srgb_to_xyz(spec_u, active), 0.f);
+                xyz = select(all(ranges>=lo && ranges<hi), srgb_to_xyz(spec_u, active), 0.f);
                 *aovs++ = xyz.x(); *aovs++ = xyz.y(); *aovs++ = xyz.z();
             } else {
                 static_assert(is_spectral_v<Spectrum>);
                 // xyz = select(all(times>=lo && times<hi), spectrum_to_xyz(spec_u, ray.wavelengths, active), 0.f);
                 // *aovs++ = xyz.x(); *aovs++ = xyz.y(); *aovs++ = xyz.z();
-                xyz = select(all(times>=lo && times<hi), spec_u.x(), 0.f);
+                xyz = select(all(ranges>=lo && ranges<hi), spec_u.x(), 0.f);
                 *aovs++ = xyz.x(); *aovs++ = xyz.y(); *aovs++ = xyz.z();
             }
 
@@ -212,8 +218,11 @@ public:
     MTS_DECLARE_CLASS()
 private:
     ref<Base> m_integrator;
+    /// Jacobs mess
+    float m_dr;
+    float m_bins;
 };
 
-MTS_IMPLEMENT_CLASS_VARIANT(TimeIntegrator, SamplingIntegrator)
-MTS_EXPORT_PLUGIN(TimeIntegrator, "Time integrator");
+MTS_IMPLEMENT_CLASS_VARIANT(RangeIntegrator, SamplingIntegrator)
+MTS_EXPORT_PLUGIN(RangeIntegrator, "Range integrator");
 NAMESPACE_END(mitsuba)

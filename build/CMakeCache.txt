@@ -516,6 +516,9 @@ core_ext_LIB_DEPENDS:STATIC=general;mitsuba-core;general;mitsuba-render;general;
 core_packet_rgb_ext_LIB_DEPENDS:STATIC=general;mitsuba-core;general;tbb;general;asmjit;
 
 //Dependencies for the target
+core_scalar_narrowband_ext_LIB_DEPENDS:STATIC=general;mitsuba-core;general;tbb;general;asmjit;
+
+//Dependencies for the target
 core_scalar_rgb_ext_LIB_DEPENDS:STATIC=general;mitsuba-core;general;tbb;general;asmjit;
 
 //Dependencies for the target
@@ -577,6 +580,9 @@ ilmbase_SOURCE_DIR:STATIC=/home/jacobacfr/src/beifong/ext/openexr/IlmBase
 
 //Dependencies for the target
 independent_LIB_DEPENDS:STATIC=general;mitsuba-core;general;mitsuba-render;general;tbb;
+
+//Dependencies for the target
+independentrad_LIB_DEPENDS:STATIC=general;mitsuba-core;general;mitsuba-render;general;tbb;
 
 //Dependencies for the target
 instance_LIB_DEPENDS:STATIC=general;mitsuba-core;general;mitsuba-render;general;tbb;
@@ -642,6 +648,9 @@ openexr_SOURCE_DIR:STATIC=/home/jacobacfr/src/beifong/ext/openexr/OpenEXR
 orthogonal_LIB_DEPENDS:STATIC=general;mitsuba-core;general;mitsuba-render;general;tbb;
 
 //Dependencies for the target
+pathlength_LIB_DEPENDS:STATIC=general;mitsuba-core;general;mitsuba-render;general;tbb;
+
+//Dependencies for the target
 pathtime_LIB_DEPENDS:STATIC=general;mitsuba-core;general;mitsuba-render;general;tbb;
 
 //Dependencies for the target
@@ -672,6 +681,12 @@ pybind11_SOURCE_DIR:STATIC=/home/jacobacfr/src/beifong/ext/pybind11
 radiancemeter_LIB_DEPENDS:STATIC=general;mitsuba-core;general;mitsuba-render;general;tbb;
 
 //Dependencies for the target
+range_LIB_DEPENDS:STATIC=general;mitsuba-core;general;mitsuba-render;general;tbb;
+
+//Dependencies for the target
+raw_LIB_DEPENDS:STATIC=general;mitsuba-core;general;mitsuba-render;general;tbb;
+
+//Dependencies for the target
 rectangle_LIB_DEPENDS:STATIC=general;mitsuba-core;general;mitsuba-render;general;tbb;
 
 //Dependencies for the target
@@ -682,6 +697,9 @@ render_ext_LIB_DEPENDS:STATIC=general;mitsuba-core;general;mitsuba-render;genera
 
 //Dependencies for the target
 render_packet_rgb_ext_LIB_DEPENDS:STATIC=general;mitsuba-core;general;mitsuba-render;general;tbb;general;asmjit;
+
+//Dependencies for the target
+render_scalar_narrowband_ext_LIB_DEPENDS:STATIC=general;mitsuba-core;general;mitsuba-render;general;tbb;general;asmjit;
 
 //Dependencies for the target
 render_scalar_rgb_ext_LIB_DEPENDS:STATIC=general;mitsuba-core;general;mitsuba-render;general;tbb;general;asmjit;
@@ -1041,7 +1059,7 @@ JPEG_INCLUDE_DIR-ADVANCED:INTERNAL=1
 JPEG_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: JPEG_LIBRARY_RELEASE
 JPEG_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
-MITSUBA_DIST:INTERNAL=python/enoki/enoki-python-core;python/enoki/enoki-python-scalar;python/enoki/enoki-python-dynamic;asmjit;mitsuba-core;pugixml;IlmThread;Half;Half;Imath;IlmImf;Iex;tbb;python/mitsuba/core_scalar_rgb_ext;python/mitsuba/core_scalar_spectral_ext;python/mitsuba/core_packet_rgb_ext;python/mitsuba/core_ext;mitsuba-render;python/mitsuba/render_scalar_rgb_ext;python/mitsuba/render_scalar_spectral_ext;python/mitsuba/render_packet_rgb_ext;python/mitsuba/render_ext;mitsuba;plugins/blendbsdf;plugins/bumpmap;plugins/conductor;plugins/dielectric;plugins/diffuse;plugins/mask;plugins/measured;plugins/normalmap;plugins/null;plugins/plastic;plugins/roughconductor;plugins/roughdielectric;plugins/roughplastic;plugins/thindielectric;plugins/twosided;plugins/polarizer;plugins/retarder;plugins/area;plugins/point;plugins/constant;plugins/envmap;plugins/directional;plugins/spot;plugins/projector;plugins/hdrfilm;plugins/pathtime;plugins/time;plugins/homogeneous;plugins/heterogeneous;plugins/hg;plugins/isotropic;plugins/box;plugins/tent;plugins/lanczos;plugins/mitchell;plugins/catmullrom;plugins/gaussian;plugins/independent;plugins/stratified;plugins/multijitter;plugins/orthogonal;plugins/ldsampler;plugins/perspective;plugins/radiancemeter;plugins/thinlens;plugins/irradiancemeter;plugins/fluxmeter;plugins/obj;plugins/ply;plugins/blender;plugins/serialized;plugins/cylinder;plugins/disk;plugins/rectangle;plugins/sphere;plugins/shapegroup;plugins/instance;plugins/blackbody;plugins/uniform;plugins/regular;plugins/irregular;plugins/d65;plugins/srgb;plugins/srgb_d65;plugins/bitmap;plugins/checkerboard;plugins/constvolume;plugins/gridvolume;plugins/mesh_attribute
+MITSUBA_DIST:INTERNAL=python/enoki/enoki-python-core;python/enoki/enoki-python-scalar;python/enoki/enoki-python-dynamic;asmjit;mitsuba-core;pugixml;IlmThread;Half;Half;Imath;IlmImf;Iex;tbb;python/mitsuba/core_scalar_rgb_ext;python/mitsuba/core_scalar_spectral_ext;python/mitsuba/core_packet_rgb_ext;python/mitsuba/core_ext;mitsuba-render;python/mitsuba/render_scalar_rgb_ext;python/mitsuba/render_scalar_spectral_ext;python/mitsuba/render_packet_rgb_ext;python/mitsuba/render_ext;mitsuba;plugins/blendbsdf;plugins/bumpmap;plugins/conductor;plugins/dielectric;plugins/diffuse;plugins/mask;plugins/measured;plugins/normalmap;plugins/null;plugins/plastic;plugins/roughconductor;plugins/roughdielectric;plugins/roughplastic;plugins/thindielectric;plugins/twosided;plugins/polarizer;plugins/retarder;plugins/area;plugins/point;plugins/constant;plugins/envmap;plugins/directional;plugins/spot;plugins/projector;plugins/hdrfilm;plugins/pathtime;plugins/pathlength;plugins/range;plugins/time;plugins/raw;plugins/homogeneous;plugins/heterogeneous;plugins/hg;plugins/isotropic;plugins/box;plugins/tent;plugins/lanczos;plugins/mitchell;plugins/catmullrom;plugins/gaussian;plugins/independent;plugins/independentrad;plugins/stratified;plugins/multijitter;plugins/orthogonal;plugins/ldsampler;plugins/perspective;plugins/radiancemeter;plugins/thinlens;plugins/irradiancemeter;plugins/fluxmeter;plugins/obj;plugins/ply;plugins/blender;plugins/serialized;plugins/cylinder;plugins/disk;plugins/rectangle;plugins/sphere;plugins/shapegroup;plugins/instance;plugins/blackbody;plugins/uniform;plugins/regular;plugins/irregular;plugins/d65;plugins/srgb;plugins/srgb_d65;plugins/bitmap;plugins/checkerboard;plugins/constvolume;plugins/gridvolume;plugins/mesh_attribute
 MITSUBA_PYTEST_FOUND:INTERNAL=TRUE
 MITSUBA_TEST_DIRECTORIES:INTERNAL=/home/jacobacfr/src/beifong/src/libcore/tests/test_argparser.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_atomic.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_bbox.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_bitmap.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_bsphere.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_dict.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_distr_1d.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_distr_2d.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_filesystem.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_frame.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_logger.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_math.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_mmap.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_properties.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_python.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_qmc.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_quad.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_random.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_spline.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_stream.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_struct.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_transform.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_util.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_vector.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_warp.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_write_xml.py;/home/jacobacfr/src/beifong/src/libcore/tests/test_xml.py;/home/jacobacfr/src/beifong/src/librender/tests/test_bsdf.py;/home/jacobacfr/src/beifong/src/librender/tests/test_fresnel.py;/home/jacobacfr/src/beifong/src/librender/tests/test_imageblock.py;/home/jacobacfr/src/beifong/src/librender/tests/test_integrator.py;/home/jacobacfr/src/beifong/src/librender/tests/test_interaction.py;/home/jacobacfr/src/beifong/src/librender/tests/test_kdtrees.py;/home/jacobacfr/src/beifong/src/librender/tests/test_mesh.py;/home/jacobacfr/src/beifong/src/librender/tests/test_microfacet.py;/home/jacobacfr/src/beifong/src/librender/tests/test_mueller.py;/home/jacobacfr/src/beifong/src/librender/tests/test_records.py;/home/jacobacfr/src/beifong/src/librender/tests/test_renders.py;/home/jacobacfr/src/beifong/src/librender/tests/test_scene.py;/home/jacobacfr/src/beifong/src/librender/tests/test_spectra.py;/home/jacobacfr/src/beifong/src/librender/tests/test_spiral.py;/home/jacobacfr/src/beifong/src/bsdfs/tests/test_blendbsdf.py;/home/jacobacfr/src/beifong/src/bsdfs/tests/test_conductor.py;/home/jacobacfr/src/beifong/src/bsdfs/tests/test_dielectric.py;/home/jacobacfr/src/beifong/src/bsdfs/tests/test_diffuse.py;/home/jacobacfr/src/beifong/src/bsdfs/tests/test_polarizer.py;/home/jacobacfr/src/beifong/src/bsdfs/tests/test_retarder.py;/home/jacobacfr/src/beifong/src/bsdfs/tests/test_rough_conductor.py;/home/jacobacfr/src/beifong/src/bsdfs/tests/test_rough_dielectric.py;/home/jacobacfr/src/beifong/src/bsdfs/tests/test_rough_plastic.py;/home/jacobacfr/src/beifong/src/bsdfs/tests/test_twosided.py;/home/jacobacfr/src/beifong/src/emitters/tests/test_area.py;/home/jacobacfr/src/beifong/src/emitters/tests/test_constant.py;/home/jacobacfr/src/beifong/src/emitters/tests/test_directional.py;/home/jacobacfr/src/beifong/src/emitters/tests/test_point.py;/home/jacobacfr/src/beifong/src/emitters/tests/test_spot.py;/home/jacobacfr/src/beifong/src/films/tests/test_hdrfilm.py;/home/jacobacfr/src/beifong/src/phase/tests/test_hg.py;/home/jacobacfr/src/beifong/src/phase/tests/test_isotropic.py;/home/jacobacfr/src/beifong/src/phase/tests/test_trampoline.py;/home/jacobacfr/src/beifong/src/rfilters/tests/test_rfilter.py;/home/jacobacfr/src/beifong/src/samplers/tests/test_independent.py;/home/jacobacfr/src/beifong/src/samplers/tests/test_ldsampler.py;/home/jacobacfr/src/beifong/src/samplers/tests/test_multijitter.py;/home/jacobacfr/src/beifong/src/samplers/tests/test_orthogonal.py;/home/jacobacfr/src/beifong/src/samplers/tests/test_stratified.py;/home/jacobacfr/src/beifong/src/sensors/tests/test_irradiancemeter.py;/home/jacobacfr/src/beifong/src/sensors/tests/test_perspective.py;/home/jacobacfr/src/beifong/src/sensors/tests/test_radiancemeter.py;/home/jacobacfr/src/beifong/src/sensors/tests/test_thinlens.py;/home/jacobacfr/src/beifong/src/shapes/tests/test_cylinder.py;/home/jacobacfr/src/beifong/src/shapes/tests/test_disk.py;/home/jacobacfr/src/beifong/src/shapes/tests/test_instance.py;/home/jacobacfr/src/beifong/src/shapes/tests/test_rectangle.py;/home/jacobacfr/src/beifong/src/shapes/tests/test_shapegroup.py;/home/jacobacfr/src/beifong/src/shapes/tests/test_sphere.py
 //ADVANCED property for variable: OPENEXR_BUILD_EXAMPLES

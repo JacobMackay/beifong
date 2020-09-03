@@ -70,14 +70,19 @@ public:
             sum += value;
             *cdf_ptr++ = (ScalarFloat) sum;
 
-            if (value < 0.0) {
-                Throw("DiscreteDistribution: entries must be non-negative!");
-            } else if (value > 0.0) {
-                // Determine the first and last wavelength bin with nonzero density
-                if (m_valid.x() == (uint32_t) -1)
-                    m_valid.x() = i;
-                m_valid.y() = i;
-            }
+            // if (value < 0.0) {
+            //     Throw("DiscreteDistribution: entries must be non-negative!");
+            // } else if (value > 0.0) {
+            //     // Determine the first and last wavelength bin with nonzero density
+            //     if (m_valid.x() == (uint32_t) -1)
+            //         m_valid.x() = i;
+            //     m_valid.y() = i;
+            // }
+            // Determine the first and last wavelength bin with nonzero density
+            // Should make quasiprobability distribution
+            if (m_valid.x() == (uint32_t) -1)
+                m_valid.x() = i;
+            m_valid.y() = i;
         }
 
         if (any(eq(m_valid, (uint32_t) -1)))
@@ -325,14 +330,18 @@ public:
             *cdf_ptr++ = (ScalarFloat) integral;
             pdf_ptr++;
 
-            if (y0 < 0. || y1 < 0.) {
-                Throw("ContinuousDistribution: entries must be non-negative!");
-            } else if (value > 0.) {
-                // Determine the first and last wavelength bin with nonzero density
-                if (m_valid.x() == (uint32_t) -1)
-                    m_valid.x() = (uint32_t) i;
-                m_valid.y() = (uint32_t) i;
-            }
+            // if (y0 < 0. || y1 < 0.) {
+            //     Throw("ContinuousDistribution: entries must be non-negative!");
+            // } else if (value > 0.) {
+            //     // Determine the first and last wavelength bin with nonzero density
+            //     if (m_valid.x() == (uint32_t) -1)
+            //         m_valid.x() = (uint32_t) i;
+            //     m_valid.y() = (uint32_t) i;
+            // }
+            // Determine the first and last wavelength bin with nonzero density
+            if (m_valid.x() == (uint32_t) -1)
+                m_valid.x() = (uint32_t) i;
+            m_valid.y() = (uint32_t) i;
         }
 
         if (any(eq(m_valid, (uint32_t) -1)))

@@ -90,12 +90,12 @@ both direct and indirect illumination.
  */
 
 template <typename Float, typename Spectrum>
-class PathTimeIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
-public:
+class PathLengthIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
+ public:
     MTS_IMPORT_BASE(MonteCarloIntegrator, m_max_depth, m_rr_depth)
     MTS_IMPORT_TYPES(Scene, Sampler, Medium, Emitter, EmitterPtr, BSDF, BSDFPtr)
 
-    PathTimeIntegrator(const Properties &props) : Base(props) { }
+    explicit PathLengthIntegrator(const Properties &props) : Base(props) { }
 
     // std::pair<Spectrum, Mask> sample(const Scene *scene,
     //                                  Sampler *sampler,
@@ -128,8 +128,7 @@ public:
         Float emission_weight(1.f);
 
         Spectrum throughput(1.f), result(0.f);
-        // Float pathtime(0.f), wlength(ray.wavelengths);
-        Float pathtime(0.f);
+        Float pathlength(0.f);
 
         // ---------------------- First intersection ----------------------
 
@@ -137,15 +136,14 @@ public:
         Mask valid_ray = si.is_valid();
         EmitterPtr emitter = si.emitter(scene);
 
-        pathtime = select(si.is_valid(), si.t/((Float)3.0e8), 0.f);
-        // pathtime = select(si.is_valid(), si.time, 0.f);
+        pathlength = select(si.is_valid(), si.t, 0.f);
 
         for (int depth = 1;; ++depth) {
-
             // ---------------- Intersection with emitters ----------------
 
             if (any_or<true>(neq(emitter, nullptr)))
-                result[active] += emission_weight * throughput * emitter->eval(si, active);
+                result[active] +=
+                    emission_weight * throughput * emitter->eval(si, active);
 
             active &= si.is_valid();
 
@@ -171,7 +169,8 @@ public:
 
             BSDFContext ctx;
             BSDFPtr bsdf = si.bsdf(ray);
-            Mask active_e = active && has_flag(bsdf->flags(), BSDFFlags::Smooth);
+            Mask active_e =
+                active && has_flag(bsdf->flags(), BSDFFlags::Smooth);
 
             if (likely(any_or<true>(active_e))) {
                 auto [ds, emitter_val] = scene->sample_emitter_direction(
@@ -183,7 +182,8 @@ public:
                 Spectrum bsdf_val = bsdf->eval(ctx, si, wo, active_e);
                 bsdf_val = si.to_world_mueller(bsdf_val, -wo, si.wi);
 
-                // Determine density of sampling that same direction using BSDF sampling
+                // Determine density of sampling that same direction using BSDF
+                // sampling
                 Float bsdf_pdf = bsdf->pdf(ctx, si, wo, active_e);
 
                 Float mis = select(ds.delta, 1.f, mis_weight(ds.pdf, bsdf_pdf));
@@ -193,8 +193,8 @@ public:
             // ----------------------- BSDF sampling ----------------------
 
             // Sample BSDF * cos(theta)
-            auto [bs, bsdf_val] = bsdf->sample(ctx, si, sampler->next_1d(active),
-                                               sampler->next_2d(active), active);
+            auto [bs, bsdf_val] = bsdf->sample(ctx, si,
+                sampler->next_1d(active), sampler->next_2d(active), active);
             bsdf_val = si.to_world_mueller(bsdf_val, -bs.wo, si.wi);
 
             throughput = throughput * bsdf_val;
@@ -216,7 +216,8 @@ public:
 
             if (any_or<true>(neq(emitter, nullptr))) {
                 Float emitter_pdf =
-                    select(neq(emitter, nullptr) && !has_flag(bs.sampled_type, BSDFFlags::Delta),
+                    select(neq(emitter, nullptr) &&
+                        !has_flag(bs.sampled_type, BSDFFlags::Delta),
                            scene->pdf_emitter_direction(si, ds),
                            0.f);
 
@@ -224,72 +225,17 @@ public:
             }
 
             si = std::move(si_bsdf);
-            // t = dist/speed
-            pathtime += select(si.is_valid(), si.t/((Float)3.0e8), 0.f);
-            // perhaps time doesn't work like it should
-            // pathtime += select(si.is_valid(), si.time, 0.f);
-            // std::cout<<pathtime<<std::endl;
+            pathlength += select(si.is_valid(), si.t, 0.f);
         }
 
-        // UnpolarizedSpectrum spec_u = depolarize(result);
-        //
-        // Color3f rgb;
-        // if constexpr (is_monochromatic_v<Spectrum>) {
-        //     rgb = spec_u.x();
-        // } else if constexpr (is_rgb_v<Spectrum>) {
-        //     rgb = spec_u;
-        // } else {
-        //     static_assert(is_spectral_v<Spectrum>);
-        //     /// Note: this assumes that sensor used sample_rgb_spectrum() to generate 'ray.wavelengths'
-        //     auto pdf = pdf_rgb_spectrum(ray.wavelengths);
-        //     spec_u *= select(neq(pdf, 0.f), rcp(pdf), 0.f);
-        //     rgb = xyz_to_srgb(spectrum_to_xyz(spec_u, ray.wavelengths, active));
-        // }
-
-        // Float dt = 0.5e-10;
-        //
-        // // aovs+=50;
-        //
-        // // auto const &rads = result;
-        // for (int i = 0; i < 9; ++i){
-        //     // Spectrum rgb;
-        //     Color3f rgb_v;
-        //     // Point3f rgb;
-        //     // Point1f lo = Float i * dt;
-        //     // Point1f hi = Float i * dt + dt;
-        //     Point1f lo = (Float)i *dt;
-        //     Point1f hi = (Float)i *dt + dt;
-        //     // rgb = rads[active && all(ray.time>=lo && ray.time<hi)];
-        //     // rgb = rads[all(ray.time>=lo && ray.time<hi)];
-        //     // rgb = select(all(ray.time>=lo && ray.time<hi), rads, 0.f);
-        //     rgb_v = select(all(pathtime>=lo && pathtime<hi), result, 0.f);
-        //     // std::cout<<ray.time<<std::endl;
-        //     // rgb = rads
-        //     // std::cout<<i<<std::endl;
-        //     // *aovs++ = rgb_v.r(); *aovs++ = rgb_v.g(); *aovs++ = rgb_v.b();
-        //     // *aovs++ = 0.f; *aovs++ = 0.f; *aovs++ = 0.f;
-        //     // *aovs[6+i] += rgb_v.r(); *aovs[7+i] += rgb_v.g(); *aovs[8+i] += rgb_v.b();
-        //     // *aovs++ = rgb.x(); *aovs++ = rgb.y(); *aovs++ = rgb.z();
-        // }
-
-        // std::cout<<aovs++<<std::endl;
-
-        // return { result, valid_ray };
-        // return { pathtime, valid_ray };
-        // std::pair result2 = {result, pathtime};
-        // std::cout<<result<<std::endl;
-        // return { result, valid_ray, pathtime, wlength};
-        // result should be spectrum: wavelength, power/contribution?
-        return { result, valid_ray, pathtime};
-        // return {{result, valid_ray}, pathtime};
-        // probably better to change the return definition... instead of tuple, do nested pairs.
+        return { result, valid_ray, pathlength};
     }
 
     //! @}
     // =============================================================
 
     std::string to_string() const override {
-        return tfm::format("PathIntegrator[\n"
+        return tfm::format("PathLengthIntegrator[\n"
             "  max_depth = %i,\n"
             "  rr_depth = %i\n"
             "]", m_max_depth, m_rr_depth);
@@ -301,20 +247,12 @@ public:
         return select(pdf_a > 0.f, pdf_a / (pdf_a + pdf_b), 0.f);
     }
 
-    // std::vector<std::string> aov_names() const override {
-    //     std::vector<std::string> result = m_integrator->aov_names();
-    //     for (int i = 0; i < 50; ++i)
-    //         for (int j = 0; j < 3; ++j)
-    //             result.insert(result.begin() + 3*i + j, "S" + std::to_string(i) + "." + ("RGB"[j]));
-    //     return result;
-    // }
-
     MTS_DECLARE_CLASS()
 
 // private:
     // ref<Base> m_integrator;
 };
 
-MTS_IMPLEMENT_CLASS_VARIANT(PathTimeIntegrator, MonteCarloIntegrator)
-MTS_EXPORT_PLUGIN(PathTimeIntegrator, "PathTracerTimeintegrator");
+MTS_IMPLEMENT_CLASS_VARIANT(PathLengthIntegrator, MonteCarloIntegrator)
+MTS_EXPORT_PLUGIN(PathLengthIntegrator, "PathTracerLengthintegrator");
 NAMESPACE_END(mitsuba)

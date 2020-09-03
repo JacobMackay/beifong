@@ -47,12 +47,24 @@ public:
     MTS_IMPORT_BASE(Emitter, m_flags, m_shape, m_medium)
     MTS_IMPORT_TYPES(Scene, Shape, Texture)
 
+    // Constructor?
     AreaLight(const Properties &props) : Base(props) {
         if (props.has_property("to_world"))
             Throw("Found a 'to_world' transformation -- this is not allowed. "
                   "The area light inherits this transformation from its parent "
                   "shape.");
 
+        // if (props.shape!= rectangle)
+            // Throw
+
+        // just focus on rectangle for now
+
+        // a 4d bitmap is useful for wigner, textures & x,y,range,doppler
+        // if i can provide a bitmap texture in 4d, thats great!
+        // textures are usually in uv coordinates
+        // this texture algorithm could be a contribution in itself.
+
+        // This is a 2d(4d) function which is multiplied by incoming ray
         m_radiance = props.texture<Texture>("radiance", Texture::D65(1.f));
 
         m_flags = +EmitterFlags::Surface;
@@ -73,6 +85,7 @@ public:
     std::pair<Ray3f, Spectrum> sample_ray(Float time, Float wavelength_sample,
                                           const Point2f &sample2, const Point2f &sample3,
                                           Mask active) const override {
+          // given time, wavelength, position (s2) and direction (s3)
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointSampleRay, active);
 
         SurfaceInteraction3f si = zero<SurfaceInteraction3f>();
@@ -80,23 +93,77 @@ public:
 
         Float pdf = 1.f;
 
+        // Position and angle are not separable if truly doing quasi Rendering
+        // If doing normal rendering, ys.
+
+        // Need qpdf as well as pdf
+
+        // shape->ft we know the closed form solution
+        // shape->fft like a texture (discreet)
+        // shape->vft continuous
+        // shape->wt
+        // shape->fwt
+        // shape->vwt
+
+        // need to find the difference between m_shape and m_radiance
+
         // 1. Two strategies to sample spatial component based on 'm_radiance'
         if (!m_radiance->is_spatially_varying()) {
             PositionSample3f ps = m_shape->sample_position(time, sample2, active);
 
+            // for tomorrow:
+                // extend shape class to have sample_fourier and sample_wigner
+                // do it for rectangle: we have closed form solutions
+                // https://math.stackexchange.com/questions/440202/definition-of-the-fourier-transform-of-function-on-the-sphere
+                // https://mathoverflow.net/questions/149692/fourier-transform-of-the-unit-sphere
+
+            // m_shape->sample_fourier_direction(time, sample3, wavelength, active) (this is based on ft) (shouldn't need position sample)
+            // don't need joint in traditional case cause they're separable
+            // m_shape->sample_qjoint(time, sample2, sample3, wavelength, active)
+
+            // I can simply make a shape called phased array
+            // it has a base shape and an array of vectors pointing to element centres
+            // OR it has spacing (centre to centre) and number of elements in x and y
+            // also takes a phase offset. either just one, or one for each element
+            // can also take steering angle (theta, phi)
+
+            // there would be some optimisation for rendering disjointed pixels, but I'm not doing that.
+            // just rendering each pixel separately.
+            // but we are sampled over [0,1], maybe can still map that to shapes
+
+            // paper can show that it doesn't REALLY work if taken just in normal space and needs wdf
+
+            // a potential solution to diffraction around edges is at scene compilation time, add a medium or material between things and let the rays interact with that
+            // or add object.ether box, like bounding region. if ray.intersect doesn't hit, the reevaluate with the ether and count that as a hit. what about parallel rays??
+
+            // why does ps position sampple have ps.pdf?
+
+            // When I use 'textures' in the future, that should be in the traditional sense
+
             // Radiance not spatially varying, use area-based sampling of shape
             si = SurfaceInteraction3f(ps, zero<Wavelength>());
+            // outgoing power is spectral weight * pi /pdf (QPI/importance)
             pdf = ps.pdf;
         } else {
             // Ipmortance sample texture
+            // sample2 is [0,1]
+            // need to convert it into world coords
+            // and find the probability for importance sampling
             std::tie(si.uv, pdf) = m_radiance->sample_position(sample2, active);
+            // std::tie(si.uvab, pdf) = m_qradiance->sample_position(sample2, sample3, active);
+            // This is for sampling textures.
+            // Can I do it live?
             active &= neq(pdf, 0.f);
 
+            // is this shifting due to importance?
             si = m_shape->eval_parameterization(Point2f(si.uv), active);
             active &= si.is_valid();
 
             pdf /= norm(cross(si.dp_du, si.dp_dv));
         }
+
+        // So I'd need to create a pos/direc 4d pdf
+        // Wait, I guess pdf is just the probability @ sample2,sample3
 
         // 2. Sample directional component
         Vector3f local = warp::square_to_cosine_hemisphere(sample3);

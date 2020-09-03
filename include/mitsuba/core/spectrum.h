@@ -303,6 +303,7 @@ template <typename Value> Value pdf_rgb_spectrum(const Value &wavelengths) {
 /// Helper function to sample a wavelength (and a weight) given a random number
 template <typename Float, typename Spectrum>
 std::pair<wavelength_t<Spectrum>, Spectrum> sample_wavelength(Float sample) {
+    // std::cout<<sample<<std::endl;
     if constexpr (!is_spectral_v<Spectrum>) {
         ENOKI_MARK_USED(sample);
         // Note: wavelengths should not be used when rendering in RGB mode.

@@ -36,6 +36,7 @@ template <typename T> constexpr auto RecipOverflow   = scalar_t<T>(sizeof(scalar
 template <typename T> constexpr auto Epsilon         = std::numeric_limits<scalar_t<T>>::epsilon() / 2;
 template <typename T> constexpr auto RayEpsilon      = Epsilon<T> * 1500;
 template <typename T> constexpr auto ShadowEpsilon   = RayEpsilon<T> * 10;
+template <typename T> constexpr auto CVac   = scalar_t<T>(299792458.0);
 
 //! @}
 // -----------------------------------------------------------------------

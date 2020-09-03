@@ -173,7 +173,9 @@ public:
                             const Point2f & /*aperture_sample*/, Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointSampleRay, active);
 
+        // std::cout << wavelength_sample <<std::endl;
         auto [wavelengths, wav_weight] = sample_wavelength<Float, Spectrum>(wavelength_sample);
+        // std::cout << wavelengths <<std::endl;
 
         RayDifferential3f ray;
         ray.time = time;
