@@ -109,6 +109,43 @@ public:
     virtual Float pdf_direction(const Interaction3f &it, const DirectionSample3f &ds,
                                 Mask active = true) const;
 
+    /**
+     * \brief Sample an outgoing direction based on the fourier transform on
+     * the surface of this shape.
+     *
+     * The sampling strategy is ideally uniform over the surface, though
+     * implementations are allowed to deviate from a perfectly uniform
+     * distribution as long as this is reflected in the returned probability
+     * density.
+     *
+     * \param time
+     *     The scene time associated with the position sample
+     *
+     * \param sample
+     *     A uniformly distributed 2D point on the domain <tt>[0,1]^2</tt>
+     *
+     * \return
+     *     A \ref FourierSample instance describing the generated sample
+     */
+     // Interesting thought/note. The FT is fraunhofer, perhaps the WT is the
+     // fresnel
+     // Not useful when passing past an edge, they have infinite width. I'll
+     // need something different for that
+    virtual DirectionSample3f sample_fourier(Float time, const Point2f &sample,
+                                             Mask active = true) const;
+
+    /**
+     * \brief Query the probability density of \ref sample_fourier() for
+     * a particular direction of the surface.
+     *
+     * \param ds
+     *     A fourier record describing the sample in question
+     *
+     * \return
+     *     The probability density per unit solid angle
+     */
+    virtual Float pdf_fourier(const DirectionSample3f &ds, Mask active = true) const;
+
     //! @}
     // =============================================================
 

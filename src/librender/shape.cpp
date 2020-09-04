@@ -322,6 +322,51 @@ MTS_VARIANT Float Shape<Float, Spectrum>::pdf_direction(const Interaction3f & /*
     return pdf;
 }
 
+MTS_VARIANT typename Shape<Float, Spectrum>::DirectionSample3f
+Shape<Float, Spectrum>::sample_fourier(Float time, const Point2f &sample,
+                                 Mask active) const {
+    MTS_MASK_ARGUMENT(active);
+
+    // PositionSample3f ps;
+    // ps.p = m_to_world.transform_affine(
+    //     Point3f(sample.x() * 2.f - 1.f, sample.y() * 2.f - 1.f, 0.f));
+    // ps.n    = m_frame.n;
+    // ps.pdf  = m_inv_surface_area;
+    // ps.uv   = sample;
+    // ps.time = time;
+    // ps.delta = false;
+    //
+    // return ps;
+
+    DirectionSample3f ds;
+
+    DirectionSample3f ds(sample_position(it.time, sample, active));
+    ds.d = ds.p - it.p;
+
+    Float dist_squared = squared_norm(ds.d);
+    ds.dist = sqrt(dist_squared);
+    ds.d /= ds.dist;
+
+    Float dp = abs_dot(ds.d, ds.n);
+    ds.pdf *= select(neq(dp, 0.f), dist_squared / dp, 0.f);
+    ds.object = (const Object *) this;
+
+    return ds;
+}
+
+MTS_VARIANT Float Shape<Float, Spectrum>::pdf_direction(const Interaction3f & /*it*/,
+                                                        const DirectionSample3f &ds,
+                                                        Mask active) const {
+    MTS_MASK_ARGUMENT(active);
+
+    Float pdf = pdf_position(ds, active),
+           dp = abs_dot(ds.d, ds.n);
+
+    pdf *= select(neq(dp, 0.f), (ds.dist * ds.dist) / dp, 0.f);
+
+    return pdf;
+}
+
 MTS_VARIANT typename Shape<Float, Spectrum>::PreliminaryIntersection3f
 Shape<Float, Spectrum>::ray_intersect_preliminary(const Ray3f & /*ray*/, Mask /*active*/) const {
     NotImplementedError("ray_intersect_preliminary");

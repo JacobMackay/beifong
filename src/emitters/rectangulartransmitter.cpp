@@ -96,6 +96,9 @@ public:
         // Position and angle are not separable if truly doing quasi Rendering
         // If doing normal rendering, ys.
 
+        // The fallback method for sampling is not appropriate. I need to
+        // sample the 4d space
+
         // Need qpdf as well as pdf
 
         // shape->ft we know the closed form solution
@@ -104,6 +107,8 @@ public:
         // shape->wt
         // shape->fwt
         // shape->vwt
+
+        // Basically I need to generate the 'sensitivity profile'.
 
         // need to find the difference between m_shape and m_radiance
 
@@ -167,6 +172,15 @@ public:
 
         // 2. Sample directional component
         Vector3f local = warp::square_to_cosine_hemisphere(sample3);
+
+        // Gives us uniform distribution of unit vectors.
+        // m_radiance IS directionally varying!
+
+        // Perhaps I should follow 'spot' more closely which doesn't have an
+        // area, but has angular distribution.
+
+        // ds can be instantiated using a ps. Can I do it with an fs?
+
         // Change this. Take vertices of shape and compute ft.
         // Then importance sample new shape.
 
@@ -224,6 +238,7 @@ public:
 
             Float dp = dot(ds.d, ds.n);
             active &= dp < 0;
+            // the pdf is the pdf at a point in space, not direction
             ds.pdf = select(active, pdf / norm(cross(si.dp_du, si.dp_dv)) *
                                         dist_squared / -dp, 0.f);
 

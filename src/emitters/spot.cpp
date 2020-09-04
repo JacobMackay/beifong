@@ -136,6 +136,8 @@ public:
                 unpolarized<Spectrum>(falloff_spec / pdf_dir) };
     }
 
+// Because we want to importance sample, we don't provide a sample, but choose
+// it ourselves. Is this true....
     std::pair<DirectionSample3f, Spectrum> sample_direction(const Interaction3f &it,
                                                             const Point2f &/*sample*/,
                                                             Mask active) const override {
