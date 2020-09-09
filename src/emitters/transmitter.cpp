@@ -1,10 +1,13 @@
-#include <mitsuba/core/properties.h>
-#include <mitsuba/core/warp.h>
-#include <mitsuba/core/spectrum.h>
-#include <mitsuba/render/emitter.h>
-#include <mitsuba/render/medium.h>
-#include <mitsuba/render/shape.h>
-#include <mitsuba/render/texture.h>
+/* For copyright see the LICENSE.txt file by mitsuba 2. Changes made here by
+Jacob Mackay should be free */
+
+#include "../../include/mitsuba/core/properties.h"
+#include "../../include/mitsuba/core/warp.h"
+#include "../../include/mitsuba/core/spectrum.h"
+#include "../../include/mitsuba/render/emitter.h"
+#include "../../include/mitsuba/render/medium.h"
+#include "../../include/mitsuba/render/shape.h"
+#include "../../include/mitsuba/render/texture.h"
 
 NAMESPACE_BEGIN(mitsuba)
 /**!
@@ -41,35 +44,78 @@ emitter shape and specify an :monosp:`area` instance as its child:
 
  */
 
-  // angular profile: default Diffuse
-  // else fourier
-  // else wdf....but this would require a backend chane.something like mts
-  // variant.
-  // rgb, spectral, mono, wigner, narrowband
-
-  // Attach to a shape.
-  // if shape = rectangle
-  // else if shape = circle
-  // elseif poly
-
 template <typename Float, typename Spectrum>
-class AreaLight final : public Emitter<Float, Spectrum> {
-public:
-    MTS_IMPORT_BASE(Emitter, m_flags, m_shape, m_medium)
-    MTS_IMPORT_TYPES(Scene, Shape, Texture)
+class Transmitter final : public Emitter<Float, Spectrum> {
+ public:
+     MTS_IMPORT_BASE(Emitter, m_flags, m_shape, m_medium)
+     MTS_IMPORT_TYPES(Scene, Shape, Texture)
 
-    AreaLight(const Properties &props) : Base(props) {
-        if (props.has_property("to_world"))
-            Throw("Found a 'to_world' transformation -- this is not allowed. "
+     // Constructor
+     Transmitter(const Properties &props) : Base(props) {
+         if (props.has_property("to_world")) {
+             Throw("Found a 'to_world' transformation -- this is not allowed. "
                   "The area light inherits this transformation from its parent "
                   "shape.");
+              }
 
+        // a 4d bitmap is useful for wigner, textures & x,y,range,doppler
+        // if i can provide a bitmap texture in 4d, thats great!
+        // textures are usually in uv coordinates
+        // this texture algorithm could be a contribution in itself.
+
+        // This is a 2d(4d) function which is multiplied by incoming ray
+
+        // D65(scale)
+        // When given a float, makes a uniform texture of float, otherwise
+        // default value of d65, or whatever is specified by "radiance"
+
+        // W/sr/m^2
         m_radiance = props.texture<Texture>("radiance", Texture::D65(1.f));
+
+        m_ele_fov = props.float_("fov_elevation", 90.0f);
+        m_azi_fov = props.float_("fov_azimuth", 90.0f);
+
+        // Default to 94 GHz antenna centre frequency
+        m_centre_frequency = props.float_("antenna_centre_freq", 94E9);
+
+        // TODO(Jacob): Automatically calculate SWR bandwidth based on...
+        // VSWR bandwidth, resonance bandwidth, Q factor, many things
+        // For now just guess for 94GHz + 6GHz classic mmw radar.
+        m_antenna_bandwidth = props.float_("antenna_bandwidth", 10E9);
+
+        // Can be a float, a spectrum, or a texture
+        // TODO(Jacob): replace D65 with either uniform or a tapered bandwidth
+        m_power = props.texture<Texture>("power", Texture::D65(1.f));
+
+        // should there be class antenna? That has tx and rx? or is that more
+        // difficult?
+        // emitter should be able to get a child object which is signal
+        // m_tsignal: u(t), as list of 2 elelents
+        // m_fsignal: u(f), as list of 2 elements
+        // m_tfsignal: u(t,f), as list of 3 elements
+        // m_power
+        // m_frequency
+        // m_units: 'voltage', 'power'
+        // for now, just accept m_power and (m_frequency)-->(m_wavelength)
+
+        // either specify a float for power (uniform), a given spectra,
+        // or centre antenna resonance frequency and bandwidth
+        // m_radiance = props.texture<Texture>("power",
+        // Texture::resonance_bandwidth(1.f, f_centre, f_bw));
+
+        // radiance(u,v,lambda)
+        // What would be better here would be to specify the antenna bandwidth
 
         m_flags = +EmitterFlags::Surface;
         if (m_radiance->is_spatially_varying())
             m_flags |= +EmitterFlags::SpatiallyVarying;
     }
+
+    // The shapes should implement a 'falloff curve' based on their ft.
+    // return{ Ray3f(trafo.translation(), trafo * local_dir, time, wavelengths),
+    //         unpolarized<Spectrum>(falloff_spec / pdf_dir) };
+    // pdf should somehow be sampled propto ft so that importance sampling can
+    // occur. Spotlight has uniform directional sampling i think.
 
     Spectrum eval(const SurfaceInteraction3f &si, Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointEvaluate, active);
@@ -84,6 +130,7 @@ public:
     std::pair<Ray3f, Spectrum> sample_ray(Float time, Float wavelength_sample,
                                           const Point2f &sample2, const Point2f &sample3,
                                           Mask active) const override {
+          // given time, wavelength, position (s2) and direction (s3)
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointSampleRay, active);
 
         SurfaceInteraction3f si = zero<SurfaceInteraction3f>();
@@ -91,26 +138,94 @@ public:
 
         Float pdf = 1.f;
 
+        // Position and angle are not separable if truly doing quasi Rendering
+        // If doing normal rendering, ys.
+
+        // The fallback method for sampling is not appropriate. I need to
+        // sample the 4d space
+
+        // Need qpdf as well as pdf
+
+        // shape->ft we know the closed form solution
+        // shape->fft like a texture (discreet)
+        // shape->vft continuous
+        // shape->wt
+        // shape->fwt
+        // shape->vwt
+
+        // Basically I need to generate the 'sensitivity profile'.
+
+        // need to find the difference between m_shape and m_radiance
+
         // 1. Two strategies to sample spatial component based on 'm_radiance'
         if (!m_radiance->is_spatially_varying()) {
             PositionSample3f ps = m_shape->sample_position(time, sample2, active);
 
+            // for tomorrow:
+                // extend shape class to have sample_fourier and sample_wigner
+                // do it for rectangle: we have closed form solutions
+                // https://math.stackexchange.com/questions/440202/definition-of-the-fourier-transform-of-function-on-the-sphere
+                // https://mathoverflow.net/questions/149692/fourier-transform-of-the-unit-sphere
+
+            // m_shape->sample_fourier_direction(time, sample3, wavelength, active) (this is based on ft) (shouldn't need position sample)
+            // don't need joint in traditional case cause they're separable
+            // m_shape->sample_qjoint(time, sample2, sample3, wavelength, active)
+
+            // I can simply make a shape called phased array
+            // it has a base shape and an array of vectors pointing to element centres
+            // OR it has spacing (centre to centre) and number of elements in x and y
+            // also takes a phase offset. either just one, or one for each element
+            // can also take steering angle (theta, phi)
+
+            // there would be some optimisation for rendering disjointed pixels, but I'm not doing that.
+            // just rendering each pixel separately.
+            // but we are sampled over [0,1], maybe can still map that to shapes
+
+            // paper can show that it doesn't REALLY work if taken just in normal space and needs wdf
+
+            // a potential solution to diffraction around edges is at scene compilation time, add a medium or material between things and let the rays interact with that
+            // or add object.ether box, like bounding region. if ray.intersect doesn't hit, the reevaluate with the ether and count that as a hit. what about parallel rays??
+
+            // why does ps position sampple have ps.pdf?
+
+            // When I use 'textures' in the future, that should be in the traditional sense
+
             // Radiance not spatially varying, use area-based sampling of shape
             si = SurfaceInteraction3f(ps, zero<Wavelength>());
+            // outgoing power is spectral weight * pi /pdf (QPI/importance)
             pdf = ps.pdf;
         } else {
             // Ipmortance sample texture
+            // sample2 is [0,1]
+            // need to convert it into world coords
+            // and find the probability for importance sampling
             std::tie(si.uv, pdf) = m_radiance->sample_position(sample2, active);
+            // std::tie(si.uvab, pdf) = m_qradiance->sample_position(sample2, sample3, active);
+            // This is for sampling textures.
+            // Can I do it live?
             active &= neq(pdf, 0.f);
 
+            // is this shifting due to importance?
             si = m_shape->eval_parameterization(Point2f(si.uv), active);
             active &= si.is_valid();
 
             pdf /= norm(cross(si.dp_du, si.dp_dv));
         }
 
+        // So I'd need to create a pos/direc 4d pdf
+        // Wait, I guess pdf is just the probability @ sample2,sample3
+
         // 2. Sample directional component
         Vector3f local = warp::square_to_cosine_hemisphere(sample3);
+
+        // Gives us uniform distribution of unit vectors.
+        // m_radiance IS directionally varying!
+
+        // Perhaps I should follow 'spot' more closely which doesn't have an
+        // area, but has angular distribution.
+
+        // ds can be instantiated using a ps. Can I do it with an fs?
+
         // Change this. Take vertices of shape and compute ft.
         // Then importance sample new shape.
 
@@ -168,6 +283,7 @@ public:
 
             Float dp = dot(ds.d, ds.n);
             active &= dp < 0;
+            // the pdf is the pdf at a point in space, not direction
             ds.pdf = select(active, pdf / norm(cross(si.dp_du, si.dp_dv)) *
                                         dist_squared / -dp, 0.f);
 
@@ -220,7 +336,10 @@ public:
     }
 
     MTS_DECLARE_CLASS()
-private:
+
+ private:
+    // ref<Texture> m_radiance;
+    spectrum m_power;
     ref<Texture> m_radiance;
 };
 
