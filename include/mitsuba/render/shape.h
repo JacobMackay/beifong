@@ -109,42 +109,53 @@ public:
     virtual Float pdf_direction(const Interaction3f &it, const DirectionSample3f &ds,
                                 Mask active = true) const;
 
-    /**
-     * \brief Sample an outgoing direction based on the fourier transform on
-     * the surface of this shape.
-     *
-     * The sampling strategy is ideally uniform over the surface, though
-     * implementations are allowed to deviate from a perfectly uniform
-     * distribution as long as this is reflected in the returned probability
-     * density.
-     *
-     * \param time
-     *     The scene time associated with the position sample
-     *
-     * \param sample
-     *     A uniformly distributed 2D point on the domain <tt>[0,1]^2</tt>
-     *
-     * \return
-     *     A \ref FourierSample instance describing the generated sample
-     */
-     // Interesting thought/note. The FT is fraunhofer, perhaps the WT is the
-     // fresnel
-     // Not useful when passing past an edge, they have infinite width. I'll
-     // need something different for that
-    virtual DirectionSample3f sample_fourier(Float time, const Point2f &sample,
-                                             Mask active = true) const;
-
-    /**
-     * \brief Query the probability density of \ref sample_fourier() for
-     * a particular direction of the surface.
-     *
-     * \param ds
-     *     A fourier record describing the sample in question
-     *
-     * \return
-     *     The probability density per unit solid angle
-     */
-    virtual Float pdf_fourier(const DirectionSample3f &ds, Mask active = true) const;
+    // // If FT is fraunhofer, is WT fresnel?
+    // // This function should behave like sample direction, but include fourier
+    // // effects, ie not ideally uniform solid angle density.
+    // /**
+    //  * \brief Sample a direction towards this shape with respect to solid
+    //  * angles measured at a reference position within the scene
+    //  *
+    //  * An ideal implementation of this interface would achieve a uniform solid
+    //  * angle density within the surface region that is visible from the
+    //  * reference position <tt>it.p</tt> (though such an ideal implementation
+    //  * is usually neither feasible nor advisable due to poor efficiency).
+    //  *
+    //  * The function returns the sampled position and the inverse probability
+    //  * per unit solid angle associated with the sample.
+    //  *
+    //  * When the Shape subclass does not supply a custom implementation of this
+    //  * function, the \ref Shape class reverts to a fallback approach that
+    //  * piggybacks on \ref sample_position(). This will generally lead to a
+    //  * suboptimal sample placement and higher variance in Monte Carlo
+    //  * estimators using the samples.
+    //  *
+    //  * \param it
+    //  *    A reference position somewhere within the scene.
+    //  *
+    //  * \param sample
+    //  *     A uniformly distributed 2D point on the domain <tt>[0,1]^2</tt>
+    //  *
+    //  * \return
+    //  *     A \ref DirectionSample instance describing the generated sample
+    //  */
+    // virtual DirectionSample3f sample_fourier(const Interaction3f &it, const Point2f &sample,
+    //                                            Mask active = true) const;
+    //
+    // /**
+    //  * \brief Query the probability density of \ref sample_direction()
+    //  *
+    //  * \param it
+    //  *    A reference position somewhere within the scene.
+    //  *
+    //  * \param ps
+    //  *     A position record describing the sample in question
+    //  *
+    //  * \return
+    //  *     The probability density per unit solid angle
+    //  */
+    // virtual Float pdf_fourier(const Interaction3f &it, const DirectionSample3f &ds,
+    //                             Mask active = true) const;
 
     //! @}
     // =============================================================
@@ -276,6 +287,21 @@ public:
      * The default implementation throws an exception.
      */
     virtual ScalarFloat surface_area() const;
+
+    /**
+     * \brief Return the shape's fourier transform.
+     *
+     * The function assumes that the object is not undergoing
+     * some kind of time-dependent scaling. Given a local direction and
+     * wavelength, return the ft.
+     *
+     * \param local_vect
+     * \param wavelengths
+     *
+     * The default implementation throws an exception.
+     */
+    virtual UnpolarizedSpectrum fourier_weight(const Vector3f &local_vect,
+        Wavelength wavelengths) const;
 
     /**
      * \brief Evaluate a specific shape attribute at the given surface interaction.

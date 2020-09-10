@@ -104,6 +104,11 @@ public:
         return norm(cross(m_frame.s, m_frame.t));
     }
 
+    UnpolarizedSpectrum fourier_weight(const Vector3f &local_vect,
+        Wavelength wavelengths) const override {
+            // Really should be wavevectors
+    }
+
     // =============================================================
     //! @{ \name Sampling routines
     // =============================================================
