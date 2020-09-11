@@ -5,6 +5,7 @@
 #include <mitsuba/core/traits.h>
 #include <cmath>
 #include <algorithm>
+#include <complex>
 
 NAMESPACE_BEGIN(mitsuba)
 NAMESPACE_BEGIN(math)

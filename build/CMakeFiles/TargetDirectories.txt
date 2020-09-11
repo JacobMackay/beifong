@@ -278,11 +278,13 @@
 /home/jacobacfr/src/beifong/build/src/emitters/CMakeFiles/projector.dir
 /home/jacobacfr/src/beifong/build/src/emitters/CMakeFiles/area-obj.dir
 /home/jacobacfr/src/beifong/build/src/emitters/CMakeFiles/point.dir
+/home/jacobacfr/src/beifong/build/src/emitters/CMakeFiles/pointtransmitter.dir
 /home/jacobacfr/src/beifong/build/src/emitters/CMakeFiles/envmap.dir
 /home/jacobacfr/src/beifong/build/src/emitters/CMakeFiles/area.dir
 /home/jacobacfr/src/beifong/build/src/emitters/CMakeFiles/spot.dir
 /home/jacobacfr/src/beifong/build/src/emitters/CMakeFiles/transmitter.dir
 /home/jacobacfr/src/beifong/build/src/emitters/CMakeFiles/point-obj.dir
+/home/jacobacfr/src/beifong/build/src/emitters/CMakeFiles/pointtransmitter-obj.dir
 /home/jacobacfr/src/beifong/build/src/emitters/CMakeFiles/constant-obj.dir
 /home/jacobacfr/src/beifong/build/src/emitters/CMakeFiles/envmap-obj.dir
 /home/jacobacfr/src/beifong/build/src/emitters/CMakeFiles/projector-obj.dir

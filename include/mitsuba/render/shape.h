@@ -450,6 +450,9 @@ public:
      */
     virtual ScalarSize effective_primitive_count() const;
 
+    // return the world transform of the shape
+    const Transform4f to_world() {return m_to_world;}
+
 
 #if defined(MTS_ENABLE_EMBREE)
     /// Return the Embree version of this shape

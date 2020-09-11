@@ -402,13 +402,20 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // float freq = 94E9;
       // float lambda = math::CVac/freq;
 
-      aovs[0] = xyz.x();
+      // aovs[0] = xyz.x();
+
       // aovs[1] = lambda;
       // aovs[1] = select(std::get<1>(result), Float(1.f), Float(0.f));
       // aovs[1] = xyz.y();
       // aovs[2] = xyz.z();
       // aovs[3] = select(std::get<1>(result), Float(1.f), Float(0.f));
       // aovs[4] = 1.f;
+
+      aovs[0] = xyz.x();
+      aovs[1] = xyz.y();
+      aovs[2] = xyz.z();
+      aovs[3] = select(std::get<1>(result), Float(1.f), Float(0.f));
+      aovs[4] = 1.f;
 
       block->put(position_sample, aovs, active);
       // block->put(position_sample, time_bin (as a fraction of the span), frequency_bin, aovs, active);

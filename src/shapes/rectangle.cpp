@@ -78,6 +78,7 @@ public:
 
         update();
         set_children();
+        // std::cout << props << std::endl;
     }
 
     void update() {
@@ -107,6 +108,46 @@ public:
     UnpolarizedSpectrum fourier_weight(const Vector3f &local_vect,
         Wavelength wavelengths) const override {
             // Really should be wavevectors
+            // 2.0f / (I * q_parr^2) * q_x
+            //
+            // std::cout << props << std::endl;
+
+            // float width_x = m_frame.s;
+            // float width_y = m_frame.t;
+
+            //
+            // std::cout << m_frame.s << m_frame.t << m_frame.n << std::endl;
+
+            // Coord system in world is like x, y, z
+
+            Array<Vector3f, 5> vertices;
+            vertices[0] = m_frame.to_local(
+                m_to_world.transform_affine(ScalarPoint3f(-1.f, -1.f, 0.f)));
+            vertices[1] = m_frame.to_local(
+                m_to_world.transform_affine(ScalarPoint3f(1.f, -1.f, 0.f)));
+            vertices[2] = m_frame.to_local(
+                m_to_world.transform_affine(ScalarPoint3f(-1.f, 1.f, 0.f)));
+            vertices[3] = m_frame.to_local(
+                m_to_world.transform_affine(ScalarPoint3f(-1.f, 1.f, 0.f)));
+            vertices[4] = vertices[0];
+
+            Array<Vector3f, 4> E_vert;
+            Array<Vector3f, 4> R_vert;
+
+            for (int i = 1; i < 5; ++i) {
+                E_vert[0] = (vertices[i] - vertices[i-1])/2.f;  // diff
+                R_vert[0] = (vertices[i] + vertices[i-1])/2.f;  // mean
+            }
+
+            // Float v_perp = dot(local_vect, m_frame.n);
+            Vector3f v_perp = dot(local_vect, m_frame.n)*Vector3f(m_frame.n);
+
+
+            std::cout << v_perp << std::endl;
+
+            // Vector3f vertices =
+
+            return 1.f;
     }
 
     // =============================================================
