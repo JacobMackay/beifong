@@ -120,6 +120,18 @@ public:
 
             // Coord system in world is like x, y, z
 
+            // It would be good to be able to provide array of vectors and
+            // evaluate them in parallel
+            // Return should be a list of n wavelengths wide, m localvectors
+            // long weights
+
+            // Wavevector q
+            // if is constexpr spectral
+            Array<Vector3f, 4> q = local_vect;
+            for (int i = 0; i < 4; ++i) {
+                q[i] /= wavelengths[i];
+            }
+
             Array<Vector3f, 5> vertices;
             vertices[0] = m_frame.to_local(
                 m_to_world.transform_affine(ScalarPoint3f(-1.f, -1.f, 0.f)));
@@ -134,16 +146,25 @@ public:
             Array<Vector3f, 4> E_vert;
             Array<Vector3f, 4> R_vert;
 
+            // Create the simple polygonal vertex chain
             for (int i = 1; i < 5; ++i) {
                 E_vert[0] = (vertices[i] - vertices[i-1])/2.f;  // diff
                 R_vert[0] = (vertices[i] + vertices[i-1])/2.f;  // mean
             }
 
-            // Float v_perp = dot(local_vect, m_frame.n);
-            Vector3f v_perp = dot(local_vect, m_frame.n)*Vector3f(m_frame.n);
+            // Find the components of the wavevector compared to the surface
+            Vector3f q_perp = dot(q, m_frame.n)*Vector3f(m_frame.n);
+            Vector3f q_parr = q - q_perp;
+            Vector3f q_crss = cross(m_frame.n, q_parr);
+
+            // Array<Vector3f, 4> E_vert;
+            //
+            // UnpolarizedSpectrum result;
 
 
-            std::cout << v_perp << std::endl;
+
+
+            // std::cout << q_perp << std::endl;
 
             // Vector3f vertices =
 
