@@ -245,8 +245,8 @@ public:
         Vector3f nu_hat_local = ws.d;
 
         // Vector3f nu_hat_local = m_frame.to_local(ws.d);
-        Float k_x = k_0*nu_hat_local.x();
-        Float k_y = k_0*nu_hat_local.y();
+        Float k_x = k_0*nu_hat_local.y();
+        Float k_y = k_0*nu_hat_local.z();
         // Point3f p_local = m_to_object.transform_affine(ws.p);
         // Vector3f p_local = m_frame.to_local(ws.p);
 
@@ -321,13 +321,17 @@ public:
             // std::cout << abs(p_local.x()) << std::endl;
             // std::cout << abs(ws.p.x()) << std::endl;
         //
-        Float g_angle = math::tri(p_local.x()/wid_x) *
+        Float g_angle1 = math::tri(p_local.x()/wid_x) *
             math::tri(p_local.y()/wid_y);
-        // Float g_angle = trix*triy;
+
+        // This should introduce regions of negative radiance.
+        Float g_angle2 = math::sinc(k_x * wid_x * math::tri(p_local.x()/wid_x))
+                    * math::sinc(k_y * wid_y * math::tri(p_local.y()/wid_y));
 
         // Float w_val = g_static;
-        // Float w_val = g_angle;
-        Float w_val = g_static * g_angle;
+        // Float w_val = g_angle1;
+        // Float w_val = g_angle2;
+        Float w_val = g_static * g_angle1 * g_angle2;
 
         ws.pdf = rcp(w_val);
 

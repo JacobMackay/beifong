@@ -13,11 +13,13 @@
 NAMESPACE_BEGIN(mitsuba)
 
 #if !defined(MTS_WAVELENGTH_MIN)
-#  define MTS_WAVELENGTH_MIN 360.f
+// #  define MTS_WAVELENGTH_MIN 360.f
+#  define MTS_WAVELENGTH_MIN 3191387.f
 #endif
 
 #if !defined(MTS_WAVELENGTH_MAX)
-#  define MTS_WAVELENGTH_MAX 830.f
+// #  define MTS_WAVELENGTH_MAX 830.f
+#  define MTS_WAVELENGTH_MAX 3191591.f
 #endif
 
 // =======================================================================
@@ -56,6 +58,7 @@ struct Color : enoki::StaticArrayImpl<Value_, Size_, false, Color<Value_, Size_>
 //! @{ \name Data types for spectral quantities with sampled wavelengths
 // =======================================================================
 
+// Is this where I choose how many samples??
 template <typename Value_, size_t Size_ = 4>
 struct Spectrum : enoki::StaticArrayImpl<Value_, Size_, false, Spectrum<Value_, Size_>> {
     using Base = enoki::StaticArrayImpl<Value_, Size_, false, Spectrum<Value_, Size_>>;
@@ -124,8 +127,11 @@ struct Spectrum<enoki::detail::MaskedArray<Value_>, Size_>
 //! @}
 // =======================================================================
 
-#define MTS_CIE_MIN           360.f
-#define MTS_CIE_MAX           830.f
+// #define MTS_CIE_MIN           360.f
+// #define MTS_CIE_MAX           830.f
+// #define MTS_CIE_SAMPLES       95
+#define MTS_CIE_MIN           3191387.f
+#define MTS_CIE_MAX           3191591.f
 #define MTS_CIE_SAMPLES       95
 
 /* Scaling the CIE curves by the following constant ensures that

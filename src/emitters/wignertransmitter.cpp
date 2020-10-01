@@ -194,7 +194,7 @@ public:
         // );
         return std::make_pair(
             Ray3f(ws.p, ws.d, ws.time, wavelength),
-            select(ws.pdf>math::Epsilon<Float>, unpolarized<Spectrum>(spec_weight) / ws.pdf, 0.f)
+            select(abs(ws.pdf)>math::Epsilon<Float>, unpolarized<Spectrum>(spec_weight) / ws.pdf, 0.f)
         );
     }
 
@@ -292,7 +292,7 @@ public:
 
         // return { ds, unpolarized<Spectrum>(spec) & active };
         // return { ws, unpolarized<Spectrum>(spec) & active };
-        return { ws, select(ws.pdf>math::Epsilon<Float>, unpolarized<Spectrum>(spec) & active, 0.f) };
+        return { ws, select(abs(ws.pdf)>math::Epsilon<Float>, unpolarized<Spectrum>(spec) & active, 0.f) };
     }
 
     Float pdf_direction(const Interaction3f &it, const DirectionSample3f &ds,
@@ -320,10 +320,10 @@ public:
         DirectionSample3f ws = m_shape->sample_wigner(ds2, it.wavelengths, active);
 
         // value *= ws.pdf;
-        // value = 1;
-        value = ws.pdf;
+        value = 1;
+        // value = abs(ws.pdf);
 
-        active &= ws.pdf > math::Epsilon<Float>;
+        active &= abs(ws.pdf) > math::Epsilon<Float>;
 
         return select(active, value, 0.f);
     }

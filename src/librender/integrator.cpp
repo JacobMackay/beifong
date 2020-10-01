@@ -308,8 +308,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
           xyz = srgb_to_xyz(spec_u, active);
       } else {
           static_assert(is_spectral_v<Spectrum>);
-          // xyz = spectrum_to_xyz(spec_u, ray.wavelengths, active);
-          xyz = spec_u.x();
+          xyz = spectrum_to_xyz(spec_u, ray.wavelengths, active);
+          // xyz = spec_u.x();
           // std::cout<<xyz<<std::endl;
       }
       // if constexpr (is_wigner_v<Spectrum>){}
