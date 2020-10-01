@@ -1,9 +1,9 @@
 Performing C++ SOURCE FILE Test __CxxFlag__fno_keep_static_consts failed with the following output:
-Change Dir: /home/jacobacfr/src/beifong/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jacob/src/beifong/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_4229d && [1/2] Building CXX object CMakeFiles/cmTC_4229d.dir/src.cxx.o
-FAILED: CMakeFiles/cmTC_4229d.dir/src.cxx.o 
-/usr/bin/clang++-10    -stdlib=libc++ -D_LIBCPP_VERSION -Wno-inconsistent-missing-override -Wno-undefined-inline -D__CxxFlag__fno_keep_static_consts   -fno-keep-static-consts -o CMakeFiles/cmTC_4229d.dir/src.cxx.o -c src.cxx
+Run Build Command(s):/usr/bin/ninja cmTC_f78a3 && [1/2] Building CXX object CMakeFiles/cmTC_f78a3.dir/src.cxx.o
+FAILED: CMakeFiles/cmTC_f78a3.dir/src.cxx.o 
+/usr/bin/clang++-10    -stdlib=libc++ -D_LIBCPP_VERSION -Wno-inconsistent-missing-override -Wno-undefined-inline -D__CxxFlag__fno_keep_static_consts   -fno-keep-static-consts -o CMakeFiles/cmTC_f78a3.dir/src.cxx.o -c src.cxx
 clang: error: unknown argument: '-fno-keep-static-consts'
 ninja: build stopped: subcommand failed.
 

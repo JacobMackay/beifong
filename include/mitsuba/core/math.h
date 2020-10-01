@@ -58,6 +58,22 @@ Vector<Value, 3> sphdir(const T &theta, const T &phi) {
     );
 }
 
+// -----------------------------------------------------------------------
+//! @{ \name Jacob functions
+// -----------------------------------------------------------------------
+
+/// Sinc function basic. Sin(x)/x
+template <typename T, typename Value = expr_t<T>>
+Value sinc(const T &x) {
+    return select(x <= Epsilon<T>, sin(x)/x, 1.f);
+}
+
+/// Triangular function, base length 1.
+template <typename T, typename Value = expr_t<T>>
+Value tri(const T &x) {
+    return select(abs(x) < 0.5, 1.0 - 2.0*abs(x), x*0.f);
+}
+
 //! @}
 // -----------------------------------------------------------------------
 

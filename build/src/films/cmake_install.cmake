@@ -1,4 +1,4 @@
-# Install script for directory: /home/jacobacfr/src/beifong/src/films
+# Install script for directory: /home/jacob/src/beifong/src/films
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

@@ -377,10 +377,21 @@ Shape<Float, Spectrum>::surface_area() const {
     NotImplementedError("surface_area");
 }
 
-MTS_VARIANT typename Shape<Float, Spectrum>::UnpolarizedSpectrum
-Shape<Float, Spectrum>::fourier_weight(const Vector3f &local_vect,
-                                                Wavelength wavelengths) const {
-    NotImplementedError("fourier_weight");
+// MTS_VARIANT typename Shape<Float, Spectrum>::UnpolarizedSpectrum
+// Shape<Float, Spectrum>::fourier_weight(const Vector3f &local_vect,
+//                                                 Wavelength wavelengths) const {
+//     NotImplementedError("fourier_weight");
+//     // At a given input/output direction and wavelength, what is the weight?
+//     // The datatype is inherently a surface interaction I think.
+// }
+
+// MTS_VARIANT typename Shape<Float, Spectrum>::DirectionSample3f
+// Shape<Float, Spectrum>::sample_wigner(const DirectionSample3f &ds, Wavelength wavelength,
+//                                          Mask active) const {
+MTS_VARIANT typename Shape<Float, Spectrum>::DirectionSample3f
+Shape<Float, Spectrum>::sample_wigner(const DirectionSample3f & /*ds*/, Wavelength /*wavelength*/,
+                                         Mask /*active*/) const {
+    NotImplementedError("sample_wigner");
     // At a given input/output direction and wavelength, what is the weight?
     // The datatype is inherently a surface interaction I think.
 }

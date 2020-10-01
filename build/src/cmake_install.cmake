@@ -1,4 +1,4 @@
-# Install script for directory: /home/jacobacfr/src/beifong/src
+# Install script for directory: /home/jacob/src/beifong/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,22 +39,22 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/jacobacfr/src/beifong/build/src/libcore/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/src/librender/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/src/mitsuba/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/src/bsdfs/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/src/emitters/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/src/films/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/src/integrators/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/src/media/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/src/phase/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/src/rfilters/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/src/samplers/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/src/sensors/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/src/shapes/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/src/spectra/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/src/textures/cmake_install.cmake")
-  include("/home/jacobacfr/src/beifong/build/src/python/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/libcore/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/librender/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/mitsuba/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/bsdfs/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/emitters/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/films/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/integrators/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/media/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/phase/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/rfilters/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/samplers/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/sensors/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/shapes/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/spectra/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/textures/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/python/cmake_install.cmake")
 
 endif()
 

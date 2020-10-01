@@ -157,6 +157,8 @@ public:
     // virtual Float pdf_fourier(const Interaction3f &it, const DirectionSample3f &ds,
     //                             Mask active = true) const;
 
+    virtual DirectionSample3f sample_wigner(const DirectionSample3f &ds, Wavelength wavelength, Mask active = true) const;
+
     //! @}
     // =============================================================
 
@@ -300,8 +302,8 @@ public:
      *
      * The default implementation throws an exception.
      */
-    virtual UnpolarizedSpectrum fourier_weight(const Vector3f &local_vect,
-        Wavelength wavelengths) const;
+    // virtual UnpolarizedSpectrum fourier_weight(const Vector3f &local_vect,
+    //     Wavelength wavelengths) const;
 
     /**
      * \brief Evaluate a specific shape attribute at the given surface interaction.

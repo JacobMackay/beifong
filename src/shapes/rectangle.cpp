@@ -105,71 +105,71 @@ public:
         return norm(cross(m_frame.s, m_frame.t));
     }
 
-    UnpolarizedSpectrum fourier_weight(const Vector3f &local_vect,
-        Wavelength wavelengths) const override {
-            // Really should be wavevectors
-            // 2.0f / (I * q_parr^2) * q_x
-            //
-            // std::cout << props << std::endl;
-
-            // float width_x = m_frame.s;
-            // float width_y = m_frame.t;
-
-            //
-            // std::cout << m_frame.s << m_frame.t << m_frame.n << std::endl;
-
-            // Coord system in world is like x, y, z
-
-            // It would be good to be able to provide array of vectors and
-            // evaluate them in parallel
-            // Return should be a list of n wavelengths wide, m localvectors
-            // long weights
-
-            // Wavevector q
-            // if is constexpr spectral
-            Array<Vector3f, 4> q = local_vect;
-            for (int i = 0; i < 4; ++i) {
-                q[i] /= wavelengths[i];
-            }
-
-            Array<Vector3f, 5> vertices;
-            vertices[0] = m_frame.to_local(
-                m_to_world.transform_affine(ScalarPoint3f(-1.f, -1.f, 0.f)));
-            vertices[1] = m_frame.to_local(
-                m_to_world.transform_affine(ScalarPoint3f(1.f, -1.f, 0.f)));
-            vertices[2] = m_frame.to_local(
-                m_to_world.transform_affine(ScalarPoint3f(-1.f, 1.f, 0.f)));
-            vertices[3] = m_frame.to_local(
-                m_to_world.transform_affine(ScalarPoint3f(-1.f, 1.f, 0.f)));
-            vertices[4] = vertices[0];
-
-            Array<Vector3f, 4> E_vert;
-            Array<Vector3f, 4> R_vert;
-
-            // Create the simple polygonal vertex chain
-            for (int i = 1; i < 5; ++i) {
-                E_vert[0] = (vertices[i] - vertices[i-1])/2.f;  // diff
-                R_vert[0] = (vertices[i] + vertices[i-1])/2.f;  // mean
-            }
-
-            // Find the components of the wavevector compared to the surface
-            Vector3f q_perp = dot(q, m_frame.n)*Vector3f(m_frame.n);
-            Vector3f q_parr = q - q_perp;
-            Vector3f q_crss = cross(m_frame.n, q_parr);
-
-            // Array<Vector3f, 4> E_vert;
-            //
-            // UnpolarizedSpectrum result;
-
-
-
-
-            // std::cout << q_perp << std::endl;
-
-            // Vector3f vertices =
-
-            return 1.f;
-    }
+    // UnpolarizedSpectrum fourier_weight(const Vector3f &local_vect,
+    //     Wavelength wavelengths) const override {
+    //         // Really should be wavevectors
+    //         // 2.0f / (I * q_parr^2) * q_x
+    //         //
+    //         // std::cout << props << std::endl;
+    //
+    //         // float width_x = m_frame.s;
+    //         // float width_y = m_frame.t;
+    //
+    //         //
+    //         // std::cout << m_frame.s << m_frame.t << m_frame.n << std::endl;
+    //
+    //         // Coord system in world is like x, y, z
+    //
+    //         // It would be good to be able to provide array of vectors and
+    //         // evaluate them in parallel
+    //         // Return should be a list of n wavelengths wide, m localvectors
+    //         // long weights
+    //
+    //         // Wavevector q
+    //         // if is constexpr spectral
+    //         Array<Vector3f, 4> q = local_vect;
+    //         for (int i = 0; i < 4; ++i) {
+    //             q[i] /= wavelengths[i];
+    //         }
+    //
+    //         Array<Vector3f, 5> vertices;
+    //         vertices[0] = m_frame.to_local(
+    //             m_to_world.transform_affine(ScalarPoint3f(-1.f, -1.f, 0.f)));
+    //         vertices[1] = m_frame.to_local(
+    //             m_to_world.transform_affine(ScalarPoint3f(1.f, -1.f, 0.f)));
+    //         vertices[2] = m_frame.to_local(
+    //             m_to_world.transform_affine(ScalarPoint3f(-1.f, 1.f, 0.f)));
+    //         vertices[3] = m_frame.to_local(
+    //             m_to_world.transform_affine(ScalarPoint3f(-1.f, 1.f, 0.f)));
+    //         vertices[4] = vertices[0];
+    //
+    //         Array<Vector3f, 4> E_vert;
+    //         Array<Vector3f, 4> R_vert;
+    //
+    //         // Create the simple polygonal vertex chain
+    //         for (int i = 1; i < 5; ++i) {
+    //             E_vert[0] = (vertices[i] - vertices[i-1])/2.f;  // diff
+    //             R_vert[0] = (vertices[i] + vertices[i-1])/2.f;  // mean
+    //         }
+    //
+    //         // Find the components of the wavevector compared to the surface
+    //         Vector3f q_perp = dot(q, m_frame.n)*Vector3f(m_frame.n);
+    //         Vector3f q_parr = q - q_perp;
+    //         Vector3f q_crss = cross(m_frame.n, q_parr);
+    //
+    //         // Array<Vector3f, 4> E_vert;
+    //         //
+    //         // UnpolarizedSpectrum result;
+    //
+    //
+    //
+    //
+    //         // std::cout << q_perp << std::endl;
+    //
+    //         // Vector3f vertices =
+    //
+    //         return 1.f;
+    // }
 
     // =============================================================
     //! @{ \name Sampling routines
@@ -194,6 +194,180 @@ public:
     Float pdf_position(const PositionSample3f & /*ps*/, Mask active) const override {
         MTS_MASK_ARGUMENT(active);
         return m_inv_surface_area;
+    }
+
+    // /// Sinc function basic. Sin(x)/x
+    // template <typename T, typename Value = expr_t<T>>
+    // Value sinc(const T &x) {
+    //     return select(x <= math::Epsilon<T>, sin(x)/x, 1.f);
+    // }
+    //
+    // /// Triangular function, base length 1.
+    // template <typename T, typename Value = expr_t<T>>
+    // Value tri(const T &x) {
+    //     return select(abs(x) <= 0.5, 1.0 - 2.0*abs(x), x*0.f);
+    // }
+
+    // /// Sinc function basic. Sin(x)/x
+    // Float sinc(Float x) const {
+    //     return select(x <= math::Epsilon<Float>, sin(x)/x, 1.f);
+    // }
+    //
+    // /// Triangular function, base length 1.
+    // Float tri(Float x) const {
+    //     return select(abs(x) < 0.5, 1.0 - 2.0*abs(x), x*0.f);
+    // }
+
+    // DirectionSample3f sample_wigner(Interaction3f it,
+    //                                       const Point2f &sample,
+    //                                       Mask active) const override {
+    DirectionSample3f sample_wigner(const DirectionSample3f &ds, Wavelength wavelength,
+                                          Mask active) const override {
+        MTS_MASK_ARGUMENT(active);
+
+        // We have world position, direction and wavelength. Now calculate
+        // weight and store in pdf
+
+        // This probably doesn't need to be a ds. A spectrum is probably more
+        // approipriate
+
+        DirectionSample3f ws = ds;
+
+        // These values are global.
+        // Vector3f nu_hat = ws.d;
+        Float nu_0 = rcp(wavelength[0]*1e-9);
+        // Vector3f k = nu_0*nu_hat;
+        Float k_0 = 2*math::Pi<Float>*nu_0;
+
+        // Make local
+        // Vector3f nu_hat_local = m_to_object.transform_affine(ws.d);
+
+        Vector3f nu_hat_local = ws.d;
+
+        // Vector3f nu_hat_local = m_frame.to_local(ws.d);
+        Float k_x = k_0*nu_hat_local.x();
+        Float k_y = k_0*nu_hat_local.y();
+        // Point3f p_local = m_to_object.transform_affine(ws.p);
+        // Vector3f p_local = m_frame.to_local(ws.p);
+
+        // My to local isn't working
+        // ATM local is coincident with global, lets test that.
+        Point3f p_local = ws.p;
+
+        // Find widths?? Maybe x2
+        // Really, I'd like a baked in answer, or a vertex sampling routine
+        // When we get to patches it'll be even harder
+        Float wid_x = norm(m_frame.s);
+        Float wid_y = norm(m_frame.t);
+
+        // The condition necessary is that the components of the wave remain
+        // coherent throughout the whole extent of their travel.
+        // Perhaps this means that on receive we need to take the wdf of
+        // different sets of incoming rays and take the cross wdf.
+        // Perhaps for each ray or packet, instead of summing, take the xwdf
+        // then sum.
+        // Showing this with single pulse temporal will be hard. Can show with
+        // envelope detection, or continuous.
+        // Two different experiments, beam steering and multipath.
+        // Temporal phase effects in spatial ray-based radar rendering.
+
+        // The wdf has been shown to be a useful tool in modelling spatial and
+        // angular effects of scene elements in optical rendering, and easily
+        // extends to beam effects which are prominent at radar wavelengths.
+        // In this paper we show these effects for radar simulation. We extend
+        // the framework, and show inclusion of temporal coherence/phase effects
+        // which are also prominent in radar, in the form of phased-array beam
+        // steering and multipath.
+
+        // For beam steering, basically take the wdf of steering angle as a
+        // function of x, and multiply wigners.
+
+        // At each interaction (surface, emitter, receiver) apply a phase wigner
+        // layer which is a phase shift proportional to travel length. This is
+        // readily available and mostly unobtrusive as rays usually have path
+        // lengths in this part of their calculations. ie part of the bsdf Now
+        // encodes path length/phase. The counter is to just do this on
+        // reception. Part of the reason we see anything when doing multipath
+        // experiment with graham is that while the pulse is on, there is
+        // continuous wave, so direct and indirect paths can have time together.
+        // What that means is that the rays arriving in the same bin get
+        // coherently summed, ie cross wignered/phased.
+        // As part of paper, show 1d example in matlab/python as well as proper
+        // implementation.
+
+        // std::cout << ws.d.x() << std::endl;
+        // std::cout << p_local.x() << std::endl;
+        // std::cout << wid_x << std::endl;
+
+        // Float wid_x =
+        //     m_to_local.transform_affine(ScalarPoint3f(+1.f, -1.f, 0.f)) -
+        //     m_to_local.transform_affine(ScalarPoint3f(-1.f, -1.f, 0.f));
+        // Float wid_y =
+        //     m_to_local.transform_affine(ScalarPoint3f(-1.f, +1.f, 0.f)) -
+        //     m_to_local.transform_affine(ScalarPoint3f(-1.f, -1.f, 0.f));
+
+
+        // Float g_static = 4.f*math::Pi<Float>*
+        //     rcp(m_inv_surface_area)*(nu_0)*(nu_0);
+        Float g_static = 4.f*math::Pi<Float>*
+            rcp(ws.pdf)*(nu_0)*(nu_0);
+
+        // Float g_angle = select(abs(p_local.x()/wid_x) < 0.5,
+        //     1.0 - 2.0*abs(p_local.x()/wid_x), 0.f) *
+        //     select(abs(p_local.y()/wid_y) < 0.5,
+        //     1.0 - 2.0*abs(p_local.y()/wid_y), 0.f);
+
+            // std::cout << g_angle << std::endl;
+            // std::cout << abs(p_local.x()) << std::endl;
+            // std::cout << abs(ws.p.x()) << std::endl;
+        //
+        Float g_angle = math::tri(p_local.x()/wid_x) *
+            math::tri(p_local.y()/wid_y);
+        // Float g_angle = trix*triy;
+
+        // Float w_val = g_static;
+        // Float w_val = g_angle;
+        Float w_val = g_static * g_angle;
+
+        ws.pdf = rcp(w_val);
+
+
+        // jbo.K = @(z,nuxz, y,nuxy) ...
+    	// 	jbo.D .* ...
+    	// 	tri((z-jbo.l.z0)/jbo.l.zbw,2).*...
+    	// 	sinc(2*nuxz.*tri((z-jbo.l.z0 )/jbo.l.zbw,2).*jbo.l.zbw) .*...
+    	// 	tri((y-jbo.l.y0)/jbo.l.ybw,2).*...
+    	// 	sinc(2*nuxy.*tri((y-jbo.l.y0 )/jbo.l.ybw,2).*jbo.l.ybw); % [W/W]
+
+        // ds.pdf *= 4*math::Pi<Float>*nu_0^2;
+
+        // Lets just take first wavelength element for now.
+
+        // ds.pdf = rcp(wdf);
+
+        // // Static gain of rectangular transmitter
+        //
+        // Float nu_0 = 1/si.wavelengths*1e9;
+        //
+        //
+        //
+        // Float g_static = 4*math::pi*m_surface_area*nu_0^2;
+        //
+        // // For single rectangular element we can use sample space to cut some
+        // // corners. For more complex geometry, probably not.
+        //
+        // // convert ds.d to
+        // // Float w_val = tri(m_to_local.transform_affine(ds.p))
+        //     // * sinc(2*nu*tri(sample2.x - 0.5))
+        //
+        // // nuxz is the z component of the projection of the wavevector onto
+        // // plane zy plane
+        //
+        // // this should be the dot product of u axis and wavevector
+        //
+        // Float w_val = tri(sample2.x - 0.5) * sinc(2*ds.d**tri(sample2.x - 0.5))
+
+        return ws;
     }
 
     //! @}

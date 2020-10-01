@@ -904,9 +904,18 @@ rule CXX_SHARED_LIBRARY_LINKER__thindielectric
 
 
 #############################################
+# Rule for linking CXX shared library.
+
+rule CXX_SHARED_LIBRARY_LINKER__wignertransmitter
+  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  description = Linking CXX shared library $TARGET_FILE
+  restat = $RESTAT
+
+
+#############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__transmitter-obj
+rule CXX_COMPILER__wignertransmitter-obj
   depfile = $DEP_FILE
   deps = gcc
   command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
@@ -944,15 +953,6 @@ rule CXX_SHARED_LIBRARY_LINKER__point
 #############################################
 # Rule for linking CXX shared library.
 
-rule CXX_SHARED_LIBRARY_LINKER__pointtransmitter
-  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
-  description = Linking CXX shared library $TARGET_FILE
-  restat = $RESTAT
-
-
-#############################################
-# Rule for linking CXX shared library.
-
 rule CXX_SHARED_LIBRARY_LINKER__envmap
   command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX shared library $TARGET_FILE
@@ -978,28 +978,9 @@ rule CXX_SHARED_LIBRARY_LINKER__spot
 
 
 #############################################
-# Rule for linking CXX shared library.
-
-rule CXX_SHARED_LIBRARY_LINKER__transmitter
-  command = $PRE_LINK && /usr/bin/clang++-10 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
-  description = Linking CXX shared library $TARGET_FILE
-  restat = $RESTAT
-
-
-#############################################
 # Rule for compiling CXX files.
 
 rule CXX_COMPILER__point-obj
-  depfile = $DEP_FILE
-  deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building CXX object $out
-
-
-#############################################
-# Rule for compiling CXX files.
-
-rule CXX_COMPILER__pointtransmitter-obj
   depfile = $DEP_FILE
   deps = gcc
   command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
@@ -2009,7 +1990,7 @@ rule CXX_SHARED_LIBRARY_LINKER__mesh_attribute
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = /usr/bin/cmake -S/home/jacobacfr/src/beifong -B/home/jacobacfr/src/beifong/build
+  command = /usr/bin/cmake -S/home/jacob/src/beifong -B/home/jacob/src/beifong/build
   description = Re-running CMake...
   generator = 1
 

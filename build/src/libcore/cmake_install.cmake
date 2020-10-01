@@ -1,4 +1,4 @@
-# Install script for directory: /home/jacobacfr/src/beifong/src/libcore
+# Install script for directory: /home/jacob/src/beifong/src/libcore
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/jacobacfr/src/beifong/build/src/libcore/python/cmake_install.cmake")
+  include("/home/jacob/src/beifong/build/src/libcore/python/cmake_install.cmake")
 
 endif()
 

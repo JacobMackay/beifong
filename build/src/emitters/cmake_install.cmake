@@ -1,4 +1,4 @@
-# Install script for directory: /home/jacobacfr/src/beifong/src/emitters
+# Install script for directory: /home/jacob/src/beifong/src/emitters
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
