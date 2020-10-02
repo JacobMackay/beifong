@@ -320,8 +320,8 @@ public:
         DirectionSample3f ws = m_shape->sample_wigner(ds2, it.wavelengths, active);
 
         // value *= ws.pdf;
-        value = 1;
-        // value = abs(ws.pdf);
+        // value = 1;
+        value = abs(ws.pdf);
 
         active &= abs(ws.pdf) > math::Epsilon<Float>;
 

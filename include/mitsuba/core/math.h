@@ -38,6 +38,7 @@ template <typename T> constexpr auto Epsilon         = std::numeric_limits<scala
 template <typename T> constexpr auto RayEpsilon      = Epsilon<T> * 1500;
 template <typename T> constexpr auto ShadowEpsilon   = RayEpsilon<T> * 10;
 template <typename T> constexpr auto CVac   = scalar_t<T>(299792458.0);
+template <typename T> constexpr auto CAirUS   = scalar_t<T>(340.0);
 
 //! @}
 // -----------------------------------------------------------------------
@@ -65,7 +66,7 @@ Vector<Value, 3> sphdir(const T &theta, const T &phi) {
 /// Sinc function basic. Sin(x)/x
 template <typename T, typename Value = expr_t<T>>
 Value sinc(const T &x) {
-    return select(x <= Epsilon<T>, sin(x)/x, 1.f);
+    return select(x > Epsilon<T>, sin(x)/x, 1.f);
 }
 
 /// Triangular function, base length 1.
