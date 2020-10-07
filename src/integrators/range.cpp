@@ -152,9 +152,8 @@ public:
                 *aovs++ = xyz.x(); *aovs++ = xyz.y(); *aovs++ = xyz.z();
             } else {
                 static_assert(is_spectral_v<Spectrum>);
-                // xyz = select(all(times>=lo && times<hi), spectrum_to_xyz(spec_u, ray.wavelengths, active), 0.f);
-                // *aovs++ = xyz.x(); *aovs++ = xyz.y(); *aovs++ = xyz.z();
-                xyz = select(all(ranges>=lo && ranges<hi), spec_u.x(), 0.f);
+                xyz = select(all(ranges>=lo && ranges<hi), spectrum_to_xyz(spec_u, ray.wavelengths, active), 0.f);
+                // xyz = select(all(ranges>=lo && ranges<hi), spec_u.x(), 0.f);
                 *aovs++ = xyz.x(); *aovs++ = xyz.y(); *aovs++ = xyz.z();
             }
 
@@ -205,7 +204,7 @@ public:
 
     std::vector<std::string> aov_names() const override {
         std::vector<std::string> result = m_integrator->aov_names();
-        for (int i = 0; i < 50; ++i)
+        for (int i = 0; i < m_bins; ++i)
             for (int j = 0; j < 3; ++j)
                 result.insert(result.begin() + 3*i + j, "S" + std::to_string(i) + "." + ("RGB"[j]));
         return result;

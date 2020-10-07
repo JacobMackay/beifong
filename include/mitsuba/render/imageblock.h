@@ -112,6 +112,7 @@ public:
         } else {
             static_assert(is_spectral_v<Spectrum>);
             xyz = spectrum_to_xyz(value_u, wavelengths, active);
+            // xyz = value_u.x();
         }
         Float values[5] = { xyz.x(), xyz.y(), xyz.z(), alpha, 1.f };
         return put(pos, values, active);

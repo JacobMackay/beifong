@@ -183,7 +183,9 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
           std::vector<Float> aovs(channels.size());
 
           for (size_t i = 0; i < n_passes; i++) {
-              render_sample(scene, sensor, sampler, block, aovs.data(),
+              // render_sample(scene, sensor, sampler, block, aovs.data(),
+              //             pos, diff_scale_factor);
+              receive_sample(scene, sensor, sampler, block, aovs.data(),
                           pos, diff_scale_factor);
           }
 
@@ -369,8 +371,11 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // std::cout << ray << std::endl;
 
       const Medium *medium = sensor->medium();
+      // std::tuple<Spectrum, Mask, Float> result =
+      //   sample(scene, sampler, ray, medium, aovs+1, active);
+      // When doing this, we only render the 'yellow'
       std::tuple<Spectrum, Mask, Float> result =
-        sample(scene, sampler, ray, medium, aovs+1, active);
+      sample(scene, sampler, ray, medium, aovs+5, active);
 
         // std::cout << std::get<0>(result) << std::endl;
 
@@ -390,8 +395,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
           xyz = srgb_to_xyz(spec_u, active);
       } else {
           static_assert(is_spectral_v<Spectrum>);
-          // xyz = spectrum_to_xyz(spec_u, ray.wavelengths, active);
-          xyz = spec_u.x();
+          xyz = spectrum_to_xyz(spec_u, ray.wavelengths, active);
+          // xyz = spec_u.x();
           // std::cout<<xyz<<std::endl;
       }
       // if constexpr (is_wigner_v<Spectrum>){}

@@ -6,6 +6,8 @@
 #include <mitsuba/render/shape.h>
 #include <mitsuba/render/texture.h>
 
+#include <unistd.h>
+
 NAMESPACE_BEGIN(mitsuba)
 /**!
 
@@ -42,12 +44,12 @@ emitter shape and specify an :monosp:`area` instance as its child:
  */
 
 template <typename Float, typename Spectrum>
-class AreaLight final : public Emitter<Float, Spectrum> {
+class WignerTransmitter final : public Emitter<Float, Spectrum> {
 public:
     MTS_IMPORT_BASE(Emitter, m_flags, m_shape, m_medium)
     MTS_IMPORT_TYPES(Scene, Shape, Texture)
 
-    AreaLight(const Properties &props) : Base(props) {
+    WignerTransmitter(const Properties &props) : Base(props) {
         if (props.has_property("to_world"))
             Throw("Found a 'to_world' transformation -- this is not allowed. "
                   "The area light inherits this transformation from its parent "
@@ -63,11 +65,15 @@ public:
     Spectrum eval(const SurfaceInteraction3f &si, Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointEvaluate, active);
 
+        // Ensures only forward emission
         return select(
             Frame3f::cos_theta(si.wi) > 0.f,
             unpolarized<Spectrum>(m_radiance->eval(si, active)),
             0.f
         );
+
+        // return unpolarized<Spectrum>(m_radiance->eval(si, active));
+        // return 0.f;
     }
 
     std::pair<Ray3f, Spectrum> sample_ray(Float time, Float wavelength_sample,
@@ -157,6 +163,9 @@ public:
 
         DirectionSample3f ds;
 
+        // Somehow in whats happening now, perhaps the integrator? We're never
+        // entering this function
+
         ds.p = si.p;
         ds.n = si.n;
         ds.uv = si.uv;
@@ -164,9 +173,16 @@ public:
         ds.delta = false;
         // ds.d = si.to_local(warp::square_to_cosine_hemisphere(sample3));
         ds.d = si.to_world(warp::square_to_cosine_hemisphere(sample3));
+        // ds.d = si.to_world(Vector3f(0.f, 0.f, 1.f));
+        // ds.d = Vector3f(1.f, 0.f, 0.f);
+        // ds.d = si.to_world(warp::square_to_uniform_hemisphere(sample3));
+        // ds.d = warp::square_to_cosine_hemisphere(sample3);
         Float dist_squared = squared_norm(ds.d);
         ds.dist = sqrt(dist_squared);
         ds.d /= ds.dist;
+
+        // std::cout << ds.d << std::endl;
+        // usleep(10000);
 
         // ds.pdf = 1.f;
         ds.pdf = pdf;
@@ -176,7 +192,11 @@ public:
 
         ds.object = this;
 
+        // ds.d *= -1.f;
+
         DirectionSample3f ws = m_shape->sample_wigner(ds, wavelength, active);
+
+        // ws.d *= -1.f;
 
         // ray weight = spec_weight / m_inv_surface_area
 
@@ -253,7 +273,17 @@ public:
             SurfaceInteraction3f si(ds, it.wavelengths);
             // spec = m_radiance->eval(si, active) / ds.pdf;
 
+            // Convert to wigner space. We want to take in the 'outgoing' ray.
+
+            // ds.d = Vector3f(-1.f, 0, 0);
+            // ds.d = Vector3f(0.f, 0.f, -1.f);
+
+            // std::cout << ds.d << std::endl;
+            // usleep(10000);
+
+            ds.d *= -1.f;
             ws = m_shape->sample_wigner(ds, it.wavelengths, active);
+            ws.d *= -1.f;
             // There is a possibility to actually return the correct weight per wlen sample.
             spec = m_radiance->eval(si, active) / ws.pdf;
         } else {
@@ -283,7 +313,9 @@ public:
 
             // spec = m_radiance->eval(si, active) / ds.pdf;
 
+            ds.d *= -1.f;
             ws = m_shape->sample_wigner(ds, it.wavelengths, active);
+            ws.d *= -1.f;
             // There is a possibility to actually return the correct weight per wlen sample.
             spec = m_radiance->eval(si, active) / ws.pdf;
         }
@@ -315,13 +347,14 @@ public:
 
         DirectionSample3f ds2 = ds;
         ds2.pdf = value;
-
+        ds2.d *= -1.f;
         // This looks after the sampling
         DirectionSample3f ws = m_shape->sample_wigner(ds2, it.wavelengths, active);
 
         // value *= ws.pdf;
         // value = 1;
         value = abs(ws.pdf);
+        // value = ws.pdf;
 
         active &= abs(ws.pdf) > math::Epsilon<Float>;
 
@@ -336,7 +369,7 @@ public:
 
     std::string to_string() const override {
         std::ostringstream oss;
-        oss << "AreaLight[" << std::endl
+        oss << "WignerTransmitter[" << std::endl
             << "  radiance = " << string::indent(m_radiance) << "," << std::endl
             << "  surface_area = ";
         if (m_shape) oss << m_shape->surface_area();
@@ -353,6 +386,6 @@ private:
     ref<Texture> m_radiance;
 };
 
-MTS_IMPLEMENT_CLASS_VARIANT(AreaLight, Emitter)
-MTS_EXPORT_PLUGIN(AreaLight, "Area emitter")
+MTS_IMPLEMENT_CLASS_VARIANT(WignerTransmitter, Emitter)
+MTS_EXPORT_PLUGIN(WignerTransmitter, "Wigner transmitter")
 NAMESPACE_END(mitsuba)

@@ -136,7 +136,8 @@ class PathLengthIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
         Mask valid_ray = si.is_valid();
         EmitterPtr emitter = si.emitter(scene);
 
-        pathlength = select(si.is_valid(), si.t, 0.f);
+        // pathlength = select(si.is_valid(), si.t, 0.f);
+        pathlength = select(si.is_valid(), si.t, math::Infinity<Float>);
 
         for (int depth = 1;; ++depth) {
             // ---------------- Intersection with emitters ----------------
@@ -225,7 +226,8 @@ class PathLengthIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
             }
 
             si = std::move(si_bsdf);
-            pathlength += select(si.is_valid(), si.t, 0.f);
+            // pathlength += select(si.is_valid(), si.t, 0.f);
+            pathlength += select(si.is_valid(), si.t, math::Infinity<Float>);
         }
 
         return { result, valid_ray, pathlength};
@@ -245,6 +247,7 @@ class PathLengthIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
         pdf_a *= pdf_a;
         pdf_b *= pdf_b;
         return select(pdf_a > 0.f, pdf_a / (pdf_a + pdf_b), 0.f);
+        // return pdf_a / (pdf_a + pdf_b);
     }
 
     MTS_DECLARE_CLASS()

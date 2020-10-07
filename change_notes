@@ -1,0 +1,13 @@
+Valid/negative checks:
+distr_1d.h: removed negative check line 73
+line 149 has a return gather < value. Value may be negative....lets handwave away for now bc we return an abs for pdf
+
+distr_2d.h: line 1189, clamp 0, 1?? Actually a lot of there
+
+imageblock.h line 114 has spec to xyz, maybe I just want value_u.x()?
+imageblock.cpp line 90 changes valid flag if negative
+
+pathlength.cpp line 248 has a pdf>0 check
+
+
+I think what happened: paths which were invalid were not removed.
