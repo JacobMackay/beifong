@@ -135,6 +135,7 @@ public:
 
         auto const &ranges = std::get<2>(result);
         auto const &spec_u = depolarize(std::get<0>(result));
+
         // auto const &rads = depolarize(std::get<0>(result));
         // auto const &rads = std::get<0>(result);
         for (int i = 0; i < m_bins; ++i){

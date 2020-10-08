@@ -119,6 +119,9 @@ class PathLengthIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
                                      Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::SamplingIntegratorSample, active);
 
+        // Possibility to change ray from const so that when function returns
+        // we keep ray.
+
         RayDifferential3f ray = ray_;
 
         // Tracks radiance scaling due to index of refraction changes
@@ -137,7 +140,11 @@ class PathLengthIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
         EmitterPtr emitter = si.emitter(scene);
 
         // pathlength = select(si.is_valid(), si.t, 0.f);
-        pathlength = select(si.is_valid(), si.t, math::Infinity<Float>);
+        // pathlength = select(si.is_valid(), si.t, math::Infinity<Float>);
+        // pathlength = select(valid_ray, si.t, math::Infinity<Float>);
+        pathlength += select(valid_ray, si.t, 0.f);
+        // pathlength += si.t;
+        // pathlength[active] += si.t;
 
         for (int depth = 1;; ++depth) {
             // ---------------- Intersection with emitters ----------------
@@ -227,7 +234,13 @@ class PathLengthIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
 
             si = std::move(si_bsdf);
             // pathlength += select(si.is_valid(), si.t, 0.f);
-            pathlength += select(si.is_valid(), si.t, math::Infinity<Float>);
+            // pathlength += select(si.is_valid(), si.t, math::Infinity<Float>);
+            // pathlength += select(active, si.t, math::Infinity<Float>);
+            pathlength += select(active, si.t, 0.f);
+            // pathlength += select(active_e, si.t, math::Infinity<Float>);
+            // pathlength += select(active_e, si.t, 0.f);
+            // pathlength += si.t;
+            // pathlength[active] += si.t;
         }
 
         return { result, valid_ray, pathlength};

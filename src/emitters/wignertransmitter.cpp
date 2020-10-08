@@ -81,49 +81,6 @@ public:
                                           Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointSampleRay, active);
 
-        // given rand pos/dir, sample the world loc, and return weight
-        // Take in a shape (must be rectangle), this is the template shape.
-        // Take in a world transform, this is the 'centre' point
-        // Take in list of locations, these are the sub parts of the tx
-        // Then expand a bbox, will prob need to instantiate a shape based on
-        // this so we can get tinteractions.
-
-        // BUT for now. Just have rectangular single one and get tx working.
-
-        // jbo.D = sqrt(4*pi)*(jbo.l.zbw)*sqrt(4*pi)*(jbo.l.ybw)/lambda^2;
-
-        // jbo.K = @(z,nuxz, y,nuxy) ...
-        //     jbo.D .* ...
-        //     tri((z-jbo.l.z0)/jbo.l.zbw,2).*...
-        //     sinc(2*nuxz.*tri((z-jbo.l.z0 )/jbo.l.zbw,2).*jbo.l.zbw) .*...
-        //     tri((y-jbo.l.y0)/jbo.l.ybw,2).*...
-        //     sinc(2*nuxy.*tri((y-jbo.l.y0 )/jbo.l.ybw,2).*jbo.l.ybw); % [W/W]
-// math::Pi<Float>;
-
-        // return a position sample on the object, and its weight, ie
-        // outgoing wigner vb
-
-        // This function takes in a time, wlen samp, 2 rands and active
-        // returns an outgoing ray:
-        // Ray3f(si.p, si.to_world(local), time, wavelength)
-        // and power:
-        // unpolarized<Spectrum>(spec_weight) * (math::Pi<Float> / pdf)
-
-        // Populate this with time, lambda, direction
-        // Interaction3f it = zero<Interaction3f>();
-        // // 2. Sample directional component
-        // // local vector, convert to world for ease of function
-        // // it.p = warp::square_to_cosine_hemisphere(sample3);
-        // // it.p =
-        // // Take sample 3, position
-        // it.p = m_to_world.transform_affine(
-        //     Point3f(sample3.x() * 2.f - 1.f, sample3.y() * 2.f - 1.f, 1.f));
-
-        // si.wi = warp::square_to_cosine_hemisphere(sample3);
-
-        // Lazy, but maybe effective for now: give a direction sample, returns
-        // the wigner weight
-
         SurfaceInteraction3f si = zero<SurfaceInteraction3f>();
         si.t = math::Infinity<Float>;
 
@@ -171,20 +128,12 @@ public:
         ds.uv = si.uv;
         ds.time = time;
         ds.delta = false;
-        // ds.d = si.to_local(warp::square_to_cosine_hemisphere(sample3));
         ds.d = si.to_world(warp::square_to_cosine_hemisphere(sample3));
-        // ds.d = si.to_world(Vector3f(0.f, 0.f, 1.f));
-        // ds.d = Vector3f(1.f, 0.f, 0.f);
         // ds.d = si.to_world(warp::square_to_uniform_hemisphere(sample3));
-        // ds.d = warp::square_to_cosine_hemisphere(sample3);
         Float dist_squared = squared_norm(ds.d);
         ds.dist = sqrt(dist_squared);
         ds.d /= ds.dist;
 
-        // std::cout << ds.d << std::endl;
-        // usleep(10000);
-
-        // ds.pdf = 1.f;
         ds.pdf = pdf;
         // Assuming wigner doesn't take look angle into account
         Float dp = abs_dot(ds.d, ds.n);
@@ -225,44 +174,7 @@ public:
         DirectionSample3f ds;
         Spectrum spec;
 
-        // Given a position in the scene and a random 2d sample, return a ds
-        // and a spectrum.
-
-        // Would like to specify m_wigner
-        // Make it a function for now.
-        // m_wigner->eval()
-        // Given sample, active and si, return ds.
-
-    //     auto [uv, pdf] = m_radiance->sample_position(sample, active);
-    //     active &= neq(pdf, 0.f);
-    //
-    //     SurfaceInteraction3f si = m_shape->eval_parameterization(uv, active);
-    //     si.wavelengths = it.wavelengths;
-    //     active &= si.is_valid();
-    //
-    //     ds.p = si.p;
-    //     ds.n = si.n;
-    //     ds.uv = si.uv;
-    //     ds.time = it.time;
-    //     ds.delta = false;
-    //     ds.d = ds.p - it.p;
-    //
-    //     Float dist_squared = squared_norm(ds.d);
-    //     ds.dist = sqrt(dist_squared);
-    //     ds.d /= ds.dist;
-    //
-    //     Float dp = dot(ds.d, ds.n);
-    //     active &= dp < 0;
-    //     ds.pdf = select(active, pdf / norm(cross(si.dp_du, si.dp_dv)) *
-    //                                 dist_squared / -dp, 0.f);
-    //
-    //     spec = m_radiance->eval(si, active) / ds.pdf;
-    // }
-    //
-    // ds.object = this;
-    // return { ds, unpolarized<Spectrum>(spec) & active };
-
-    DirectionSample3f ws;
+        DirectionSample3f ws;
 
         // One of two very different strategies is used depending on 'm_radiance'
         if (!m_radiance->is_spatially_varying()) {
@@ -272,15 +184,7 @@ public:
 
             SurfaceInteraction3f si(ds, it.wavelengths);
             // spec = m_radiance->eval(si, active) / ds.pdf;
-
             // Convert to wigner space. We want to take in the 'outgoing' ray.
-
-            // ds.d = Vector3f(-1.f, 0, 0);
-            // ds.d = Vector3f(0.f, 0.f, -1.f);
-
-            // std::cout << ds.d << std::endl;
-            // usleep(10000);
-
             ds.d *= -1.f;
             ws = m_shape->sample_wigner(ds, it.wavelengths, active);
             ws.d *= -1.f;
@@ -353,8 +257,8 @@ public:
 
         // value *= ws.pdf;
         // value = 1;
-        value = abs(ws.pdf);
-        // value = ws.pdf;
+        // value = abs(ws.pdf);
+        value = ws.pdf;
 
         active &= abs(ws.pdf) > math::Epsilon<Float>;
 

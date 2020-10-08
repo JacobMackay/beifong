@@ -8,8 +8,6 @@
 #include <mitsuba/render/interaction.h>
 #include <mitsuba/render/shape.h>
 
-#include <unistd.h>
-
 #if defined(MTS_ENABLE_OPTIX)
     #include "optix/rectangle.cuh"
 #endif
@@ -198,427 +196,48 @@ public:
         return m_inv_surface_area;
     }
 
-    // /// Sinc function basic. Sin(x)/x
-    // template <typename T, typename Value = expr_t<T>>
-    // Value sinc(const T &x) {
-    //     return select(x <= math::Epsilon<T>, sin(x)/x, 1.f);
-    // }
-    //
-    // /// Triangular function, base length 1.
-    // template <typename T, typename Value = expr_t<T>>
-    // Value tri(const T &x) {
-    //     return select(abs(x) <= 0.5, 1.0 - 2.0*abs(x), x*0.f);
-    // }
-
-    // /// Sinc function basic. Sin(x)/x
-    // Float sinc(Float x) const {
-    //     return select(x <= math::Epsilon<Float>, sin(x)/x, 1.f);
-    // }
-    //
-    // /// Triangular function, base length 1.
-    // Float tri(Float x) const {
-    //     return select(abs(x) < 0.5, 1.0 - 2.0*abs(x), x*0.f);
-    // }
-
-    // DirectionSample3f sample_wigner(Interaction3f it,
-    //                                       const Point2f &sample,
-    //                                       Mask active) const override {
-    DirectionSample3f sample_wigner(const DirectionSample3f &ds, Wavelength wavelength,
-                                          Mask active) const override {
+    DirectionSample3f sample_wigner(const DirectionSample3f &ds,
+                                    Wavelength wavelength,
+                                    Mask active) const override {
         MTS_MASK_ARGUMENT(active);
 
-        // We have world position, direction and wavelength. Now calculate
-        // weight and store in pdf
+        Float k_0 = math::TwoPi<Float>*rcp(wavelength[0]*1e-9);
+        Float wid_x = norm(m_frame.s);
+        Float wid_y = norm(m_frame.t);
+
+        // Convert direction to local frame
+        Transform4f trafto1;
+        trafto1 = trafto1.from_frame(
+            Frame3f(normalize(m_frame.s),
+                    normalize(m_frame.t),
+                    normalize(m_frame.n)));
+        // Normal3f k_hat_local = trafto1 * ws.d;
+        Normal3f k_hat_local = trafto1.transform_affine(ds.d);
+        Float k_x = k_0*k_hat_local.x();
+        Float k_y = k_0*k_hat_local.y();
+
+        // Convert position to local frame. As this is a rectangle, we can also
+        // include relative width for the triangular function.
+        Point3f p_local = m_to_object * ds.p/2;
+        Float p_x = p_local.x();
+        Float p_y = p_local.y();
+
+        // Find static gain of antenna
+        // pdf is doing 2 things...the distance part and the inv surf area
+        Float g_static = math::InvPi<Float>*(k_0)*(k_0)*rcp(ds.pdf)
+            *rcp(m_inv_surface_area);
+        // Float g_static = math::InvPi<Float>*(k_0)*(k_0)*rcp(ds.pdf);
+
+        // Find directional gain of antenna
+        Float g_angle =
+            wid_x * math::tri(p_x) * math::sinc(k_x * wid_x * math::tri(p_x)) *
+            wid_y * math::tri(p_y) * math::sinc(k_y * wid_y * math::tri(p_y));
 
         // This probably doesn't need to be a ds. A spectrum is probably more
         // approipriate
 
         DirectionSample3f ws = ds;
-
-        // These values are global.
-        // Vector3f nu_hat = ws.d;
-        // Float nu_0 = rcp(wavelength[0]*1e-9);
-        // Vector3f k = nu_0*nu_hat;
-        Float k_0 = math::TwoPi<Float>*rcp(wavelength[0]*1e-9);
-
-        Float wid_x = norm(m_frame.s);
-        Float wid_y = norm(m_frame.t);
-
-        // Make local
-        // Vector3f nu_hat_local = m_to_object.transform_affine(ws.d);
-
-        // Vector3f nu_hat = ws.d;
-        // Vector3f nu_hat_local = m_frame.to_local(ws.d);
-
-        // My input vector is in world coordinates. It's pointing overwhelmingly
-        // in the x direction (tx boresight). I want to change this to be the
-        // local z direction. All I need is the rotation matrix from world, z
-        // up to local z up.
-
-        // Vector3f up = normalize(cross(m_frame.s, m_frame.t));
-        // Vector3f up = Vector3f(0.f, 1.f, 0.f);
-
-        // All I want is the
-
-        Frame3f t_frame(normalize(m_frame.s), normalize(m_frame.t), normalize(m_frame.n));
-
-        // Transform4f trafto1 = m_to_world;
-        Transform4f trafto1;
-
-        // to_world should be = from frame
-        // to_world but is = to frame
-        // trafto1 = trafto1.to_frame(t_frame);
-        trafto1 = trafto1.from_frame(t_frame);
-
-
-        // // trafto1 = trafto1.scale(Vector3f(rcp(wid_x), rcp(wid_y), 1.f)) * trafto1;
-        // Transform3f trafto;
-        //
-        // trafto = trafto1.extract();
-
-        // Frame3f t_frame(normalize(m_frame.n), normalize(m_frame.t), normalize(m_frame.s));
-        // Frame3f t_frame(m_frame.n);
-
-        // trafto = trafto.scale(Vector3f(1.f*wid_x, 1.f*wid_y, 1.f));
-        // trafto = Transform4f(m_to_object) * trafto;
-        // up may be cross s,t
-        // trafto = trafto.look_at(m_frame.n, Vector3f(0.f, 0.f, 1.f), up);
-        // trafto = trafto.look_at(Vector3f(0.f, 0.f, 0.f), m_frame.n, up);
-        // trafto = trafto.to_frame(m_frame) * trafto;
-        // trafto = trafto.to_frame(Frame3f(normalize(m_frame.t), normalize(m_frame.s), normalize(m_frame.n)));
-        // trafto = trafto.scale(m_frame);
-        // trafto = trafto(m_to_object);
-        // trafto = trafto.inverse();
-
-        // Normal3f nu_hat_local = trafto1.inverse() * ws.d;
-        // Normal3f nu_hat_local = trafto1.transform_affine(ws.d);
-        Normal3f k_hat_local = trafto1.transform_affine(ws.d);
-
-        // Normal3f nu_hat_local = trafto1 * ws.d;
-        // nu_hat_local = m_to_object * ws.d;
-        // nu_hat_local = trafto.inverse() * ws.d;
-
-        // nu_hat_local = t_frame.to_local(-ws.d);
-
-        // std::cout << ds.d << std::endl;
-        // usleep(10000);
-
-        // ws.d.y() = ds.d.z();
-        // ws.d.z() = ds.d.y();
-
-        // Not sure if correct but:
-        // gx -> lz
-        // gy -> lx
-        // gz -> -ly
-
-        // nu_hat_local = Normal3f(dot(ws.d, normalize(m_frame.s)),
-        //                         dot(ws.d, -normalize(m_frame.t)),
-        //                         dot(ws.d, normalize(m_frame.n)));
-
-        // I dunno how or why but this is working?
-
-
-        // nu_hat_local = trafto.transform_affine(ws.d);
-
-        // std::cout << t_frame << std::endl;
-        // // std::cout << m_to_world << std::endl;
-        // std::cout << trafto1 << std::endl;
-        // // std::cout << t_frame << std::endl;
-        // std::cout << ws.d << std::endl;
-        // std::cout << nu_hat_local << std::endl;
-        // usleep(10000);
-
-
-        // nu_hat_local = trafto.transform_affine(ws.d);
-        // nu_hat_local *= Transform4f(scale(Vector3f(wid_x, wid_y, 1)));
-        // nu_hat_local.x() *= wid_x;
-        // nu_hat_local.y() *= wid_y;
-        // std::cout << nu_hat_local << std::endl;
-        // usleep(10000);
-        // Vector3f nu_hat_local = m_to_world.inverse() * ws.d;
-
-        // Transform4f trafto;
-        // trafto = trafto.translate(m_to_world * Vector3f(0.f, 0.f, 0.f));
-        // trafto = trafto.to_frame(m_frame);
-        // trafto = trafto.to_frame_norm(m_frame);
-        // trafto = trafto.from_frame(m_frame);
-
-        // Matrix trafto = Matrix::from_cols(
-        //     concat(frame.s, Scalar(0)),
-        //     concat(frame.t, Scalar(0)),
-        //     concat(frame.n, Scalar(0)),
-        //     Vector<Float, 4>(0.f, 0.f, 0.f, 1.f)
-        // );
-
-        // static constexpr size_t Size = Point_::Size;
-        // using Matrix  = enoki::Matrix<Float, Size>;
-
-        // Matrix trafto = Matrix::from_cols(
-        //     normalize(m_frame.s),
-        //     normalize(m_frame.t),
-        //     normalize(m_frame.n));
-        //
-        // Transform4f trafto(m_to_world);
-        // trafto.translate(Vector3f(-1.f, 0.f, 0.f));
-        //
-        // std::cout << m_to_world * Point3f(0.f, 0.f, 0.f) << std::endl;
-        // usleep(10000);
-
-        // Point3f nu_hat_local = normalize(m_to_object * (ws.d + m_to_world * Point3f(0.f, 0.f, 0.f)));
-        // Normal3f nu_hat_local = m_to_object * ws.d;
-        // Point3f nu_hat_local = m_to_object * ws.d;
-        // Vector3f nu_hat_local = m_to_object * ws.d;
-        // Vector3f nu_hat_local = normalize(trafto * ws.d);
-
-        // Vector3f nu_hat_local = (m_to_object) * (ws.d+trafto);
-        // nu_hat_local = normalize(nu_hat_local);
-
-        // nu_hat_local = normalize(nu_hat_local);
-        // Vector3f nu_hat_local = trafto.transform_vector(ws.d);
-        // Vector3f nu_hat_local = ws.d;
-
-        // It looks like y = 0. Is outgoing direction y??
-        // Vector3f nu_hat_local = ws.d;
-
-        // std::cout << nu_hat_local << std::endl;
-        // // std::cout << m_to_world << std::endl;
-        // // std::cout << m_frame << std::endl;
-        // std::cout << nu_hat_local << std::endl;
-        // std::cout << trafto << std::endl;
-        //
-        // usleep(1000);
-
-        // Vector3f nu_hat_local = m_to_world * ws.d;
-        // Vector3f nu_hat_local = m_to_world * ws.d;
-
-        // Vector3f nu_hat_local = m_frame.to_local(ws.d);
-        // Float k_x = k_0*nu_hat_local.z();
-        // Float k_y = k_0*nu_hat_local.y();
-
-        // Float k_x = k_0*nu_hat_local.y();
-        // Float k_y = k_0*nu_hat_local.z();
-
-        // Float nu_x = nu_0*nu_hat_local.x();
-        // Float nu_y = nu_0*nu_hat_local.y();
-        Float k_x = k_0*k_hat_local.x();
-        Float k_y = k_0*k_hat_local.y();
-        // Float k_x = k_0*(dot(ws.d, m_frame.s));
-        // Float k_y = k_0*(dot(ws.d, m_frame.t));
-        // Float k_x = k_0*dot(normalize(m_frame.s), nu_hat_local);
-        // Float k_y = k_0*dot(normalize(m_frame.t), nu_hat_local);
-        // Float k_x = k_0*dot(Vector3f(1.f, 0.f, 0.f), nu_hat_local);
-        // Float k_y = k_0*dot(Vector3f(0.f, 1.f, 0.f), nu_hat_local);
-
-        // std::cout << normalize(m_frame.s) << normalize(m_frame.t) << std::endl;
-        // std::cout << nu_hat_local << std::endl;
-        // usleep(1000);
-
-        // let t = 'x', s = 'y', n = 'z'
-
-        // Point3f p_local = m_to_object.transform_affine(ws.p);
-        // Vector3f p_local = m_frame.to_local(ws.p);
-
-        // My to local isn't working
-        // ATM local is coincident with global, lets test that.
-        // Point3f p_local = ws.p;
-        // /
-
-        // Let's assume for now that local x = x, outgoing direction is y, if
-        // y forward coordinate frame locally. and z up.
-
-        // Point3f p_local =  ws.p;
-        // This includes the scale transform
-        Point3f p_local = m_to_object * ws.p/2;
-        Float p_x = p_local.x();
-        Float p_y = p_local.y();
-        // Float p_x = dot(normalize(m_frame.s), p_local);
-        // Float p_y = dot(normalize(m_frame.t), p_local);
-
-        // std::cout << p_local << std::endl;
-        // std::cout << p_x << p_y << std::endl;
-        // // std::cout << m_to_world.extract() << std::endl;
-        //
-        // // extract rotation matrix from m_to_world
-        //
-        // usleep(1000);
-
-        // Find widths?? Maybe x2
-        // Really, I'd like a baked in answer, or a vertex sampling routine
-        // When we get to patches it'll be even harder
-
-
-        // The condition necessary is that the components of the wave remain
-        // coherent throughout the whole extent of their travel.
-        // Perhaps this means that on receive we need to take the wdf of
-        // different sets of incoming rays and take the cross wdf.
-        // Perhaps for each ray or packet, instead of summing, take the xwdf
-        // then sum.
-        // Showing this with single pulse temporal will be hard. Can show with
-        // envelope detection, or continuous.
-        // Two different experiments, beam steering and multipath.
-        // Temporal phase effects in spatial ray-based radar rendering.
-
-        // The wdf has been shown to be a useful tool in modelling spatial and
-        // angular effects of scene elements in optical rendering, and easily
-        // extends to beam effects which are prominent at radar wavelengths.
-        // In this paper we show these effects for radar simulation. We extend
-        // the framework, and show inclusion of temporal coherence/phase effects
-        // which are also prominent in radar, in the form of phased-array beam
-        // steering and multipath.
-
-        // For beam steering, basically take the wdf of steering angle as a
-        // function of x, and multiply wigners.
-
-        // At each interaction (surface, emitter, receiver) apply a phase wigner
-        // layer which is a phase shift proportional to travel length. This is
-        // readily available and mostly unobtrusive as rays usually have path
-        // lengths in this part of their calculations. ie part of the bsdf Now
-        // encodes path length/phase. The counter is to just do this on
-        // reception. Part of the reason we see anything when doing multipath
-        // experiment with graham is that while the pulse is on, there is
-        // continuous wave, so direct and indirect paths can have time together.
-        // What that means is that the rays arriving in the same bin get
-        // coherently summed, ie cross wignered/phased.
-        // As part of paper, show 1d example in matlab/python as well as proper
-        // implementation.
-
-        //         Note to self: Put together a work which is inverse radar/temporal rendering, regardless of wave effects.
-        //
-        // 3 papers: wigner render with phase
-        // reconstruction with shitty scene
-        // maths for wigner arbitary
-
-        // Receiver could have a phase filter/layer which is proportional to the incoming rays phase/path length
-        // Or each object could have it. That way it is similar to current ray tracing/intersection tests....no
-
-        // std::cout << ws.d.x() << std::endl;
-        // std::cout << p_local.x() << std::endl;
-        // std::cout << wid_x << std::endl;
-        // usleep(1000);
-
-        // Float wid_x =
-        //     m_to_local.transform_affine(ScalarPoint3f(+1.f, -1.f, 0.f)) -
-        //     m_to_local.transform_affine(ScalarPoint3f(-1.f, -1.f, 0.f));
-        // Float wid_y =
-        //     m_to_local.transform_affine(ScalarPoint3f(-1.f, +1.f, 0.f)) -
-        //     m_to_local.transform_affine(ScalarPoint3f(-1.f, -1.f, 0.f));
-
-
-        // Float g_static = 4.f*math::Pi<Float>*
-        //     rcp(m_inv_surface_area)*(nu_0)*(nu_0);
-
-        // pdf is doing 2 things...the distance part and the inv surf area
-
-        // Float g_static = 4.f*math::Pi<Float>*
-        //     rcp(ws.pdf)*rcp(m_inv_surface_area)*rcp(m_inv_surface_area)*(nu_0)*(nu_0);
-
-        Float g_static = math::InvPi<Float>*rcp(ws.pdf)*rcp(m_inv_surface_area)*rcp(m_inv_surface_area)*(k_0)*(k_0);
-
-        // Float g_static = 4.f*math::Pi<Float>*
-        //     rcp(ws.pdf)*rcp(m_inv_surface_area)*(nu_0)*(nu_0);
-
-        // Float g_static = 4.f*math::Pi<Float>*
-        //     rcp(ws.pdf)*rcp(m_inv_surface_area)*(nu_0)*(nu_0);
-
-        // Float g_static = 1.f;
-
-        // Float g_angle = select(abs(p_local.x()/wid_x) < 0.5,
-        //     1.0 - 2.0*abs(p_local.x()/wid_x), 0.f) *
-        //     select(abs(p_local.y()/wid_y) < 0.5,
-        //     1.0 - 2.0*abs(p_local.y()/wid_y), 0.f);
-
-            // std::cout << g_angle << std::endl;
-            // std::cout << abs(p_local.x()) << std::endl;
-            // std::cout << abs(ws.p.x()) << std::endl;
-        //
-        // Float g_angle1 = math::tri(p_local.x()/wid_x) *
-        //     math::tri(p_local.z()/wid_y);
-
-        Float g_angle1 = math::tri(p_x) * math::tri(p_y);
-
-        // std::cout << g_angle1 << std::endl;
-        // usleep(10000);
-
-        // Float g_angle1 = 1;
-
-        // std::cout << k_x << std::endl;
-        // std::cout << k_x * wid_x * math::tri(p_local.x()) << std::endl;
-        // usleep(1000);
-
-        // This should introduce regions of negative radiance.
-        // Float g_angle2 = math::sinc(k_x * wid_x * math::tri(p_local.x()/wid_x))
-        //             * math::sinc(k_y * wid_y * math::tri(p_local.z()/wid_y));
-
-        // Float g_angle2 = math::sinc(k_x * wid_x * math::tri(p_x))
-        //             * math::sinc(k_y * wid_y * math::tri(p_y));
-
-        // Float g_angle2 = math::sinc(k_x * wid_x * math::tri(p_local.x()))
-        //             * math::sinc(k_y * wid_y * math::tri(p_local.y()));
-
-        Float g_angle2 = math::sinc(k_x * wid_x * math::tri(p_x))
-                    * math::sinc(k_y * wid_y * math::tri(p_y));
-
-        // Float g_angle2 = math::sinc(2*nu_x * wid_x * math::tri(p_x))
-        //             * math::sinc(2*nu_y * wid_y * math::tri(p_y));
-
-        // std::cout << ws.d << std::endl;
-        // std::cout << nu_hat_local << std::endl;
-        // std::cout << nu_x << std::endl;
-        // std::cout << wid_x << std::endl;
-        // std::cout << math::tri(p_x) << std::endl << std::endl;
-        // usleep(10000);
-
-        // Float g_angle2 = math::sinc(2*nu_x * wid_x * math::tri(p_x));
-        // Float g_angle2 = sin(2*nu_x * wid_x * math::tri(p_x))/(2*nu_x * wid_x * math::tri(p_x));
-        // Float g_angle2 = math::sinc(2*nu_y * wid_y * math::tri(p_y));
-
-        // Float g_angle2 = 1;
-
-        // Float w_val = g_static;
-        // Float w_val = g_angle1;
-        // Float w_val = g_angle2;
-        Float w_val = g_static * g_angle1 * g_angle2;
-
-        ws.pdf = rcp(w_val);
-        // ws.pdf = 1;
-
-        // std::cout << ws.pdf <<std::endl;
-
-
-        // jbo.K = @(z,nuxz, y,nuxy) ...
-    	// 	jbo.D .* ...
-    	// 	tri((z-jbo.l.z0)/jbo.l.zbw,2).*...
-    	// 	sinc(2*nuxz.*tri((z-jbo.l.z0 )/jbo.l.zbw,2).*jbo.l.zbw) .*...
-    	// 	tri((y-jbo.l.y0)/jbo.l.ybw,2).*...
-    	// 	sinc(2*nuxy.*tri((y-jbo.l.y0 )/jbo.l.ybw,2).*jbo.l.ybw); % [W/W]
-
-        // ds.pdf *= 4*math::Pi<Float>*nu_0^2;
-
-        // Lets just take first wavelength element for now.
-
-        // ds.pdf = rcp(wdf);
-
-        // // Static gain of rectangular transmitter
-        //
-        // Float nu_0 = 1/si.wavelengths*1e9;
-        //
-        //
-        //
-        // Float g_static = 4*math::pi*m_surface_area*nu_0^2;
-        //
-        // // For single rectangular element we can use sample space to cut some
-        // // corners. For more complex geometry, probably not.
-        //
-        // // convert ds.d to
-        // // Float w_val = tri(m_to_local.transform_affine(ds.p))
-        //     // * sinc(2*nu*tri(sample2.x - 0.5))
-        //
-        // // nuxz is the z component of the projection of the wavevector onto
-        // // plane zy plane
-        //
-        // // this should be the dot product of u axis and wavevector
-        //
-        // Float w_val = tri(sample2.x - 0.5) * sinc(2*ds.d**tri(sample2.x - 0.5))
+        ws.pdf = rcp(g_static * g_angle);
 
         return ws;
     }

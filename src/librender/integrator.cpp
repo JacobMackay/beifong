@@ -366,6 +366,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       auto [ray, ray_weight] = sensor->sample_ray_differential(
           time, wavelength_sample, adjusted_position, aperture_sample);
 
+    // I'm guessing that our 'pulse' is due to sampling from the sensor.
+
       ray.scale_differential(diff_scale_factor);
 
       // std::cout << ray << std::endl;
