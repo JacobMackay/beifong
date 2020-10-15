@@ -403,14 +403,24 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       //     time = 0.f;
       // }
 
+      // The sensor and emitter are distinct from transmitter and receiver, But
+      // closely related.
+      // Does an emitter have a transmitter? Does a sensor have a receiver?
+
+      // A receiver should have an input signal/member signal.
+      // A transmitter should have an output/member signal.
+
+      // First, lets try and marry these to the current framework.
+
       // For pulsed signals this is clear. For CW signals, we take a window of
       // the cw signal.
       // What do these lines mean? We need a class transmitter that has a sub
       // class, signal.
       // We need a class receiver.
       Float time = transmitter->sig_start();
-      if (receiver->window_time() > 0.f) {
-          time += sampler->next_1d(active) * receiver->window_time();
+      if (transmitter->window_time() > 0.f) {
+          // time += sampler->next_1d(active) * receiver->window_time();
+          time += sampler->next_1d(active) * transmitter->window_time();
       } else {
           time = 0.f;
       }
@@ -420,16 +430,24 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // 2) the ranges of frequency that each element has their radiance/
       // reflectivity/absorption defined at.
 
+      // Float frequency_sample = sampler->next_1d(active);
       Float wavelength_sample = sampler->next_1d(active);
 
+      // This is just a real (local) position.
       Vector2f adjusted_position =
         (position_sample - sensor->film()->crop_offset()) /
         sensor->film()->crop_size();
+        // Perhaps sensor can have film & ADC?
 
       // ray_weight will be like the bsdf of the sensor. I can also use it to
-      // apply my phase shift. Maybe not, this more relates to the wavelength
+      // apply my phase shift. Maybe not, this more relates to the wavelength.
+      // Could make things more complicated, pass a frequency sample, then
+      // convert to wavelength inside using medium and bandwidth conversion.
       auto [ray, ray_weight] = sensor->sample_ray_differential(
           time, wavelength_sample, adjusted_position, aperture_sample);
+      // this says that the incoming ray has a wavelength and time already.
+      // These are the rays landing on the sensor, we propagate back into the
+      // scene, lets interpret t and λ as tx values.
 
       ray.scale_differential(diff_scale_factor);
 
@@ -442,8 +460,26 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       std::tuple<Spectrum, Mask, Float> result =
       sample(scene, sampler, ray, medium, aovs+5, active);
 
+      // Change this back, but allow rays to be modified.
+      // std::pair<Spectrum, Mask> result =
+      // sample(scene, sampler, ray, medium, aovs+5, active);
+      // Gives power, wavelength.
+
         // std::cout << std::get<0>(result) << std::endl;
 
+        // Each ray gets multiplied by a wigner layer wrt the path length..or t
+        // Do we include bounces? Or does that already happen when we hit the
+        // ground? It is simply a -1 after all. If we do path length, that
+        // assumes that all rays left with 0 phase. Phase will need to be
+        // calculated based on time, we can say 0 phase at time 0, it's all
+        // relative anyway....maybe this will even give interference between
+        // targets!!
+
+        // I could put phase calc here, but that would force it to be always
+        // be wigner. Maybe that's ok considering we're saying that signals are
+        // tf anyway. How does this limit my ability to do diff rendering?
+        // Let's build the code properly. Keep classic mods so that maybe we
+        // can go back.
       std::get<0>(result) = ray_weight * std::get<0>(result);
       UnpolarizedSpectrum spec_u = depolarize(std::get<0>(result));
 

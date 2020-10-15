@@ -220,6 +220,12 @@ public:
             ds.d *= -1.f;
             ws = m_shape->sample_wigner(ds, it.wavelengths, active);
             ws.d *= -1.f;
+            // After/before taking the wigner sample, use the it.time to find a
+            // phase component. Then it's a simple multiplication. If we were
+            // going from transmitter to receiver, how would this be different?
+            // It would be nice to have a symmetric calculation, but rays have
+            // diff start times, yes they would leave with correct phase, but
+            // that's not useful as some could be 0.
             // There is a possibility to actually return the correct weight per wlen sample.
             spec = m_radiance->eval(si, active) / ws.pdf;
         }
