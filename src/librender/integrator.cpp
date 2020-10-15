@@ -366,8 +366,6 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       auto [ray, ray_weight] = sensor->sample_ray_differential(
           time, wavelength_sample, adjusted_position, aperture_sample);
 
-    // I'm guessing that our 'pulse' is due to sampling from the sensor.
-
       ray.scale_differential(diff_scale_factor);
 
       // std::cout << ray << std::endl;
@@ -423,6 +421,11 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       aovs[2] = xyz.z();
       aovs[3] = select(std::get<1>(result), Float(1.f), Float(0.f));
       aovs[4] = 1.f;
+
+      // Modify sample so that ray is not const.The sample routine can now
+      // change the ray.time and ray.wavelength.
+      // aovs become result(basically power), time, wavelength....or can I
+      // encode these factors into what they already are?
 
       block->put(position_sample, aovs, active);
       // block->put(position_sample, time_bin (as a fraction of the span), frequency_bin, aovs, active);
