@@ -61,8 +61,29 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
       ScopedPhase sp(ProfilerPhase::Render);
       m_stop = false;
 
+      // Changing the film and receive characteristics is a deep fundamental
+      // change and will require a lot.
+
+      // How can I do it differently? Fuck ton of aovs.
+
+      // What is a 'film'? A film is an object which is a carrier for data
+      // storage, typically in 2d corresponding to planar coordinates.
+
+      // I will have a matrix...but this is a conflicting name...how about tessy
+      // as short for tesseract? Or just a tess.
+
+      // Maybe a 6 bucket is better? Start with 4
+
+      // What is a sensor? A sensor is an object which occupies some space, and
+      // through interactions collects signals.
+
       ref<Film> film = sensor->film();
       ScalarVector2i film_size = film->crop_size();
+
+      // I'll either need to make a different sensor or modify it. I guess This
+      // is a deep change.
+      // ref<Tess> tess = gamjigi->tess();
+      // ScalarVector4i tess_size = tess->crop_size();
 
       size_t total_spp = sensor->sampler()->sample_count();
       size_t samples_per_pass = (m_samples_per_pass == (size_t) -1)
@@ -343,9 +364,53 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
           aperture_sample = sampler->next_2d(active);
       }
 
-      Float time = sensor->shutter_open();
-      if (sensor->shutter_open_time() > 0.f) {
-          time += sampler->next_1d(active) * sensor->shutter_open_time();
+      // Currently the renderer chooses a random time based on shutter open.
+
+      // Two approaches: If we choose a random receive time, then we need to
+      // find a path that obeys this. kinda ok for cw radar. choose a time and
+      // whatever path you find is ok. But not for pulsed radar.
+
+      // Other approach: random time based on transmit signal, time simply
+      // increases with propagation.
+
+      // block->put will have to have phase aware routines unless the receiver
+      // encodes it into the power first. I think this is better.
+
+      // As a first foray, I'd choose a random time
+
+      // Radar perception in phase-space
+      // A flex on/nod toward graham: Sensors and Signals in Phase Space
+      // Note: We always have an envelope detection with wigner..
+      // Can I pose fmcw in the phase space domain? Why not? It should work.
+      // Make a note of this in the paper~~ ^^
+
+      // What do I want my output/data struct to be?
+      // u,v,t,w...l
+      // t,w...l
+      // u,v,t...l
+      // t...l
+
+      // I want a new signal block. has position and two more. (this could be
+      // useful later for capturing 4d snapshots of wigner/light fields)
+
+      // Instead of breaking up pixels and sending blocks to the gpu, can we
+      // have multiple scene descriptions and send those blockwise to gpu?
+
+      // Float time = sensor->shutter_open();
+      // if (sensor->shutter_open_time() > 0.f) {
+      //     time += sampler->next_1d(active) * sensor->shutter_open_time();
+      // } else {
+      //     time = 0.f;
+      // }
+
+      // For pulsed signals this is clear. For CW signals, we take a window of
+      // the cw signal.
+      // What do these lines mean? We need a class transmitter that has a sub
+      // class, signal.
+      // We need a class receiver.
+      Float time = transmitter->sig_start();
+      if (receiver->window_time() > 0.f) {
+          time += sampler->next_1d(active) * receiver->window_time();
       } else {
           time = 0.f;
       }
@@ -427,6 +492,9 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // aovs become result(basically power), time, wavelength....or can I
       // encode these factors into what they already are?
 
+      // tf_sample = ray.time, ray.wavelengths/frequency
+
+      // block->put(tf_sample, aovs, active);
       block->put(position_sample, aovs, active);
       // block->put(position_sample, time_bin (as a fraction of the span), frequency_bin, aovs, active);
 
