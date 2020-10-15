@@ -431,6 +431,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // reflectivity/absorption defined at.
 
       // Float frequency_sample = sampler->next_1d(active);
+      // Wavelength/time is not random. Do I do a mapping, or a sampling.
+      // I guess I need to do a ray-weight as well.
       Float wavelength_sample = sampler->next_1d(active);
 
       // This is just a real (local) position.
