@@ -364,6 +364,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
           aperture_sample = sampler->next_2d(active);
       }
 
+      // Random test
+
       // Currently the renderer chooses a random time based on shutter open.
 
       // Two approaches: If we choose a random receive time, then we need to
