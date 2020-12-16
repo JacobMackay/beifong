@@ -143,6 +143,7 @@ public:
             Point1f lo = (Float)i *m_dr;
             Point1f hi = (Float)i *m_dr + m_dr;
 
+            // Stick to just luminance
             Color3f xyz;
             if constexpr (is_monochromatic_v<Spectrum>) {
                 // xyz = spec_u.x();
@@ -153,9 +154,10 @@ public:
                 *aovs++ = xyz.x(); *aovs++ = xyz.y(); *aovs++ = xyz.z();
             } else {
                 static_assert(is_spectral_v<Spectrum>);
-                xyz = select(all(ranges>=lo && ranges<hi), spectrum_to_xyz(spec_u, ray.wavelengths, active), 0.f);
-                // xyz = select(all(ranges>=lo && ranges<hi), spec_u.x(), 0.f);
-                *aovs++ = xyz.x(); *aovs++ = xyz.y(); *aovs++ = xyz.z();
+                // xyz = select(all(ranges>=lo && ranges<hi), spectrum_to_xyz(spec_u, ray.wavelengths, active), 0.f);
+                // *aovs++ = xyz.x(); *aovs++ = xyz.y(); *aovs++ = xyz.z();
+                xyz = select(all(ranges>=lo && ranges<hi), spec_u.x(), 0.f);
+                *aovs++ = xyz.x();
             }
 
             // Color3f rgb;
@@ -203,11 +205,18 @@ public:
     //     return result;
     // }
 
+    // std::vector<std::string> aov_names() const override {
+    //     std::vector<std::string> result = m_integrator->aov_names();
+    //     for (int i = 0; i < m_bins; ++i)
+    //         for (int j = 0; j < 3; ++j)
+    //             result.insert(result.begin() + 3*i + j, "S" + std::to_string(i) + "." + ("RGB"[j]));
+    //     return result;
+    // }
+
     std::vector<std::string> aov_names() const override {
         std::vector<std::string> result = m_integrator->aov_names();
         for (int i = 0; i < m_bins; ++i)
-            for (int j = 0; j < 3; ++j)
-                result.insert(result.begin() + 3*i + j, "S" + std::to_string(i) + "." + ("RGB"[j]));
+            result.insert(result.begin() + i, "S" + std::to_string(i) + "." + "Y");
         return result;
     }
 

@@ -101,8 +101,12 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
       bool has_aovs = !channels.empty();
 
       // Insert default channels and set up the film
-      for (size_t i = 0; i < 5; ++i) {
-          channels.insert(channels.begin() + i, std::string(1, "XYZAW"[i]));
+      // for (size_t i = 0; i < 5; ++i) {
+      //     channels.insert(channels.begin() + i, std::string(1, "XYZAW"[i]));
+      //     film->prepare(channels);
+      // }
+      for (size_t i = 0; i < 3; ++i) {
+          channels.insert(channels.begin() + i, std::string(1, "YAW"[i]));
           film->prepare(channels);
       }
 
@@ -398,12 +402,12 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // Instead of breaking up pixels and sending blocks to the gpu, can we
       // have multiple scene descriptions and send those blockwise to gpu?
 
-      // Float time = sensor->shutter_open();
-      // if (sensor->shutter_open_time() > 0.f) {
-      //     time += sampler->next_1d(active) * sensor->shutter_open_time();
-      // } else {
-      //     time = 0.f;
-      // }
+      Float time = sensor->shutter_open();
+      if (sensor->shutter_open_time() > 0.f) {
+          time += sampler->next_1d(active) * sensor->shutter_open_time();
+      } else {
+          time = 0.f;
+      }
 
       // The sensor and emitter are distinct from transmitter and receiver, But
       // closely related.
@@ -419,13 +423,13 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // What do these lines mean? We need a class transmitter that has a sub
       // class, signal.
       // We need a class receiver.
-      Float time = transmitter->sig_start();
-      if (transmitter->window_time() > 0.f) {
-          // time += sampler->next_1d(active) * receiver->window_time();
-          time += sampler->next_1d(active) * transmitter->window_time();
-      } else {
-          time = 0.f;
-      }
+      // Float time = transmitter->sig_start();
+      // if (transmitter->window_time() > 0.f) {
+      //     // time += sampler->next_1d(active) * receiver->window_time();
+      //     time += sampler->next_1d(active) * transmitter->window_time();
+      // } else {
+      //     time = 0.f;
+      // }
 
       // two different ranges
       // 1) the overall range of the sim, ie wideband/94GHZ +- BW
@@ -500,8 +504,9 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
           xyz = srgb_to_xyz(spec_u, active);
       } else {
           static_assert(is_spectral_v<Spectrum>);
-          xyz = spectrum_to_xyz(spec_u, ray.wavelengths, active);
-          // xyz = spec_u.x();
+          // This is in receive sample, so should be only used with adc film
+          // xyz = spectrum_to_xyz(spec_u, ray.wavelengths, active);
+          xyz = spec_u.x();
           // std::cout<<xyz<<std::endl;
       }
       // if constexpr (is_wigner_v<Spectrum>){}
@@ -521,11 +526,15 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // aovs[3] = select(std::get<1>(result), Float(1.f), Float(0.f));
       // aovs[4] = 1.f;
 
+      // aovs[0] = xyz.x();
+      // aovs[1] = xyz.y();
+      // aovs[2] = xyz.z();
+      // aovs[3] = select(std::get<1>(result), Float(1.f), Float(0.f));
+      // aovs[4] = 1.f;
+
       aovs[0] = xyz.x();
-      aovs[1] = xyz.y();
-      aovs[2] = xyz.z();
-      aovs[3] = select(std::get<1>(result), Float(1.f), Float(0.f));
-      aovs[4] = 1.f;
+      aovs[1] = select(std::get<1>(result), Float(1.f), Float(0.f));
+      aovs[2] = 1.f;
 
       // Modify sample so that ray is not const.The sample routine can now
       // change the ray.time and ray.wavelength.
