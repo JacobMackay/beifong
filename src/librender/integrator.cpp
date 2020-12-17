@@ -38,9 +38,6 @@ MTS_VARIANT SamplingIntegrator<Float, Spectrum>::
 
       /// Disable direct visibility of emitters if needed
       m_hide_emitters = props.bool_("hide_emitters", false);
-
-      // m_dr = props.float_("dr", -1.f);
-      // m_bins = props.int_("bins", -1);
 }
 
 MTS_VARIANT SamplingIntegrator<Float, Spectrum>::
@@ -58,6 +55,261 @@ MTS_VARIANT std::vector<std::string> SamplingIntegrator<Float, Spectrum>::
 
 MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
   render(Scene *scene, Sensor *sensor) {
+      ScopedPhase sp(ProfilerPhase::Render);
+      m_stop = false;
+
+      ref<Film> film = sensor->film();
+      ScalarVector2i film_size = film->crop_size();
+
+      size_t total_spp = sensor->sampler()->sample_count();
+      size_t samples_per_pass = (m_samples_per_pass == (size_t) -1)
+                               ? total_spp
+                               : std::min(
+                                   (size_t) m_samples_per_pass, total_spp);
+      if ((total_spp % samples_per_pass) != 0) {
+          Throw("sample_count (%d) must be a multiple of samples_per_pass (%d)."
+          , total_spp, samples_per_pass);
+      }
+
+      size_t n_passes = (total_spp + samples_per_pass - 1) / samples_per_pass;
+
+      std::vector<std::string> channels = aov_names();
+      bool has_aovs = !channels.empty();
+
+      // Insert default channels and set up the film
+      for (size_t i = 0; i < 5; ++i) {
+          channels.insert(channels.begin() + i, std::string(1, "XYZAW"[i]));
+          film->prepare(channels);
+      }
+
+      m_render_timer.reset();
+      if constexpr (!is_cuda_array_v<Float>) {
+          /// Render on the CPU using a spiral pattern
+          size_t n_threads = __global_thread_count;
+          Log(Info, "Starting render job (%ix%i, %i sample%s,%s %i thread%s)",
+            film_size.x(), film_size.y(),
+            total_spp, total_spp == 1 ? "" : "s",
+            n_passes > 1 ? tfm::format(" %d passes,", n_passes) : "",
+            n_threads, n_threads == 1 ? "" : "s");
+
+          if (m_timeout > 0.f) {
+              Log(Info, "Timeout specified: %.2f seconds.", m_timeout);
+          }
+
+          // Find a good block size to use for splitting up the total workload.
+          if (m_block_size == 0) {
+              uint32_t block_size = MTS_BLOCK_SIZE;
+              while (true) {
+                  if (block_size == 1 ||
+                      hprod((film_size + block_size - 1) / block_size)
+                      >= n_threads) {
+                          break;
+                  }
+                  block_size /= 2;
+              }
+              m_block_size = block_size;
+          }
+
+          Spiral spiral(film, m_block_size, n_passes);
+
+          ThreadEnvironment env;
+          ref<ProgressReporter> progress = new ProgressReporter("Rendering");
+          std::mutex mutex;
+
+          // Total number of blocks to be handled, including multiple passes.
+          size_t total_blocks = spiral.block_count() * n_passes,
+            blocks_done = 0;
+
+          tbb::parallel_for(
+            tbb::blocked_range<size_t>(0, total_blocks, 1),
+            [&](const tbb::blocked_range<size_t> &range) {
+                ScopedSetThreadEnvironment set_env(env);
+                ref<Sampler> sampler = sensor->sampler()->clone();
+                ref<ImageBlock> block =
+                    new ImageBlock(m_block_size, channels.size(),
+                                    film->reconstruction_filter(), !has_aovs);
+                scoped_flush_denormals flush_denormals(true);
+                std::unique_ptr<Float[]> aovs(new Float[channels.size()]);
+
+                // For each block
+                for (auto i = range.begin(); i != range.end() && !should_stop();
+                    ++i) {
+                    auto [offset, size, block_id] = spiral.next_block();
+                    Assert(hprod(size) != 0);
+                    block->set_size(size);
+                    block->set_offset(offset);
+
+                    render_block(scene, sensor, sampler, block,
+                             aovs.get(), samples_per_pass, block_id);
+
+                    film->put(block);
+
+                    /* Critical section: update progress bar */ {
+                        std::lock_guard<std::mutex> lock(mutex);
+                        blocks_done++;
+                        progress->update(blocks_done /
+                            (ScalarFloat) total_blocks);
+                    }
+                }
+          });
+      } else {
+          Log(Info, "Start rendering...");
+
+          ref<Sampler> sampler = sensor->sampler();
+          sampler->set_samples_per_wavefront((uint32_t) samples_per_pass);
+
+          ScalarFloat diff_scale_factor =
+            rsqrt((ScalarFloat) sampler->sample_count());
+          ScalarUInt32 wavefront_size =
+            hprod(film_size) * (uint32_t) samples_per_pass;
+          if (sampler->wavefront_size() != wavefront_size) {
+            sampler->seed(0, wavefront_size);
+          }
+
+          UInt32 idx = arange<UInt32>(wavefront_size);
+          if (samples_per_pass != 1) {
+              idx /= (uint32_t) samples_per_pass;
+          }
+
+          ref<ImageBlock> block = new ImageBlock(film_size, channels.size(),
+                                               film->reconstruction_filter(),
+                                               !has_aovs);
+          block->clear();
+          Vector2f pos = Vector2f(Float(idx % uint32_t(film_size[0])),
+                                Float(idx / uint32_t(film_size[0])));
+          std::vector<Float> aovs(channels.size());
+
+          for (size_t i = 0; i < n_passes; i++) {
+              render_sample(scene, sensor, sampler, block, aovs.data(),
+                          pos, diff_scale_factor);
+          }
+
+          film->put(block);
+      }
+
+      if (!m_stop) {
+        Log(Info, "Rendering finished. (took %s)",
+            util::time_string(m_render_timer.value(), true));
+      }
+
+      return !m_stop;
+}
+
+MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
+  render_block(const Scene *scene, const Sensor *sensor, Sampler *sampler,
+      ImageBlock *block, Float *aovs, size_t sample_count_, size_t block_id)
+      const {
+    block->clear();
+    uint32_t pixel_count  = (uint32_t)(m_block_size * m_block_size),
+             sample_count = (uint32_t)(sample_count_ == (size_t) -1
+                                           ? sampler->sample_count()
+                                           : sample_count_);
+
+    ScalarFloat diff_scale_factor =
+        rsqrt((ScalarFloat) sampler->sample_count());
+
+    if constexpr (!is_array_v<Float>) {
+        for (uint32_t i = 0; i < pixel_count && !should_stop(); ++i) {
+            sampler->seed(block_id * pixel_count + i);
+
+            ScalarPoint2u pos = enoki::morton_decode<ScalarPoint2u>(i);
+            if (any(pos >= block->size()))
+                continue;
+
+            pos += block->offset();
+            for (uint32_t j = 0; j < sample_count && !should_stop(); ++j) {
+                render_sample(scene, sensor, sampler, block, aovs,
+                              pos, diff_scale_factor);
+            }
+        }
+    } else if constexpr (is_array_v<Float> && !is_cuda_array_v<Float>) {
+        // Ensure that the sample generation is fully deterministic
+        sampler->seed(block_id);
+
+        for (auto [index, active] : range<UInt32>(pixel_count * sample_count)) {
+            if (should_stop()) {
+                break;
+            }
+            Point2u pos = enoki::morton_decode<Point2u>
+                (index / UInt32(sample_count));
+            active &= !any(pos >= block->size());
+            pos += block->offset();
+            render_sample(scene, sensor, sampler, block, aovs,
+                pos, diff_scale_factor, active);
+        }
+    } else {
+        ENOKI_MARK_USED(scene);
+        ENOKI_MARK_USED(sensor);
+        ENOKI_MARK_USED(aovs);
+        ENOKI_MARK_USED(diff_scale_factor);
+        ENOKI_MARK_USED(pixel_count);
+        ENOKI_MARK_USED(sample_count);
+        Throw("Not implemented for CUDA arrays.");
+    }
+}
+
+MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
+  render_sample(const Scene *scene, const Sensor *sensor, Sampler *sampler,
+                    ImageBlock *block, Float *aovs, const Vector2f &pos,
+                    ScalarFloat diff_scale_factor, Mask active) const {
+      Vector2f position_sample = pos + sampler->next_2d(active);
+
+      Point2f aperture_sample(.5f);
+      if (sensor->needs_aperture_sample()) {
+          aperture_sample = sampler->next_2d(active);
+      }
+
+      Float time = sensor->shutter_open();
+      if (sensor->shutter_open_time() > 0.f) {
+          time += sampler->next_1d(active) * sensor->shutter_open_time();
+      } else {
+          time = 0.f;
+      }
+
+      Float wavelength_sample = sampler->next_1d(active);
+
+      Vector2f adjusted_position =
+        (position_sample - sensor->film()->crop_offset()) /
+        sensor->film()->crop_size();
+
+      auto [ray, ray_weight] = sensor->sample_ray_differential(
+          time, wavelength_sample, adjusted_position, aperture_sample);
+
+      ray.scale_differential(diff_scale_factor);
+
+      const Medium *medium = sensor->medium();
+      std::tuple<Spectrum, Mask, Float> result =
+        sample(scene, sampler, ray, medium, aovs + 5, active);
+
+      std::get<0>(result) = ray_weight * std::get<0>(result);
+      UnpolarizedSpectrum spec_u = depolarize(std::get<0>(result));
+
+      Color3f xyz;
+      if constexpr (is_monochromatic_v<Spectrum>) {
+          xyz = spec_u.x();
+      } else if constexpr (is_rgb_v<Spectrum>) {
+          xyz = srgb_to_xyz(spec_u, active);
+      } else {
+          static_assert(is_spectral_v<Spectrum>);
+          xyz = spectrum_to_xyz(spec_u, ray.wavelengths, active);
+      }
+
+      aovs[0] = xyz.x();
+      aovs[1] = xyz.y();
+      aovs[2] = xyz.z();
+      aovs[3] = select(std::get<1>(result), Float(1.f), Float(0.f));
+      aovs[4] = 1.f;
+
+      block->put(position_sample, aovs, active);
+
+      sampler->advance();
+}
+
+// ============================================================================
+// Radar Receive Section
+// ============================================================================
+MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
+  receive(Scene *scene, Sensor *sensor) {
       ScopedPhase sp(ProfilerPhase::Render);
       m_stop = false;
 
@@ -167,7 +419,7 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
                     block->set_size(size);
                     block->set_offset(offset);
 
-                    render_block(scene, sensor, sampler, block,
+                    receive_block(scene, sensor, sampler, block,
                              aovs.get(), samples_per_pass, block_id);
 
                     film->put(block);
@@ -194,22 +446,29 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
             sampler->seed(0, wavefront_size);
           }
 
+          // idx from 0:nsamples
           UInt32 idx = arange<UInt32>(wavefront_size);
           if (samples_per_pass != 1) {
+              // idx from 0:1, how does this work as uint32?
               idx /= (uint32_t) samples_per_pass;
           }
+          // std::cout<<idx<<std::endl;
 
           ref<ImageBlock> block = new ImageBlock(film_size, channels.size(),
                                                film->reconstruction_filter(),
                                                !has_aovs);
           block->clear();
-          Vector2f pos = Vector2f(Float(idx % uint32_t(film_size[0])),
-                                Float(idx / uint32_t(film_size[0])));
+          // Modify something depending on film type.
+          // Vector2f pos = Vector2f(Float(idx % uint32_t(film_size[0])),
+          //                       Float(idx / uint32_t(film_size[0])));
+          // When considering range doppler, there should be only 1 'positionpixel'
+          // We will now move across the 'pixel'
+          // Pos should be of size (2,numsampes*numpixels)
+          Vector2f pos = Vector2f(Float(idx % uint32_t(1)),
+                                Float(idx / uint32_t(1)));
           std::vector<Float> aovs(channels.size());
 
           for (size_t i = 0; i < n_passes; i++) {
-              // render_sample(scene, sensor, sampler, block, aovs.data(),
-              //             pos, diff_scale_factor);
               receive_sample(scene, sensor, sampler, block, aovs.data(),
                           pos, diff_scale_factor);
           }
@@ -226,7 +485,7 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
 }
 
 MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
-  render_block(const Scene *scene, const Sensor *sensor, Sampler *sampler,
+  receive_block(const Scene *scene, const Sensor *sensor, Sampler *sampler,
       ImageBlock *block, Float *aovs, size_t sample_count_, size_t block_id)
       const {
     block->clear();
@@ -248,8 +507,6 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 
             pos += block->offset();
             for (uint32_t j = 0; j < sample_count && !should_stop(); ++j) {
-                // render_sample(scene, sensor, sampler, block, aovs,
-                //               pos, diff_scale_factor);
                 receive_sample(scene, sensor, sampler, block, aovs,
                               pos, diff_scale_factor);
             }
@@ -283,82 +540,10 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 }
 
 MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
-  render_sample(const Scene *scene, const Sensor *sensor, Sampler *sampler,
-                    ImageBlock *block, Float *aovs, const Vector2f &pos,
-                    ScalarFloat diff_scale_factor, Mask active) const {
-      Vector2f position_sample = pos + sampler->next_2d(active);
-
-      Point2f aperture_sample(.5f);
-      if (sensor->needs_aperture_sample()) {
-          aperture_sample = sampler->next_2d(active);
-      }
-
-      Float time = sensor->shutter_open();
-      if (sensor->shutter_open_time() > 0.f) {
-          time += sampler->next_1d(active) * sensor->shutter_open_time();
-      } else {
-          time = 0.f;
-      }
-
-      // two different ranges
-      // 1) the overall range of the sim, ie wideband/94GHZ +- BW
-      // 2) the ranges of frequency that each element has their radiance/
-      // reflectivity/absorption defined at.
-
-      Float wavelength_sample = sampler->next_1d(active);
-
-      Vector2f adjusted_position =
-        (position_sample - sensor->film()->crop_offset()) /
-        sensor->film()->crop_size();
-
-      // ray_weight will be like the bsdf of the sensor. I can also use it to
-      // apply my phase shift. Maybe not, this more relates to the wavelength
-      auto [ray, ray_weight] = sensor->sample_ray_differential(
-          time, wavelength_sample, adjusted_position, aperture_sample);
-
-      ray.scale_differential(diff_scale_factor);
-
-      const Medium *medium = sensor->medium();
-      std::tuple<Spectrum, Mask, Float> result =
-        sample(scene, sampler, ray, medium, aovs + 5, active);
-
-      std::get<0>(result) = ray_weight * std::get<0>(result);
-      UnpolarizedSpectrum spec_u = depolarize(std::get<0>(result));
-
-      // std::cout<<spec_u<<std::endl;
-      // spec_u should be like radiances at wavelengths
-
-      Color3f xyz;
-      if constexpr (is_monochromatic_v<Spectrum>) {
-          xyz = spec_u.x();
-      } else if constexpr (is_rgb_v<Spectrum>) {
-          xyz = srgb_to_xyz(spec_u, active);
-      } else {
-          static_assert(is_spectral_v<Spectrum>);
-          xyz = spectrum_to_xyz(spec_u, ray.wavelengths, active);
-          // xyz = spec_u.x();
-          // std::cout<<xyz<<std::endl;
-      }
-      // if constexpr (is_wigner_v<Spectrum>){}
-
-      // What should I output?
-      // I have wavelength
-
-      aovs[0] = xyz.x();
-      aovs[1] = xyz.y();
-      aovs[2] = xyz.z();
-      aovs[3] = select(std::get<1>(result), Float(1.f), Float(0.f));
-      aovs[4] = 1.f;
-
-      block->put(position_sample, aovs, active);
-
-      sampler->advance();
-}
-
-MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
   receive_sample(const Scene *scene, const Sensor *sensor, Sampler *sampler,
                     ImageBlock *block, Float *aovs, const Vector2f &pos,
                     ScalarFloat diff_scale_factor, Mask active) const {
+      // We've been given a location on the pixel grid, now we jitter it
       Vector2f position_sample = pos + sampler->next_2d(active);
 
       // std::cout << position_sample << std::endl;
@@ -442,6 +627,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       Float wavelength_sample = sampler->next_1d(active);
 
       // This is just a real (local) position.
+      // Get the sample from 0-1, take away the 
       Vector2f adjusted_position =
         (position_sample - sensor->film()->crop_offset()) /
         sensor->film()->crop_size();

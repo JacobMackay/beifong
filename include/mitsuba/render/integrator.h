@@ -120,7 +120,12 @@ public:
 
     // virtual std::pair<std::pair<Spectrum, Mask>, Float> sample(const Scene *scene, Sampler *sampler, const RayDifferential3f &ray, const Medium *medium = nullptr, Float *aovs = nullptr, Mask active = true) const;
 
-    virtual std::tuple<Spectrum, Mask, Float> sample(const Scene *scene, Sampler *sampler, const RayDifferential3f &ray, const Medium *medium = nullptr, Float *aovs = nullptr, Mask active = true) const;
+    virtual std::tuple<Spectrum, Mask, Float> sample(const Scene *scene,
+                                                Sampler *sampler,
+                                                const RayDifferential3f &ray,
+                                                const Medium *medium = nullptr,
+                                                Float *aovs = nullptr,
+                                                Mask active = true) const;
 
     /**
      * For integrators that return one or more arbitrary output variables
@@ -134,6 +139,8 @@ public:
     // =========================================================================
 
     bool render(Scene *scene, Sensor *sensor) override;
+    // I have no idea why override or not?
+    bool receive(Scene *scene, Sensor *sensor);
     void cancel() override;
 
     /**
@@ -174,6 +181,14 @@ protected:
                        ScalarFloat diff_scale_factor,
                        Mask active = true) const;
 
+    virtual void receive_block(const Scene *scene,
+                             const Sensor *sensor,
+                             Sampler *sampler,
+                             ImageBlock *block,
+                             Float *aovs,
+                             size_t sample_count,
+                             size_t block_id) const;
+
     void receive_sample(const Scene *scene,
                       const Sensor *sensor,
                       Sampler *sampler,
@@ -210,10 +225,6 @@ protected:
 
     /// Flag for disabling direct visibility of emitters
     bool m_hide_emitters;
-
-    // /// Jacobs mess
-    // float m_dr;
-    // float m_bins;
 };
 
 /*

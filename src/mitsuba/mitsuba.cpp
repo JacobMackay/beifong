@@ -98,6 +98,8 @@ bool render(Object *scene_, size_t sensor_i, filesystem::path filename) {
         develop_callback = [&]() { film->develop(); };
     }
     bool success = integrator->render(scene, sensor.get());
+    // if film == adc
+    // bool success = integrator->receive(scene, sensor.get());
     /* critical section */ {
         std::lock_guard<std::mutex> guard(develop_callback_mutex);
         develop_callback = nullptr;
