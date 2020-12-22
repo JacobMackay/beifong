@@ -9,6 +9,7 @@ NAMESPACE_BEGIN(mitsuba)
 
 class DifferentiableParameters;
 struct BSDFContext;
+template <typename Float, typename Spectrum> class ADC;
 template <typename Float, typename Spectrum> class BSDF;
 template <typename Float, typename Spectrum> class Emitter;
 template <typename Float, typename Spectrum> class Endpoint;
@@ -20,8 +21,10 @@ template <typename Float, typename Spectrum> class MonteCarloIntegrator;
 template <typename Float, typename Spectrum> class Medium;
 template <typename Float, typename Spectrum> class Mesh;
 template <typename Float, typename Spectrum> class MicrofacetDistribution;
+template <typename Float, typename Spectrum> class Receiver;
 template <typename Float, typename Spectrum> class ReconstructionFilter;
 template <typename Float, typename Spectrum> class Sampler;
+template <typename Float, typename Spectrum> class SignalBlock;
 template <typename Float, typename Spectrum> class Scene;
 template <typename Float, typename Spectrum> class Sensor;
 template <typename Float, typename Spectrum> class PhaseFunction;
@@ -81,6 +84,7 @@ template <typename Float_, typename Spectrum_> struct RenderAliases {
     using MonteCarloIntegrator   = mitsuba::MonteCarloIntegrator<FloatU, SpectrumU>;
     using BSDF                   = mitsuba::BSDF<FloatU, SpectrumU>;
     using Sensor                 = mitsuba::Sensor<FloatU, SpectrumU>;
+    using Receiver               = mitsuba::Receiver<FloatU, SpectrumU>;
     using ProjectiveCamera       = mitsuba::ProjectiveCamera<FloatU, SpectrumU>;
     using Emitter                = mitsuba::Emitter<FloatU, SpectrumU>;
     using Endpoint               = mitsuba::Endpoint<FloatU, SpectrumU>;
@@ -88,6 +92,8 @@ template <typename Float_, typename Spectrum_> struct RenderAliases {
     using PhaseFunction          = mitsuba::PhaseFunction<FloatU, SpectrumU>;
     using Film                   = mitsuba::Film<FloatU, SpectrumU>;
     using ImageBlock             = mitsuba::ImageBlock<FloatU, SpectrumU>;
+    using ADC                    = mitsuba::ADC<FloatU, SpectrumU>;
+    using SignalBlock            = mitsuba::SignalBlock<FloatU, SpectrumU>;
     using ReconstructionFilter   = mitsuba::ReconstructionFilter<FloatU, SpectrumU>;
     using Texture                = mitsuba::Texture<FloatU, SpectrumU>;
     using Volume                 = mitsuba::Volume<FloatU, SpectrumU>;
@@ -138,6 +144,7 @@ template <typename Float_, typename Spectrum_> struct RenderAliases {
     using MonteCarloIntegrator   = typename RenderAliases::MonteCarloIntegrator;                   \
     using BSDF                   = typename RenderAliases::BSDF;                                   \
     using Sensor                 = typename RenderAliases::Sensor;                                 \
+    using Receiver               = typename RenderAliases::Receiver;                               \
     using ProjectiveCamera       = typename RenderAliases::ProjectiveCamera;                       \
     using Emitter                = typename RenderAliases::Emitter;                                \
     using Endpoint               = typename RenderAliases::Endpoint;                               \
@@ -145,6 +152,8 @@ template <typename Float_, typename Spectrum_> struct RenderAliases {
     using PhaseFunction          = typename RenderAliases::PhaseFunction;                          \
     using Film                   = typename RenderAliases::Film;                                   \
     using ImageBlock             = typename RenderAliases::ImageBlock;                             \
+    using ADC                    = typename RenderAliases::ADC;                                    \
+    using SignalBlock            = typename RenderAliases::SignalBlock;                            \
     using ReconstructionFilter   = typename RenderAliases::ReconstructionFilter;                   \
     using Texture                = typename RenderAliases::Texture;                                \
     using Volume                 = typename RenderAliases::Volume;                                 \

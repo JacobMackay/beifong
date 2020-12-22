@@ -142,16 +142,22 @@ class PathLengthIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
         // pathlength = select(si.is_valid(), si.t, 0.f);
         // pathlength = select(si.is_valid(), si.t, math::Infinity<Float>);
         // pathlength = select(valid_ray, si.t, math::Infinity<Float>);
+
         pathlength += select(valid_ray, si.t, 0.f);
+        // pathlength += select(si.is_valid(), si.t, 0.f);
+
         // pathlength += si.t;
         // pathlength[active] += si.t;
 
         for (int depth = 1;; ++depth) {
             // ---------------- Intersection with emitters ----------------
 
-            if (any_or<true>(neq(emitter, nullptr)))
+            if (any_or<true>(neq(emitter, nullptr))) {
                 result[active] +=
                     emission_weight * throughput * emitter->eval(si, active);
+
+                pathlength += select(si.is_valid(), si.t, 0.f);
+            }
 
             active &= si.is_valid();
 
@@ -196,6 +202,8 @@ class PathLengthIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
 
                 Float mis = select(ds.delta, 1.f, mis_weight(ds.pdf, bsdf_pdf));
                 result[active_e] += mis * throughput * bsdf_val * emitter_val;
+
+                pathlength += select(si.is_valid(), si.t, 0.f);
             }
 
             // ----------------------- BSDF sampling ----------------------
@@ -236,14 +244,17 @@ class PathLengthIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
             // pathlength += select(si.is_valid(), si.t, 0.f);
             // pathlength += select(si.is_valid(), si.t, math::Infinity<Float>);
             // pathlength += select(active, si.t, math::Infinity<Float>);
-            pathlength += select(active, si.t, 0.f);
+
+            // pathlength += select(active, si.t, 0.f);
+            // pathlength += select(si.is_valid(), si.t, 0.f);
+
             // pathlength += select(active_e, si.t, math::Infinity<Float>);
             // pathlength += select(active_e, si.t, 0.f);
             // pathlength += si.t;
             // pathlength[active] += si.t;
         }
 
-        std::cout << pathlength << std::endl;
+        // std::cout << pathlength << std::endl;
 
         return { result, valid_ray, pathlength};
     }

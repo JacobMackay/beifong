@@ -21,6 +21,7 @@ enum class ProfilerPhase : int {
     LoadTexture,                /* Texture loading */
     InitKDTree,                 /* kd-tree construction */
     Render,                     /* Integrator::render() */
+    Receive,                     /* Integrator::receive() */
     SamplingIntegratorSample,   /* SamplingIntegrator::sample() */
     SampleEmitterRay,           /* Scene::sample_emitter_ray() */
     SampleEmitterDirection,     /* Scene::sample_emitter_direction() */
@@ -28,6 +29,7 @@ enum class ProfilerPhase : int {
     RayIntersect,               /* Scene::ray_intersect() */
     CreateSurfaceInteraction,   /* KDTree::create_surface_interaction() */
     ImageBlockPut,              /* ImageBlock::put() */
+    SignalBlockPut,              /* SignalBlock::put() */
     BSDFEvaluate,               /* BSDF::eval() and BSDF::pdf() */
     BSDFSample,                 /* BSDF::sample() */
     PhaseFunctionEvaluate,      /* PhaseFunction::eval() and PhaseFunction::pdf() */
@@ -50,6 +52,7 @@ constexpr const char
         "Texture loading",
         "kd-tree construction",
         "Integrator::render()",
+        "Integrator::receive()",
         "SamplingIntegrator::sample()",
         "Scene::sample_emitter_ray()",
         "Scene::sample_emitter_direction()",
@@ -57,6 +60,7 @@ constexpr const char
         "Scene::ray_intersect()",
         "KDTree::create_surface_interaction()",
         "ImageBlock::put()",
+        "SignalBlock::put()",
         "BSDF::eval(), pdf()",
         "BSDF::sample()",
         "PhaseFunction::eval(), pdf()",

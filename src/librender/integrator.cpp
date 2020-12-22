@@ -9,6 +9,7 @@
 #include <mitsuba/core/util.h>
 #include <mitsuba/core/warp.h>
 #include <mitsuba/render/film.h>
+#include <mitsuba/render/adc.h>
 #include <mitsuba/render/integrator.h>
 #include <mitsuba/render/sampler.h>
 #include <mitsuba/render/sensor.h>
@@ -462,7 +463,7 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
 
                     receive_block(scene, sensor, sampler, block,
                              aovs.get(), samples_per_pass, block_id);
-                    std::cout << "Hello2" << std::endl;
+                    // std::cout << "Hello2" << std::endl;
                     film->put(block);
 
                     /* Critical section: update progress bar */ {
@@ -570,9 +571,9 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
           //       }
           // });
 
-          std::cout << "Hello_rd" << std::endl;
+          // std::cout << "Hello_rd" << std::endl;
 
-          Log(Info, "Start rendering...");
+          Log(Info, "Start signal rendering...");
 
           ref<Sampler> sampler = sensor->sampler();
           // sampler->set_samples_per_wavefront((uint32_t) samples_per_pass);
@@ -723,7 +724,7 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
       }
 
       if (!m_stop) {
-        Log(Info, "Rendering finished. (took %s)",
+        Log(Info, "Signal Rendering finished. (took %s)",
             util::time_string(m_render_timer.value(), true));
       }
 
@@ -925,10 +926,12 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // Alternatively from our integrator.
       // ScalarVector2i rd = (std::get<2>(result)/
       //   (10-0.1), 0);
-      Vector2f rd = (std::get<2>(result)/
-        (10-0.1), 0);
-
-        std::cout << std::get<2>(result) << rd << std::endl;
+      Vector2f rd;
+      // range / range interval * nbins
+      rd[0] = std::get<2>(result)/(10.0-0.1)*400;
+      // rd[0] = std::get<2>(result);
+      // Put it in the middle
+      rd[1] = 0.5f;
 
       // Change this back, but allow rays to be modified.
       // std::pair<Spectrum, Mask> result =

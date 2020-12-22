@@ -9,6 +9,7 @@
 #include <mitsuba/core/vector.h>
 #include <mitsuba/render/fwd.h>
 #include <mitsuba/render/imageblock.h>
+#include <mitsuba/render/signalblock.h>
 #include <mitsuba/render/interaction.h>
 #include <mitsuba/render/records.h>
 #include <mitsuba/render/scene.h>
@@ -71,7 +72,7 @@ template <typename Float, typename Spectrum>
 class MTS_EXPORT_RENDER SamplingIntegrator : public Integrator<Float, Spectrum> {
 public:
     MTS_IMPORT_BASE(Integrator)
-    MTS_IMPORT_TYPES(Scene, Sensor, Film, ImageBlock, Medium, Sampler)
+    MTS_IMPORT_TYPES(Scene, Sensor, Film, ImageBlock, SignalBlock, Medium, Sampler)
 
     /**
      * \brief Sample the incident radiance along a ray.

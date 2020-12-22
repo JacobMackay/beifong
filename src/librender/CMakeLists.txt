@@ -45,7 +45,10 @@ add_library(mitsuba-render-obj OBJECT
   endpoint.cpp     ${INC_DIR}/endpoint.h
   film.cpp         ${INC_DIR}/film.h
                    ${INC_DIR}/fresnel.h
+  adc.cpp          ${INC_DIR}/adc.h
+                   ${INC_DIR}/fresnel.h
   imageblock.cpp   ${INC_DIR}/imageblock.h
+  signalblock.cpp   ${INC_DIR}/signalblock.h
   integrator.cpp   ${INC_DIR}/integrator.h
                    ${INC_DIR}/interaction.h
   kdtree.cpp       ${INC_DIR}/kdtree.h
@@ -57,6 +60,7 @@ add_library(mitsuba-render-obj OBJECT
   sampler.cpp      ${INC_DIR}/sampler.h
   scene.cpp        ${INC_DIR}/scene.h
   sensor.cpp       ${INC_DIR}/sensor.h
+  receiver.cpp     ${INC_DIR}/receiver.h
   shape.cpp        ${INC_DIR}/shape.h
   shapegroup.cpp   ${INC_DIR}/shapegroup.h
   texture.cpp      ${INC_DIR}/texture.h
