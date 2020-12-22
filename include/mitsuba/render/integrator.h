@@ -40,6 +40,7 @@ public:
 
     /// Perform the main rendering job. Returns \c true upon success
     virtual bool render(Scene *scene, Sensor *sensor) = 0;
+    virtual bool receive(Scene *scene, Sensor *sensor) = 0;
 
     /**
      * \brief Cancel a running render job
@@ -139,8 +140,7 @@ public:
     // =========================================================================
 
     bool render(Scene *scene, Sensor *sensor) override;
-    // I have no idea why override or not?
-    bool receive(Scene *scene, Sensor *sensor);
+    bool receive(Scene *scene, Sensor *sensor) override;
     void cancel() override;
 
     /**

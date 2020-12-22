@@ -97,9 +97,44 @@ bool render(Object *scene_, size_t sensor_i, filesystem::path filename) {
         std::lock_guard<std::mutex> guard(develop_callback_mutex);
         develop_callback = [&]() { film->develop(); };
     }
+
     bool success = integrator->render(scene, sensor.get());
-    // if film == adc
-    // bool success = integrator->receive(scene, sensor.get());
+
+    /* critical section */ {
+        std::lock_guard<std::mutex> guard(develop_callback_mutex);
+        develop_callback = nullptr;
+    }
+    if (success)
+        film->develop();
+    else
+        Log(Warn, "\U0000274C Rendering failed, result not saved.");
+    return success;
+}
+
+template <typename Float, typename Spectrum>
+bool receive(Object *scene_, size_t sensor_i, filesystem::path filename) {
+    auto *scene = dynamic_cast<Scene<Float, Spectrum> *>(scene_);
+    if (!scene)
+        Throw("Root element of the input file must be a <scene> tag!");
+    if (sensor_i >= scene->sensors().size())
+        Throw("Specified sensor index is out of bounds!");
+    auto sensor = scene->sensors()[sensor_i];
+    auto film = sensor->film();
+
+    filename.replace_extension("exr");
+    film->set_destination_file(filename);
+
+    auto integrator = scene->integrator();
+    if (!integrator)
+        Throw("No integrator specified for scene: %s", scene);
+
+    /* critical section */ {
+        std::lock_guard<std::mutex> guard(develop_callback_mutex);
+        develop_callback = [&]() { film->develop(); };
+    }
+
+    bool success = integrator->receive(scene, sensor.get());
+
     /* critical section */ {
         std::lock_guard<std::mutex> guard(develop_callback_mutex);
         develop_callback = nullptr;

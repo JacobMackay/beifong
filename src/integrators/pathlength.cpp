@@ -243,6 +243,8 @@ class PathLengthIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
             // pathlength[active] += si.t;
         }
 
+        std::cout << pathlength << std::endl;
+
         return { result, valid_ray, pathlength};
     }
 

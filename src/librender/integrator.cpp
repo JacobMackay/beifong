@@ -330,7 +330,10 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
       // through interactions collects signals.
 
       ref<Film> film = sensor->film();
-      ScalarVector2i film_size = film->crop_size();
+      ScalarVector2i film_rd_size = film->crop_size();
+      ScalarVector2i film_rd_offset = film->crop_offset();
+      ScalarVector2i film_px_size = (1, 1);
+      ScalarVector2i film_px_offset = (0, 0);
 
       // I'll either need to make a different sensor or modify it. I guess This
       // is a deep change.
@@ -362,12 +365,24 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
           film->prepare(channels);
       }
 
+      // Actually...it makes more sense to be a time-frequency method...maybe..
+      // Maybe that only makes sense at baseband.
+      // For now, let's not do the spiral method for range-doppler
+      // We would have to do something like:
+
       m_render_timer.reset();
-      if constexpr (!is_cuda_array_v<Float>) {
+      // if constexpr (!is_cuda_array_v<Float>) {
+      // This doesn't make sense for radar atm...
+      if constexpr (false) {
           /// Render on the CPU using a spiral pattern
+
+          std::cout << "Hello" << std::endl;
+
           size_t n_threads = __global_thread_count;
-          Log(Info, "Starting render job (%ix%i, %i sample%s,%s %i thread%s)",
-            film_size.x(), film_size.y(),
+          Log(Info, "Starting render job (%ix%i rd, %ix%i xy,"
+            " %i sample%s,%s %i thread%s)",
+            film_rd_size.x(), film_rd_size.y(),
+            film_px_size.x(), film_px_size.y(),
             total_spp, total_spp == 1 ? "" : "s",
             n_passes > 1 ? tfm::format(" %d passes,", n_passes) : "",
             n_threads, n_threads == 1 ? "" : "s");
@@ -376,12 +391,28 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
               Log(Info, "Timeout specified: %.2f seconds.", m_timeout);
           }
 
+          // Blocking and spiralling doesn't make sense for traditional
+          // renderingxtemporals. Unless the render pipeline explicitly only
+          // renders range/doppler for a given interval.
+          // With that in mind, I need to do something different...for now.
+          // This is partly bc the pixels are independent in xy
+          // This could be really good for ensuring incoherence between distant
+          // blocks.
+
           // Find a good block size to use for splitting up the total workload.
           if (m_block_size == 0) {
               uint32_t block_size = MTS_BLOCK_SIZE;
               while (true) {
+                  // Our film size pixel-wise should now be 1
+                  // Old:
+                  // if (block_size == 1 ||
+                  //     hprod((film_size + block_size - 1) / block_size)
+                  //     >= n_threads) {
+                  //         break;
+                  // }
+                  // New:
                   if (block_size == 1 ||
-                      hprod((film_size + block_size - 1) / block_size)
+                      hprod((film_px_size + block_size - 1) / block_size)
                       >= n_threads) {
                           break;
                   }
@@ -390,10 +421,20 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
               m_block_size = block_size;
           }
 
-          Spiral spiral(film, m_block_size, n_passes);
+          // Here's another problem, our block size is now tied to pixels
+          std::cout << m_block_size << std::endl;
+
+          // I'm worried about this in that it may use film size to apply
+          // offsets
+          // This spiral would be spiralling over the range and doppler
+          // Old:
+          // Spiral spiral(film, m_block_size, n_passes);
+          // New:
+          Spiral spiral(film_px_size, film_px_offset, m_block_size, n_passes);
 
           ThreadEnvironment env;
-          ref<ProgressReporter> progress = new ProgressReporter("Rendering");
+          ref<ProgressReporter> progress =
+            new ProgressReporter("Rendering Signal");
           std::mutex mutex;
 
           // Total number of blocks to be handled, including multiple passes.
@@ -421,7 +462,7 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
 
                     receive_block(scene, sensor, sampler, block,
                              aovs.get(), samples_per_pass, block_id);
-
+                    std::cout << "Hello2" << std::endl;
                     film->put(block);
 
                     /* Critical section: update progress bar */ {
@@ -432,7 +473,194 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
                     }
                 }
           });
+      } else if constexpr (!is_cuda_array_v<Float>) {
+          /// Render on the CPU using no pattern
+
+          // size_t n_threads = __global_thread_count;
+          // Log(Info, "Starting render job (%ix%i rd, %ix%i xy,"
+          //   " %i sample%s,%s %i thread%s)",
+          //   film_rd_size.x(), film_rd_size.y(),
+          //   film_px_size.x(), film_px_size.y(),
+          //   total_spp, total_spp == 1 ? "" : "s",
+          //   n_passes > 1 ? tfm::format(" %d passes,", n_passes) : "",
+          //   n_threads, n_threads == 1 ? "" : "s");
+          //
+          // if (m_timeout > 0.f) {
+          //     Log(Info, "Timeout specified: %.2f seconds.", m_timeout);
+          // }
+          //
+          // // Blocking and spiralling doesn't make sense for traditional
+          // // renderingxtemporals. Unless the render pipeline explicitly only
+          // // renders range/doppler for a given interval.
+          // // With that in mind, I need to do something different...for now.
+          // // This is partly bc the pixels are independent in xy
+          // // This could be really good for ensuring incoherence between distant
+          // // blocks.
+          //
+          // // Find a good block size to use for splitting up the total workload.
+          // if (m_block_size == 0) {
+          //     uint32_t block_size = MTS_BLOCK_SIZE;
+          //     while (true) {
+          //         // Our film size pixel-wise should now be 1
+          //         // Old:
+          //         // if (block_size == 1 ||
+          //         //     hprod((film_size + block_size - 1) / block_size)
+          //         //     >= n_threads) {
+          //         //         break;
+          //         // }
+          //         // New:
+          //         if (block_size == 1 ||
+          //             hprod((film_px_size + block_size - 1) / block_size)
+          //             >= n_threads) {
+          //                 break;
+          //         }
+          //         block_size /= 2;
+          //     }
+          //     m_block_size = block_size;
+          // }
+          //
+          //
+          // // I'm worried about this in that it may use film size to apply
+          // // offsets
+          // // This spiral would be spiralling over the range and doppler
+          // // Old:
+          // // Spiral spiral(film, m_block_size, n_passes);
+          // // New:
+          // Spiral spiral(film_px_size, film_px_offset, m_block_size, n_passes);
+          //
+          // ThreadEnvironment env;
+          // ref<ProgressReporter> progress =
+          //   new ProgressReporter("Rendering Signal");
+          // std::mutex mutex;
+          //
+          // // Total number of blocks to be handled, including multiple passes.
+          // size_t total_blocks = spiral.block_count() * n_passes,
+          //   blocks_done = 0;
+          //
+          // tbb::parallel_for(
+          //   tbb::blocked_range<size_t>(0, total_blocks, 1),
+          //   [&](const tbb::blocked_range<size_t> &range) {
+          //       ScopedSetThreadEnvironment set_env(env);
+          //       ref<Sampler> sampler = sensor->sampler()->clone();
+          //       ref<ImageBlock> block =
+          //           new ImageBlock(m_block_size, channels.size(),
+          //                           film->reconstruction_filter(), !has_aovs);
+          //       scoped_flush_denormals flush_denormals(true);
+          //       std::unique_ptr<Float[]> aovs(new Float[channels.size()]);
+          //
+          //       // For each block
+          //       for (auto i = range.begin(); i != range.end() && !should_stop();
+          //           ++i) {
+          //           auto [offset, size, block_id] = spiral.next_block();
+          //           Assert(hprod(size) != 0);
+          //           block->set_size(size);
+          //           block->set_offset(offset);
+          //
+          //           receive_block(scene, sensor, sampler, block,
+          //                    aovs.get(), samples_per_pass, block_id);
+          //           std::cout << "Hello2" << std::endl;
+          //           film->put(block);
+          //
+          //           /* Critical section: update progress bar */ {
+          //               std::lock_guard<std::mutex> lock(mutex);
+          //               blocks_done++;
+          //               progress->update(blocks_done /
+          //                   (ScalarFloat) total_blocks);
+          //           }
+          //       }
+          // });
+
+          std::cout << "Hello_rd" << std::endl;
+
+          Log(Info, "Start rendering...");
+
+          ref<Sampler> sampler = sensor->sampler();
+          // sampler->set_samples_per_wavefront((uint32_t) samples_per_pass);
+
+          ScalarFloat diff_scale_factor =
+            rsqrt((ScalarFloat) sampler->sample_count());
+
+          // This needs to change. Film_size now means range/doppler bins.
+          // Old:
+          // ScalarUInt32 wavefront_size =
+          //   hprod(film_size) * (uint32_t) samples_per_pass;
+          // if (sampler->wavefront_size() != wavefront_size) {
+          //   sampler->seed(0, wavefront_size);
+          // }
+
+          // New:
+          // ScalarUInt32 wavefront_size = (uint32_t) samples_per_pass;
+          // if (sampler->wavefront_size() != wavefront_size) {
+          //   sampler->seed(0, wavefront_size);
+          // }
+
+          // idx from 0:nsamples
+          // UInt32 idx = arange<UInt32>(wavefront_size);
+          // if (samples_per_pass != 1) {
+          //     // idx from 0:1, how does this work as uint32?
+          //     idx /= (uint32_t) samples_per_pass;
+          // }
+          // std::cout<<idx<<std::endl;
+
+          // Old:
+          // ref<ImageBlock> block = new ImageBlock(film_size, channels.size(),
+          //                                      film->reconstruction_filter(),
+          //                                      !has_aovs);
+            // New:
+          ref<ImageBlock> block = new ImageBlock(film_rd_size, channels.size(),
+                                               film->reconstruction_filter(),
+                                               !has_aovs);
+          block->clear();
+          // Modify something depending on film type.
+          // Vector2f pos = Vector2f(Float(idx % uint32_t(film_size[0])),
+          //                       Float(idx / uint32_t(film_size[0])));
+
+          // When considering range doppler, there should be only 1
+          // 'positionpixel'
+          // We will now move across the 'pixel'
+          // Pos should be of size (2,numsampes*numpixels)
+
+          // Throws a malloc error if film size isn't 1x1
+          // Old:
+          // Vector2f pos = Vector2f(Float(idx % uint32_t(1)),
+          //                       Float(idx / uint32_t(1)));
+          // New:
+          // Vector2f pos = Vector2f(1.f, 1.f);
+          // Vector2f pos = Vector2f(0.5f, 0.5f);
+          Vector2f pos = Vector2f(0.f, 0.f);
+          std::vector<Float> aovs(channels.size());
+
+          // Could make this parallel?
+          // Old:
+          // for (size_t i = 0; i < n_passes; i++) {
+          //     receive_sample(scene, sensor, sampler, block, aovs.data(),
+          //                 pos, diff_scale_factor);
+          // }
+          // New:
+          for (size_t i = 0; i < total_spp; i++) {
+              // std::cout << i << std::endl;
+              receive_sample(scene, sensor, sampler, block, aovs.data(),
+                          pos, diff_scale_factor);
+          }
+
+
+          film->put(block);
+
+
+
+
+
+
+
+
+
+
+
+
+
       } else {
+          std::cout << "Hello_c" << std::endl;
+
           Log(Info, "Start rendering...");
 
           ref<Sampler> sampler = sensor->sampler();
@@ -440,8 +668,17 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
 
           ScalarFloat diff_scale_factor =
             rsqrt((ScalarFloat) sampler->sample_count());
-          ScalarUInt32 wavefront_size =
-            hprod(film_size) * (uint32_t) samples_per_pass;
+
+          // This needs to change. Film_size now means range/doppler bins.
+          // Old:
+          // ScalarUInt32 wavefront_size =
+          //   hprod(film_size) * (uint32_t) samples_per_pass;
+          // if (sampler->wavefront_size() != wavefront_size) {
+          //   sampler->seed(0, wavefront_size);
+          // }
+
+          // New:
+          ScalarUInt32 wavefront_size = (uint32_t) samples_per_pass;
           if (sampler->wavefront_size() != wavefront_size) {
             sampler->seed(0, wavefront_size);
           }
@@ -454,16 +691,25 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
           }
           // std::cout<<idx<<std::endl;
 
-          ref<ImageBlock> block = new ImageBlock(film_size, channels.size(),
+          // Old:
+          // ref<ImageBlock> block = new ImageBlock(film_size, channels.size(),
+          //                                      film->reconstruction_filter(),
+          //                                      !has_aovs);
+            // New:
+          ref<ImageBlock> block = new ImageBlock(film_rd_size, channels.size(),
                                                film->reconstruction_filter(),
                                                !has_aovs);
           block->clear();
           // Modify something depending on film type.
           // Vector2f pos = Vector2f(Float(idx % uint32_t(film_size[0])),
           //                       Float(idx / uint32_t(film_size[0])));
-          // When considering range doppler, there should be only 1 'positionpixel'
+
+          // When considering range doppler, there should be only 1
+          // 'positionpixel'
           // We will now move across the 'pixel'
           // Pos should be of size (2,numsampes*numpixels)
+
+          // Throws a malloc error if film size isn't 1x1
           Vector2f pos = Vector2f(Float(idx % uint32_t(1)),
                                 Float(idx / uint32_t(1)));
           std::vector<Float> aovs(channels.size());
@@ -539,6 +785,13 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
     }
 }
 
+// The idea here is that you guarantee that you are getting samples where you
+// want so that they aren't wasted. We say we are starting rays at range r and
+// doppler d. Cameras say they they start at x and y. If they happen to not get
+// any hits, so be it, but they tried.
+// For radar that means that we start with a ray with range and doppler value,
+// then must find a path that achieves this.
+
 MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
   receive_sample(const Scene *scene, const Sensor *sensor, Sampler *sampler,
                     ImageBlock *block, Float *aovs, const Vector2f &pos,
@@ -548,6 +801,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 
       // std::cout << position_sample << std::endl;
 
+      // If we are forcing rays to have a certain range-doppler, we don't need
+      // a tuple because the result naturally falls in the wanted bin.
       Point2f aperture_sample(.5f);
       if (sensor->needs_aperture_sample()) {
           aperture_sample = sampler->next_2d(active);
@@ -627,16 +882,23 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       Float wavelength_sample = sampler->next_1d(active);
 
       // This is just a real (local) position.
-      // Get the sample from 0-1, take away the 
-      Vector2f adjusted_position =
-        (position_sample - sensor->film()->crop_offset()) /
-        sensor->film()->crop_size();
+      // Get the sample from 0-1, take away the
+      // Old:
+      // Vector2f adjusted_position =
+      //   (position_sample - sensor->film()->crop_offset()) /
+      //   sensor->film()->crop_size();
         // Perhaps sensor can have film & ADC?
+      // New:
+      Vector2f adjusted_position = position_sample;
 
       // ray_weight will be like the bsdf of the sensor. I can also use it to
       // apply my phase shift. Maybe not, this more relates to the wavelength.
       // Could make things more complicated, pass a frequency sample, then
       // convert to wavelength inside using medium and bandwidth conversion.
+      // std::cout << time << wavelength_sample << adjusted_position << aperture_sample << std::cout;
+
+      // std::cout << aperture_sample << std::endl;
+
       auto [ray, ray_weight] = sensor->sample_ray_differential(
           time, wavelength_sample, adjusted_position, aperture_sample);
       // this says that the incoming ray has a wavelength and time already.
@@ -651,8 +913,22 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // std::tuple<Spectrum, Mask, Float> result =
       //   sample(scene, sampler, ray, medium, aovs+1, active);
       // When doing this, we only render the 'yellow'
+      // std::tuple<Spectrum, Mask, Float> result =
+      // sample(scene, sampler, ray, medium, aovs+5, active);
       std::tuple<Spectrum, Mask, Float> result =
-      sample(scene, sampler, ray, medium, aovs+5, active);
+      sample(scene, sampler, ray, medium, aovs+3, active);
+
+      // ScalarVector2i rd = (std::get<2>(result)/
+      //   (sensor->far_clip()-sensor->near_clip()), 0);
+
+      // We'll have to get this from our signal/film prop.
+      // Alternatively from our integrator.
+      // ScalarVector2i rd = (std::get<2>(result)/
+      //   (10-0.1), 0);
+      Vector2f rd = (std::get<2>(result)/
+        (10-0.1), 0);
+
+        std::cout << std::get<2>(result) << rd << std::endl;
 
       // Change this back, but allow rays to be modified.
       // std::pair<Spectrum, Mask> result =
@@ -730,7 +1006,12 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // tf_sample = ray.time, ray.wavelengths/frequency
 
       // block->put(tf_sample, aovs, active);
-      block->put(position_sample, aovs, active);
+
+      // Old:
+      // block->put(position_sample, aovs, active);
+      // New:
+      block->put(rd, aovs, active);
+
       // block->put(position_sample, time_bin (as a fraction of the span), frequency_bin, aovs, active);
 
       sampler->advance();

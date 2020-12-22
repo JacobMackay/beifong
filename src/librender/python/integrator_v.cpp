@@ -185,6 +185,41 @@ MTS_PY_EXPORT(Integrator) {
                 return res;
             },
             D(Integrator, render), "scene"_a, "sensor"_a)
+
+        .def("receive",
+            [&](Integrator *integrator, Scene *scene, Sensor *sensor) {
+                py::gil_scoped_release release;
+
+#if MTS_HANDLE_SIGINT
+                // Install new signal handler
+                sigint_handler = [integrator]() {
+                    integrator->cancel();
+                };
+
+                sigint_handler_prev = signal(SIGINT, [](int) {
+                    Log(Warn, "Received interrupt signal, winding down..");
+                    if (sigint_handler) {
+                        sigint_handler();
+                        sigint_handler = std::function<void()>();
+                        signal(SIGINT, sigint_handler_prev);
+                        raise(SIGINT);
+                    }
+                });
+#endif
+
+                bool res = integrator->receive(scene, sensor);
+
+#if MTS_HANDLE_SIGINT
+                // Restore previous signal handler
+                signal(SIGINT, sigint_handler_prev);
+#endif
+
+                return res;
+            },
+            D(Integrator, render), "scene"_a, "sensor"_a)
+            // D(Integrator, receive), "scene"_a, "sensor"_a)
+            // "scene"_a, "sensor"_a)
+
         .def_method(Integrator, cancel);
 
     auto integrator =
