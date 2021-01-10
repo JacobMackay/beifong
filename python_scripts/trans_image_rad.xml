@@ -1,0 +1,98 @@
+<scene version="2.1.0">
+
+<!-- Defaults, these can be set via the command line: -Darg=value -->
+
+	<!-- <default name="spp" value="64"/>
+	<default name="resx" value="640"/>
+	<default name="resy" value="480"/> -->
+
+	<default name="spp" value="1000000"/>
+	<default name="resx" value="1"/>
+	<default name="resy" value="1"/>
+
+<!-- Locations -->
+
+<!-- <transform name="to_world" id="lorigin">
+	<lookat origin="20e-2, 0, 20e-2" target="1, 0, 20e-2" up="0,0,1"/>
+</transform> -->
+
+<!-- Camera and Rendering Parameters -->
+
+	<integrator type="range">
+		<integrator type="pathlength">
+		</integrator>
+		<float name="dr" value="0.5"/>
+		<integer name="bins" value="50"/>
+	</integrator>
+
+	<sensor type="perspective">
+		<string name="fov_axis" value="x"/>
+		<float name="fov" value="120"/>
+		<float name="near_clip" value="0.100000"/>
+		<float name="far_clip" value="100.000000"/>
+		<transform name="to_world">
+			<!-- <lookat origin="20e-2, 0, 20e-2" target="1, 0, 20e-2" up="0,0,1"/> -->
+			<lookat origin="20e-2, 0, 20e-2" target="1, 0, 20e-2" up="0,0,1"/>
+		</transform>
+		<sampler type="independent">
+			<integer name="sample_count" value="$spp"/>
+		</sampler>
+		<film type="hdrfilm">
+			<integer name="width" value="$resx"/>
+			<integer name="height" value="$resy"/>
+			<rfilter type="box"/>
+		</film>
+	</sensor>
+
+<!-- Materials -->
+
+	<bsdf type="twosided" id="material">
+		<bsdf type="diffuse">
+			<!-- <spectrum value="1.0" name="reflectance"/> -->
+			<!-- <spectrum name="reflectance" value="3191387:1, 3191591:1"/> -->
+			<spectrum name="reflectance" value="8292683:1, 8717949:1"/>
+		</bsdf>
+	</bsdf>
+
+<!-- Emitters -->
+
+	<shape type="rectangle" id="transmitAntenna">
+		<transform name="to_world">
+			<scale x="6.5e-3" y="6.5e-3" />
+			<!-- <scale x="50e-3" y="50e-3" /> -->
+			<lookat origin="20e-2, 0, 20e-2" target="1, 0, 20e-2" up="0,0,1"/>
+		</transform>
+		<!-- <ref id="lorigin" name="to_world"/> -->
+		<emitter type="wignertransmitter">
+		<!-- <emitter type="phasedwignertransmitter"> -->
+		<!-- <emitter type="area"> -->
+			<spectrum name="radiance" value="8292683:10000, 8717949:10000"/>
+			<!-- <integer name="nx" value="3"/>
+			<integer name="ny" value="5"/>
+			<float name="wid_x" value="6.5e-3"/>
+			<float name="wid_y" value="6.5e-3"/>
+			<float name="gap_x" value="10e-3"/>
+			<float name="gap_y" value="10e-3"/> -->
+		</emitter>
+	</shape>
+
+<!-- Shapes -->
+
+	<shape type="rectangle" id="target">
+		<transform name="to_world">
+		   <scale x="100e-3" y="50e-3" />
+		   <lookat origin="2, 0, 20e-2" target="0, 0, 20e-2" up="0, 0, 1"/>
+	   </transform>
+		<ref id="material" name="bsdf"/>
+	</shape>
+
+
+	<shape type="rectangle" id="gnd">
+		<transform name="to_world">
+			<scale x="20" y="20" />
+			<lookat origin="0, 0, 0" target="0, 0, 1" up="0,1,0" />
+		</transform>
+		<ref id="material" name="bsdf"/>
+	</shape>
+
+</scene>

@@ -1,0 +1,80 @@
+<scene version="2.1.0">
+
+<!-- Defaults, these can be set via the command line: -Darg=value -->
+
+	<default name="spp" value="10000"/>
+	<default name="resx" value="1"/>
+	<default name="resy" value="1"/>
+
+<!-- Camera and Rendering Parameters -->
+
+	<integrator type="time">
+	    <integrator type="pathtime">
+	    </integrator>
+	</integrator>
+
+	<shape type="rectangle" id="receiveAntenna">
+		<transform name="to_world">
+			<scale x="0.05" y="0.05" />
+			<lookat origin="0, 0, 0" target="0, -1, 0" up="0, 0, 1"/>
+		</transform>
+		<sensor type="fluxmeter">
+			<film type="hdrfilm">
+				<integer name="width" value="$resx"/>
+				<integer name="height" value="$resy"/>
+				<rfilter type="box"/>
+			</film>
+			<sampler type="independent">
+				<integer name="sample_count" value="$spp"/>
+			</sampler>
+		</sensor>
+	</shape>
+
+<!-- Materials -->
+
+	<bsdf type="twosided" id="material">
+		<bsdf type="diffuse">
+			<spectrum value="1.0" name="reflectance"/>
+		</bsdf>
+	</bsdf>
+
+<!-- Emitters -->
+
+	<emitter type="spot">
+		<spectrum value="1.0" name="intensity"/>
+		<float name="cutoff_angle" value="25"/>
+		<float name="beam_width" value="20"/>
+		<transform name="to_world">
+			<lookat origin="0, 0, 0" target="0, -1, 0" up="0, 0, 1"/>
+		</transform>
+	</emitter>
+
+	<!-- <shape type="rectangle" id="transmitAntenna">
+		<transform name="to_world">
+			<scale x="0.05" y="0.05" />
+			<lookat origin="0, 0, 0" target="0, -1, 0" up="0, 0, 1"/>
+		</transform>
+		<emitter type="area">
+			<spectrum name="radiance" value="1.0"/>
+		</emitter>
+	</shape> -->
+
+<!-- Shapes -->
+
+	<shape type="rectangle" id="target">
+		<transform name="to_world">
+		   <scale x="1" y="1" />
+		   <lookat origin="0, -4, 0" target="0, 0, 0" up="0, 0, 1"/>
+	   </transform>
+		<ref id="material" name="bsdf"/>
+	</shape>
+
+	<shape type="rectangle" id="gnd">
+		<transform name="to_world">
+			<scale x="20" y="20" />
+			<lookat origin="0, 0, -0.5" target="0, 0, 0.5" />
+		</transform>
+		<ref id="material" name="bsdf"/>
+	</shape>
+
+</scene>

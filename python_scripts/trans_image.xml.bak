@@ -1,0 +1,247 @@
+<scene version="2.1.0">
+
+<!-- Defaults, these can be set via the command line: -Darg=value -->
+
+	<default name="spp" value="64"/>
+	<default name="resx" value="640"/>
+	<default name="resy" value="480"/>
+
+<!-- Camera and Rendering Parameters -->
+
+	<!-- <integrator type="time">
+	    <integrator type="pathtime">
+	    </integrator>
+	</integrator> -->
+
+	<integrator type="range">
+		<integrator type="pathlength">
+		</integrator>
+		<float name="dr" value="0.1"/>
+		<integer name="bins" value="50"/>
+	</integrator>
+
+	<!-- <integrator type="path">
+		<integer name="max_depth" value="12"/>
+	</integrator> -->
+
+	<!-- <sensor type="perspective">
+		<string name="fov_axis" value="y"/>
+		<float name="fov" value="120"/>
+		<string name="focal_length" value="10mm"/>
+		<float name="near_clip" value="0.100000"/>
+		<float name="far_clip" value="100.000000"/>
+		<transform name="to_world">
+			<lookat origin="0, 0, 0" target="0, -1, 0" up="0, 0, 1"/>
+		</transform>
+		<sampler type="independent">
+			<integer name="sample_count" value="$spp"/>
+		</sampler>
+		<film type="hdrfilm">
+			<integer name="width" value="$resx"/>
+			<integer name="height" value="$resy"/>
+			<rfilter type="box"/>
+		</film>
+	</sensor> -->
+
+	<!-- <rotate value="1,0,0" angle="90" />
+	<rotate value="0,1,0" angle="180" /> -->
+
+	<!-- Oh my fucking god, is the camera the origin? -->
+
+	<sensor type="perspective">
+		<string name="fov_axis" value="x"/>
+		<float name="fov" value="120"/>
+		<!-- <string name="focal_length" value="10mm"/> -->
+		<float name="near_clip" value="0.100000"/>
+		<float name="far_clip" value="100.000000"/>
+		<transform name="to_world">
+			<!-- Camera starts by looking at the sky, rotate about x 90 deg to point it horizontal -->
+			<!-- <translate value="0,0,4"/> -->
+			<!-- <translate value="0,0,1"/>
+			<rotate value="1,0,0" angle="90" />
+			<rotate value="0,1,0" angle="180" /> -->
+			<!-- <rotate value="1,0,0" angle="180" /> -->
+			<!-- <lookat origin="0, 0, 0.5" target="1, 0, -20e-2" up="0, 0, 1"/> -->
+			<!-- <lookat origin="0, 0, 0.5" target="0, 0, -0.5" up="1, 0, 0"/> -->
+			<!-- <lookat origin="0, 0, 0" target="1, 0, 0" up="0, 0, 1"/> -->
+			<!-- <lookat origin="0, 0, 0.5" target="1, 0, 0.5" up="0,0,1"/> -->
+			<!-- <lookat origin="-10e-2, 0, 50e-2" target="1, 0, 20e-2" up="0,0,1"/> -->
+			<lookat origin="20e-2, 0, 20e-2" target="1, 0, 20e-2" up="0,0,1"/>
+
+		</transform>
+		<sampler type="independent">
+			<integer name="sample_count" value="$spp"/>
+		</sampler>
+		<film type="hdrfilm">
+			<integer name="width" value="$resx"/>
+			<integer name="height" value="$resy"/>
+			<rfilter type="box"/>
+		</film>
+	</sensor>
+
+<!-- Materials -->
+
+	<bsdf type="twosided" id="material">
+		<bsdf type="diffuse">
+			<!-- <spectrum value="1.0" name="reflectance"/> -->
+			<!-- <spectrum name="reflectance" value="3191387:1, 3191591:1"/> -->
+			<spectrum name="reflectance" value="8292683:1, 8717949:1"/>
+		</bsdf>
+	</bsdf>
+
+<!-- Emitters -->
+
+	<!-- <emitter type="spot">
+		<spectrum value="100.0" name="intensity"/>
+		<float name="cutoff_angle" value="25"/>
+		<float name="beam_width" value="20"/>
+		<transform name="to_world">
+			<lookat origin="0, 0, 0" target="0, -1, 0" up="0, 0, 1"/>
+		</transform>
+	</emitter> -->
+
+	<!-- <shape type="rectangle" id="transmitAntenna">
+		<transform name="to_world">
+			<scale x="0.05" y="0.05" />
+			<lookat origin="0, 0, 0" target="0, -1, 0" up="0, 0, 1"/>
+		</transform>
+		<emitter type="area">
+			<spectrum name="radiance" value="1000.0"/>
+			<spectrum name="radiance" value="3191387:1000, 3191591:1000"/>
+		</emitter>
+	</shape> -->
+
+	<!-- <shape type="rectangle" id="transmitAntenna">
+		<transform name="to_world">
+			<scale x="10e-3" y="10e-3" />
+			<lookat origin="20e-2, 0, 20e-2" target="1, 0, 20e-2" up="0,0,1"/>
+		</transform>
+		<emitter type="wignertransmitter">
+			<spectrum name="radiance" value="8292683:1000, 8717949:1000"/>
+		</emitter>
+	</shape> -->
+
+	<!-- <shape type="rectangle" id="transmitAntenna">
+		<transform name="to_world">
+			<scale x="0.05" y="0.05" />
+			note this is width/2
+			nulls on range->vertical plane, nulls on cross range->horizontal
+			<scale x="10e-3" y="10e-3" />
+			<scale x="50e-3" y="50e-3" />
+			<scale x="25e-3" y="25e-3" />
+			<lookat origin="0, 0, 0" target="0, -1, 0" up="0, 0, 1"/>
+			<lookat origin="0, 0, 0" target="0, 1, 0" up="0, 0, 1"/>
+			<lookat origin="0, 0, 0" target="0, 1, 0" up="0, 0, 1"/>
+			<lookat origin="0, 1, 0" target="1, 0, 0" up="0,0,-1"/>
+
+			<translate value="0,0,1" />
+			Get to normal robot frame
+			We might be in y up, x right, z into
+			<rotate value="0,1,0" angle="180" />
+			<rotate value="1,0,0" angle="90" />
+
+			<rotate value="0,1,0" angle="90" />
+			<rotate value="0,0,1" angle="90" />
+			<lookat origin="20e-2, 0, 20e-2" target="1, 0, 20e-2" up="0,0,1"/>
+			<lookat origin="-0.5, 0, 0" target="0.5, 0, 0" up="0,0,1"/>
+			<lookat origin="0, 0, 0" target="1, 0, 0" up="0,0,1"/>
+		</transform>
+		<emitter type="wignertransmitter">
+		<emitter type="area">
+			<spectrum name="radiance" value="1000.0"/>
+			<spectrum name="radiance" value="3191387:1000, 3191591:1000"/>
+			<spectrum name="radiance" value="3191489:1000"/>
+			<spectrum name="radiance" value="8292683:0.005, 8717949:0.005"/>
+			<spectrum name="radiance" value="8292683:1000, 8717949:1000"/>
+			<spectrum name="radiance" value="8292683:100, 8717949:100"/>
+			<spectrum name="radiance" value="8500000:1000, 8500001:1000"/>
+		</emitter>
+	</shape> -->
+
+	<shape type="rectangle" id="transmitAntenna">
+		<transform name="to_world">
+			<scale x="10e-3" y="10e-3" />
+			<lookat origin="20e-2, 0, 20e-2" target="1, 0, 20e-2" up="0,0,1"/>
+		</transform>
+		<!-- <emitter type="wignertransmitter"> -->
+		<emitter type="phasedwignertransmitter">
+		<!-- <emitter type="area"> -->
+			<spectrum name="radiance" value="8292683:1000, 8717949:1000"/>
+			<shape type="rectangle">
+		</emitter>
+	</shape>
+
+	<shape type="phasedrectangle" id="transmitAntenna">
+		<transform name="to_world">
+			<scale x="10e-3" y="10e-3" />
+			<lookat origin="20e-2, 0, 20e-2" target="1, 0, 20e-2" up="0,0,1"/>
+		</transform>
+		<!-- <emitter type="wignertransmitter"> -->
+		<emitter type="phasedwignertransmitter">
+		<!-- <emitter type="area"> -->
+			<spectrum name="radiance" value="8292683:1000, 8717949:1000"/>
+			<shape type="rectangle">
+		</emitter>
+	</shape>
+
+	<!-- <emitter type="pointtransmitter">
+		<spectrum name="intensity" value="1000.0"/>
+		<shape type="rectangle">
+			<transform name="to_world">
+				<scale x="0.05" y="0.05" />
+				<lookat origin="0, 0, 0" target="0, -1, 0" up="0, 0, 1"/>
+			</transform>
+		</shape>
+	</emitter> -->
+
+	<!-- <shape type="rectangle" id="transmitAntenna">
+		<transform name="to_world">
+			<scale x="0.05" y="0.05" />
+			<lookat origin="0, 0, 0" target="0, -1, 0" up="0, 0, 1"/>
+		</transform>
+		<emitter type="pointtransmitter">
+			<spectrum name="intensity" value="10.0"/>
+		</emitter>
+	</shape> -->
+
+<!-- Shapes -->
+
+	<shape type="rectangle" id="target">
+		<transform name="to_world">
+		   <!-- <scale x="250e-3" y="250e-3" /> -->
+		   <scale x="125e-3" y="50e-3" />
+		   <lookat origin="2, 0, 20e-2" target="0, 0, 20e-2" up="0, 0, 1"/>
+		   <!-- <lookat origin="2, 0, 0" target="0, 0, 0" up="0, 0, 1"/> -->
+	   </transform>
+		<ref id="material" name="bsdf"/>
+		<!-- <bsdf type="roughconductor">
+		</bsdf>
+		<bsdf type="plastic">
+		</bsdf> -->
+	</shape>
+
+	<!-- <shape type="rectangle" id="target">
+		<transform name="to_world">
+		   <scale x="1" y="1" />
+		   <lookat origin="2, 0, 0" target="0, 0, 0" up="0, 0, 1"/>
+		   <lookat origin="0, -1, 0" target="0, 0, 0" up="0, 0, 1"/>
+	   </transform>
+		<ref id="material" name="bsdf"/>
+	</shape> -->
+
+	<shape type="rectangle" id="gnd">
+		<transform name="to_world">
+			<scale x="20" y="20" />
+			<lookat origin="0, 0, 0" target="0, 0, 1" up="0,1,0" />
+			<!-- <translate value="-10,-10,-0.1"/> -->
+			<!-- <lookat origin="0, 0, -25e-3" target="0, 0, -0.1" /> -->
+			<!-- <lookat origin="0, 0, -10e-2" target="0, 0, -1" /> -->
+		</transform>
+		<ref id="material" name="bsdf"/>
+		<!-- <bsdf type="roughconductor">
+		</bsdf> -->
+		<!-- <bsdf type="plastic">
+		</bsdf> -->
+	</shape>
+
+</scene>

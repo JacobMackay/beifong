@@ -1,0 +1,112 @@
+        // The condition necessary is that the components of the wave remain
+        // coherent throughout the whole extent of their travel.
+        // Perhaps this means that on receive we need to take the wdf of
+        // different sets of incoming rays and take the cross wdf.
+        // Perhaps for each ray or packet, instead of summing, take the xwdf
+        // then sum.
+        // Showing this with single pulse temporal will be hard. Can show with
+        // envelope detection, or continuous.
+        // Two different experiments, beam steering and multipath.
+        // Temporal phase effects in spatial ray-based radar rendering.
+
+        // The wdf has been shown to be a useful tool in modelling spatial and
+        // angular effects of scene elements in optical rendering, and easily
+        // extends to beam effects which are prominent at radar wavelengths.
+        // In this paper we show these effects for radar simulation. We extend
+        // the framework, and show inclusion of temporal coherence/phase effects
+        // which are also prominent in radar, in the form of phased-array beam
+        // steering and multipath.
+
+        // For beam steering, basically take the wdf of steering angle as a
+        // function of x, and multiply wigners.
+
+        // At each interaction (surface, emitter, receiver) apply a phase wigner
+        // layer which is a phase shift proportional to travel length. This is
+        // readily available and mostly unobtrusive as rays usually have path
+        // lengths in this part of their calculations. ie part of the bsdf Now
+        // encodes path length/phase. The counter is to just do this on
+        // reception. Part of the reason we see anything when doing multipath
+        // experiment with graham is that while the pulse is on, there is
+        // continuous wave, so direct and indirect paths can have time together.
+        // What that means is that the rays arriving in the same bin get
+        // coherently summed, ie cross wignered/phased.
+        // As part of paper, show 1d example in matlab/python as well as proper
+        // implementation.
+
+//         Note to self: Put together a work which is inverse radar/temporal rendering, regardless of wave effects.
+        //
+        // 3 papers: wigner render with phase
+        // reconstruction with shitty scene
+        // maths for wigner arbitary
+
+        // Receiver could have a phase filter/layer which is proportional to the incoming rays phase/path length
+        // Or each object could have it. That way it is similar to current ray tracing/intersection tests....no
+
+
+Perhaps the reason we see the 'pulse' is because the sensor is the source of the rays.
+
+To test if accurate: find null2null beamwidth, and range, then compare.
+
+
+TODO:
+
+Get phased array going
+Get transient/range/signal working
+Get multipath working
+Get materials/wigners for objects working...this is quite deep
+
+transmitter, integrator, receiver, objects
+
+// How will we do a phased array?
+
+best would be to have a member shape which is the template of the element
+then: centre spacing x, centre spacing y, nx, ny
+(if even, centre has no element, if odd centre has element)
+...centre spacing r, centre spacing theta
+
+Ideal would be either shapegroup or mesh
+
+Easy solution: Remember this is mostly hack for now, don't worry to much but be aware
+Make a rectangle which is a phased_wigner_transmitter
+It needs a rectangle/shape
+The shape should have a to-world
+Also should have nx, ny elements, widx, widy, spacex, spacey
+These should not be larger or go outside the parent shape.
+
+Remember everything needs to be able to be tested.
+
+
+2 possibilities: Define the base shape for intersections
+or define elements, then bbox expand and hopefully we get intersections
+
+
+
+A question that I still haven't answered: WDF is a complete formulation. But how do we account for phase?
+
+In his thesis, cuypers talks about a surfaces ability to impart a phase delay on light. Free space propagation is modelled currently as having no effect. Free space could impart a phase delay. But he uses this phase delay to bias an angle......in this sim framework, phase only has an effect when it 'impacts' something. eg waves on camera, physical impact
+Eg a wave hitting a mill. if it hits with 0 phase (ie no instantaneous amplitude), the mill doesn't experience a force...but the wave still reflects and continues.
+
+
+
+The way renderers ensure you get useful information is by choosing locations on the image and using these as start points for ray tracing.
+This is pretty clever. I should take the same idea and apply it to temporal rfendering.....but there are issues. If many targets are located at some ranges, and not mnany at others, how should I focus my efforts?
+
+Do a simple render to find the shape, then focus on where is good? This is a piece of work in itself. Similar to david's radar, but with simulation.
+
+
+I think I may need a nested render...render 1 scene from view 1, then render again, and append. I wonder if movie interpolation could help? Again probably a work in itself.
+
+Real world output data: buffer with fixed size, range, powerpor
+
+
+
+
+
+
+
+
+
+Temporal rendering pipeline:
+Lets do single shot for now: create routine/framework for temporal rendering into a block.
+Then investigate how to make a movie.
+

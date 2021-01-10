@@ -1,0 +1,145 @@
+<scene version="2.1.0">
+
+<!-- Defaults, these can be set via the command line: -Darg=value -->
+
+	<default name="spp" value="400"/>
+	<default name="resx" value="400"/>
+	<default name="resy" value="400"/>
+
+<!-- Camera and Rendering Parameters -->
+
+	<!-- <integrator type="time">
+	    <integrator type="pathtime">
+	    </integrator>
+	</integrator> -->
+
+	<integrator type="range">
+		<integrator type="pathlength">
+		</integrator>
+		<float name="dr" value="0.1"/>
+		<integer name="bins" value="50"/>
+	</integrator>
+
+	<!-- <integrator type="path">
+		<integer name="max_depth" value="12"/>
+	</integrator> -->
+
+	<sensor type="perspective">
+		<string name="fov_axis" value="x"/>
+		<float name="fov" value="45"/>
+		<!-- <string name="focal_length" string="200mm"/> -->
+		<float name="near_clip" value="0.100000"/>
+		<float name="far_clip" value="100.000000"/>
+		<transform name="to_world">
+			<lookat origin="0, 0, 0" target="0, -1, 0" up="0, 0, 1"/>
+		</transform>
+		<sampler type="independent">
+			<integer name="sample_count" value="$spp"/>
+		</sampler>
+		<film type="hdrfilm">
+			<integer name="width" value="$resx"/>
+			<integer name="height" value="$resy"/>
+			<rfilter type="box"/>
+		</film>
+	</sensor>
+
+	<!-- <sensor type="projectivecamera">
+		<string name="fov_axis" value="x"/>
+		<float name="fov" value="170"/>
+		<float name="near_clip" value="0.100000"/>
+		<float name="far_clip" value="100.000000"/>
+		<transform name="to_world">
+			<lookat origin="0, 0, 0" target="0, -1, 0" up="0, 0, 1"/>
+		</transform>
+		<sampler type="independent">
+			<integer name="sample_count" value="$spp"/>
+		</sampler>
+		<film type="hdrfilm">
+			<integer name="width" value="$resx"/>
+			<integer name="height" value="$resy"/>
+			<rfilter type="box"/>
+		</film>
+	</sensor> -->
+
+<!-- Materials -->
+
+	<bsdf type="twosided" id="material">
+		<bsdf type="diffuse">
+			<!-- <spectrum value="1.0" name="reflectance"/> -->
+			<spectrum name="reflectance" value="3191387:1, 3191591:1"/>
+		</bsdf>
+	</bsdf>
+
+<!-- Emitters -->
+
+	<!-- <emitter type="spot">
+		<spectrum value="100.0" name="intensity"/>
+		<float name="cutoff_angle" value="25"/>
+		<float name="beam_width" value="20"/>
+		<transform name="to_world">
+			<lookat origin="0, 0, 0" target="0, -1, 0" up="0, 0, 1"/>
+		</transform>
+	</emitter> -->
+
+	<!-- <shape type="rectangle" id="transmitAntenna">
+		<transform name="to_world">
+			<scale x="0.05" y="0.05" />
+			<lookat origin="0, 0, 0" target="0, -1, 0" up="0, 0, 1"/>
+		</transform>
+		<emitter type="area">
+			<spectrum name="radiance" value="1000.0"/>
+			<spectrum name="radiance" value="3191387:1000, 3191591:1000"/>
+		</emitter>
+	</shape> -->
+
+	<shape type="rectangle" id="transmitAntenna">
+		<transform name="to_world">
+			<!-- <scale x="0.05" y="0.05" /> -->
+			<scale x="0.2" y="0.05" />
+			<lookat origin="0, 0, 0" target="0, -1, 0" up="0, 0, 1"/>
+		</transform>
+		<emitter type="wignertransmitter">
+			<!-- <spectrum name="radiance" value="1000.0"/> -->
+			<spectrum name="radiance" value="3191387:1000, 3191591:1000"/>
+		</emitter>
+	</shape>
+
+	<!-- <emitter type="pointtransmitter">
+		<spectrum name="intensity" value="1000.0"/>
+		<shape type="rectangle">
+			<transform name="to_world">
+				<scale x="0.05" y="0.05" />
+				<lookat origin="0, 0, 0" target="0, -1, 0" up="0, 0, 1"/>
+			</transform>
+		</shape>
+	</emitter> -->
+
+	<!-- <shape type="rectangle" id="transmitAntenna">
+		<transform name="to_world">
+			<scale x="0.05" y="0.05" />
+			<lookat origin="0, 0, 0" target="0, -1, 0" up="0, 0, 1"/>
+		</transform>
+		<emitter type="pointtransmitter">
+			<spectrum name="intensity" value="10.0"/>
+		</emitter>
+	</shape> -->
+
+<!-- Shapes -->
+
+	<shape type="rectangle" id="target">
+		<transform name="to_world">
+		   <scale x="1" y="1" />
+		   <lookat origin="0, -4, 0" target="0, 0, 0" up="0, 0, 1"/>
+	   </transform>
+		<ref id="material" name="bsdf"/>
+	</shape>
+
+	<shape type="rectangle" id="gnd">
+		<transform name="to_world">
+			<scale x="20" y="20" />
+			<lookat origin="0, 0, -0.5" target="0, 0, 0.5" />
+		</transform>
+		<ref id="material" name="bsdf"/>
+	</shape>
+
+</scene>
