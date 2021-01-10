@@ -3,6 +3,7 @@
 #include <mitsuba/render/bsdf.h>
 #include <mitsuba/render/emitter.h>
 #include <mitsuba/render/sensor.h>
+#include <mitsuba/render/receiver.h>
 #include <mitsuba/render/medium.h>
 #include <mitsuba/render/mesh.h>
 #include <mitsuba/render/shape.h>
@@ -44,9 +45,11 @@ MTS_PY_EXPORT(Shape) {
         .def_method(Shape, exterior_medium)
         .def_method(Shape, is_emitter)
         .def_method(Shape, is_sensor)
+        .def_method(Shape, is_receiver)
         .def("emitter", vectorize(py::overload_cast<Mask>(&Shape::emitter, py::const_)),
                 "active"_a = true)
         .def("sensor", py::overload_cast<>(&Shape::sensor, py::const_))
+        .def("receiver", py::overload_cast<>(&Shape::receiver, py::const_))
         .def("bsdf", py::overload_cast<>(&Shape::bsdf, py::const_))
         .def_method(Shape, parameters_grad_enabled)
         .def_method(Shape, primitive_count)

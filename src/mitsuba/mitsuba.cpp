@@ -112,17 +112,17 @@ bool render(Object *scene_, size_t sensor_i, filesystem::path filename) {
 }
 
 template <typename Float, typename Spectrum>
-bool receive(Object *scene_, size_t sensor_i, filesystem::path filename) {
+bool receive(Object *scene_, size_t receiver_i, filesystem::path filename) {
     auto *scene = dynamic_cast<Scene<Float, Spectrum> *>(scene_);
     if (!scene)
         Throw("Root element of the input file must be a <scene> tag!");
-    if (sensor_i >= scene->sensors().size())
+    if (receiver_i >= scene->receivers().size())
         Throw("Specified sensor index is out of bounds!");
-    auto sensor = scene->sensors()[sensor_i];
-    auto film = sensor->film();
+    auto receiver = scene->receivers()[receiver_i];
+    auto adc = receiver->adc();
 
     filename.replace_extension("exr");
-    film->set_destination_file(filename);
+    adc->set_destination_file(filename);
 
     auto integrator = scene->integrator();
     if (!integrator)
@@ -130,17 +130,17 @@ bool receive(Object *scene_, size_t sensor_i, filesystem::path filename) {
 
     /* critical section */ {
         std::lock_guard<std::mutex> guard(develop_callback_mutex);
-        develop_callback = [&]() { film->develop(); };
+        develop_callback = [&]() { adc->develop(); };
     }
 
-    bool success = integrator->receive(scene, sensor.get());
+    bool success = integrator->receive(scene, receiver.get());
 
     /* critical section */ {
         std::lock_guard<std::mutex> guard(develop_callback_mutex);
         develop_callback = nullptr;
     }
     if (success)
-        film->develop();
+        adc->develop();
     else
         Log(Warn, "\U0000274C Rendering failed, result not saved.");
     return success;
@@ -174,6 +174,7 @@ int main(int argc, char *argv[]) {
     auto arg_verbose   = parser.add(StringVec{ "-v", "--verbose" }, false);
     auto arg_define    = parser.add(StringVec{ "-D", "--define" }, true);
     auto arg_sensor_i  = parser.add(StringVec{ "-s", "--sensor" }, true);
+    auto arg_receiver_i= parser.add(StringVec{ "-r", "--receiver" }, false);
     auto arg_output    = parser.add(StringVec{ "-o", "--output" }, true);
     auto arg_update    = parser.add(StringVec{ "-u", "--update" }, false);
     auto arg_help      = parser.add(StringVec{ "-h", "--help" });
@@ -225,6 +226,7 @@ int main(int argc, char *argv[]) {
 #endif
 
         size_t sensor_i  = (*arg_sensor_i ? arg_sensor_i->as_int() : 0);
+        size_t receiver_i  = (*arg_receiver_i ? arg_receiver_i->as_int() : 0);
 
         // Initialize Intel Thread Building Blocks with the requested number of threads
         if (*arg_threads)
@@ -278,8 +280,17 @@ int main(int argc, char *argv[]) {
             ref<Object> parsed =
                 xml::load_file(arg_extra->as_string(), mode, params, *arg_update);
 
-            bool success = MTS_INVOKE_VARIANT(mode, render, parsed.get(),
-                                              sensor_i, filename);
+            // Run in receive or render
+            bool success;
+            if(receiver_i){
+                success = MTS_INVOKE_VARIANT(mode, receive, parsed.get(),
+                                                  receiver_i, filename);
+            } else {
+                success = MTS_INVOKE_VARIANT(mode, render, parsed.get(),
+                                                  sensor_i, filename);
+            }
+
+
             print_profile = print_profile || success;
             arg_extra = arg_extra->next();
         }

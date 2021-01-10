@@ -100,7 +100,7 @@ The following XML snippet discribes a film that writes a full-HD RGBA OpenEXR fi
 template <typename Float, typename Spectrum>
 class HDRADC final : public ADC<Float, Spectrum> {
  public:
-     MTS_IMPORT_BASE(ADC, m_size, m_crop_size, m_crop_offset,
+     MTS_IMPORT_BASE(ADC, m_size, m_window_size, m_window_offset,
          m_high_quality_edges, m_filter)
      MTS_IMPORT_TYPES(SignalBlock)
 
@@ -163,8 +163,8 @@ class HDRADC final : public ADC<Float, Spectrum> {
              }
          }
 
-         m_storage = new SignalBlock(m_crop_size, channels.size());
-         m_storage->set_offset(m_crop_offset);
+         m_storage = new SignalBlock(m_window_size, channels.size());
+         m_storage->set_offset(m_window_offset);
          m_storage->clear();
          m_channels = channels;
      }
@@ -315,8 +315,8 @@ class HDRADC final : public ADC<Float, Spectrum> {
          std::ostringstream oss;
          oss << "HDRADC[" << std::endl
              << "  size = " << m_size        << "," << std::endl
-             << "  crop_size = " << m_crop_size   << "," << std::endl
-             << "  crop_offset = " << m_crop_offset << "," << std::endl
+             << "  window_size = " << m_window_size   << "," << std::endl
+             << "  window_offset = " << m_window_offset << "," << std::endl
              << "  high_quality_edges = "
                 << m_high_quality_edges << "," << std::endl
              << "  filter = " << m_filter << "," << std::endl

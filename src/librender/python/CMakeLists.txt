@@ -17,8 +17,10 @@ foreach (MTS_VARIANT ${MTS_VARIANTS})
     emitter_v.cpp
     endpoint_v.cpp
     film_v.cpp
+    adc_v.cpp
     fresnel_v.cpp
     imageblock_v.cpp
+    signalblock_v.cpp
     interaction_v.cpp
     integrator_v.cpp
     medium_v.cpp
@@ -29,6 +31,7 @@ foreach (MTS_VARIANT ${MTS_VARIANTS})
     sampler_v.cpp
     scene_v.cpp
     sensor_v.cpp
+    receiver_v.cpp
     shape_v.cpp
     srgb_v.cpp
     texture_v.cpp

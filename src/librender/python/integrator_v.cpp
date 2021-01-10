@@ -187,7 +187,7 @@ MTS_PY_EXPORT(Integrator) {
             D(Integrator, render), "scene"_a, "sensor"_a)
 
         .def("receive",
-            [&](Integrator *integrator, Scene *scene, Sensor *sensor) {
+            [&](Integrator *integrator, Scene *scene, Receiver *receiver) {
                 py::gil_scoped_release release;
 
 #if MTS_HANDLE_SIGINT
@@ -207,7 +207,7 @@ MTS_PY_EXPORT(Integrator) {
                 });
 #endif
 
-                bool res = integrator->receive(scene, sensor);
+                bool res = integrator->receive(scene, receiver);
 
 #if MTS_HANDLE_SIGINT
                 // Restore previous signal handler
@@ -216,9 +216,7 @@ MTS_PY_EXPORT(Integrator) {
 
                 return res;
             },
-            D(Integrator, render), "scene"_a, "sensor"_a)
-            // D(Integrator, receive), "scene"_a, "sensor"_a)
-            // "scene"_a, "sensor"_a)
+            D(Integrator, receive), "scene"_a, "receiver"_a)
 
         .def_method(Integrator, cancel);
 

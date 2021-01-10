@@ -12,7 +12,8 @@ NAMESPACE_BEGIN(mitsuba)
 // Sensor interface
 // =============================================================================
 
-MTS_VARIANT Receiver<Float, Spectrum>::Receiver(const Properties &props) : Base(props) {
+MTS_VARIANT Receiver<Float, Spectrum>::Receiver(const Properties &props)
+    : Base(props) {
     m_shutter_open      = props.float_("shutter_open", 0.f);
     m_shutter_open_time = props.float_("shutter_close", 0.f) - m_shutter_open;
 
@@ -25,9 +26,9 @@ MTS_VARIANT Receiver<Float, Spectrum>::Receiver(const Properties &props) : Base(
         auto *sampler = dynamic_cast<Sampler *>(obj.get());
 
         if (adc) {
-            if (m_film)
-                Throw("Only one film can be specified per sensor.");
-            m_film = adc;
+            if (m_adc)
+                Throw("Only one adc can be specified per sensor.");
+            m_adc = adc;
             props.mark_queried(name);
         } else if (sampler) {
             if (m_sampler)
@@ -38,31 +39,42 @@ MTS_VARIANT Receiver<Float, Spectrum>::Receiver(const Properties &props) : Base(
     }
 
     auto pmgr = PluginManager::instance();
-    if (!m_film) {
+    if (!m_adc) {
         // Instantiate an high dynamic range film if none was specified
         // Properties props_film("hdrfilm");
-        Properties props_film("hdradc");
-        m_film = static_cast<ADC *>(pmgr->create_object<ADC>(props_film));
+        Properties props_adc("hdradc");
+        m_adc = static_cast<ADC *>(pmgr->create_object<ADC>(props_adc));
     }
 
     if (!m_sampler) {
-        // Instantiate an independent filter with 4 samples/pixel if none was specified
+        // Instantiate an independent filter with 4 samples/pixel if none was
+        // specified
         Properties props_sampler("independent");
         props_sampler.set_int("sample_count", 4);
-        m_sampler = static_cast<Sampler *>(pmgr->create_object<Sampler>(props_sampler));
+        m_sampler = static_cast<Sampler *>
+            (pmgr->create_object<Sampler>(props_sampler));
     }
 
-    m_resolution = ScalarVector2f(m_film->crop_size());
+    m_resolution = ScalarVector2f(m_adc->window_size());
 }
 
 MTS_VARIANT Receiver<Float, Spectrum>::~Receiver() {}
 
-MTS_VARIANT std::pair<typename Receiver<Float, Spectrum>::RayDifferential3f, Spectrum>
-Receiver<Float, Spectrum>::sample_ray_differential(Float time, Float sample1, const Point2f &sample2,
-                                                 const Point2f &sample3, Mask active) const {
+MTS_VARIANT std::pair<
+    typename Receiver<Float, Spectrum>::RayDifferential3f, Spectrum>
+Receiver<Float, Spectrum>::sample_ray_differential(Float time, Float sample1,
+                                                    const Point2f &sample2,
+                                                    const Point2f &sample3,
+                                                    Mask active) const {
     MTS_MASKED_FUNCTION(ProfilerPhase::EndpointSampleRay, active);
 
-    auto [temp_ray, result_spec] = sample_ray(time, sample1, sample2, sample3, active);
+    // Note, this is for testing how the output changes wrt small differences
+    // in position. Changing the position on the sensor is still useful, but
+    // care must be taken in temporal cases. The resolution it NOW refers to
+    // is time,range/frequency,doppler bins.
+
+    auto [temp_ray, result_spec] =
+        sample_ray(time, sample1, sample2, sample3, active);
 
     RayDifferential result_ray(temp_ray);
 
@@ -70,13 +82,15 @@ Receiver<Float, Spectrum>::sample_ray_differential(Float time, Float sample1, co
     Vector2f dy(0.f, 1.f / m_resolution.y());
 
     // Sample a result_ray for X+1
-    std::tie(temp_ray, std::ignore) = sample_ray(time, sample1, sample2 + dx, sample3, active);
+    std::tie(temp_ray, std::ignore) =
+        sample_ray(time, sample1, sample2 + dx, sample3, active);
 
     result_ray.o_x = temp_ray.o;
     result_ray.d_x = temp_ray.d;
 
     // Sample a result_ray for Y+1
-    std::tie(temp_ray, std::ignore) = sample_ray(time, sample1, sample2 + dy, sample3, active);
+    std::tie(temp_ray, std::ignore) =
+        sample_ray(time, sample1, sample2 + dy, sample3, active);
 
     result_ray.o_y = temp_ray.o;
     result_ray.d_y = temp_ray.d;
@@ -88,7 +102,7 @@ Receiver<Float, Spectrum>::sample_ray_differential(Float time, Float sample1, co
 // =============================================================================
 // ProjectiveCamera interface
 // =============================================================================
-// 
+//
 // MTS_VARIANT ProjectiveCamera<Float, Spectrum>::ProjectiveCamera(const Properties &props)
 //     : Base(props) {
 //     /* Distance to the near clipping plane */

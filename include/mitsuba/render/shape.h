@@ -22,7 +22,7 @@ NAMESPACE_BEGIN(mitsuba)
 template <typename Float, typename Spectrum>
 class MTS_EXPORT_RENDER Shape : public Object {
 public:
-    MTS_IMPORT_TYPES(BSDF, Medium, Emitter, Sensor, MeshAttribute);
+    MTS_IMPORT_TYPES(BSDF, Medium, Emitter, Sensor, Receiver, MeshAttribute);
 
     // Use 32 bit indices to keep track of indices to conserve memory
     using ScalarIndex = uint32_t;
@@ -435,6 +435,14 @@ public:
     /// Return the area sensor associated with this shape (if any)
     Sensor *sensor() { return m_sensor.get(); }
 
+    /// Is this shape also an area receiver?
+    bool is_receiver() const { return (bool) m_receiver; }
+
+    /// Return the area receiver associated with this shape (if any)
+    const Receiver *receiver() const { return m_receiver.get(); }
+    /// Return the area receiver associated with this shape (if any)
+    Receiver *receiver() { return m_receiver.get(); }
+
     /**
      * \brief Returns the number of sub-primitives that make up this shape
      *
@@ -570,6 +578,7 @@ protected:
     ref<BSDF> m_bsdf;
     ref<Emitter> m_emitter;
     ref<Sensor> m_sensor;
+    ref<Receiver> m_receiver;
     ref<Medium> m_interior_medium;
     ref<Medium> m_exterior_medium;
     std::string m_id;
@@ -597,6 +606,7 @@ ENOKI_CALL_SUPPORT_TEMPLATE_BEGIN(mitsuba::Shape)
     ENOKI_CALL_SUPPORT_METHOD(eval_attribute_3)
     ENOKI_CALL_SUPPORT_GETTER_TYPE(emitter, m_emitter, const typename Class::Emitter *)
     ENOKI_CALL_SUPPORT_GETTER_TYPE(sensor, m_sensor, const typename Class::Sensor *)
+    ENOKI_CALL_SUPPORT_GETTER_TYPE(receiver, m_receiver, const typename Class::Receiver *)
     ENOKI_CALL_SUPPORT_GETTER_TYPE(bsdf, m_bsdf, const typename Class::BSDF *)
     ENOKI_CALL_SUPPORT_GETTER_TYPE(interior_medium, m_interior_medium,
                                    const typename Class::Medium *)
@@ -604,6 +614,7 @@ ENOKI_CALL_SUPPORT_TEMPLATE_BEGIN(mitsuba::Shape)
                                    const typename Class::Medium *)
     auto is_emitter() const { return neq(emitter(), nullptr); }
     auto is_sensor() const { return neq(sensor(), nullptr); }
+    auto is_receiver() const { return neq(receiver(), nullptr); }
     auto is_medium_transition() const { return neq(interior_medium(), nullptr) ||
                                                neq(exterior_medium(), nullptr); }
 ENOKI_CALL_SUPPORT_TEMPLATE_END(mitsuba::Shape)

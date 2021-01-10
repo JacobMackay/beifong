@@ -48,7 +48,7 @@ add_library(mitsuba-render-obj OBJECT
   adc.cpp          ${INC_DIR}/adc.h
                    ${INC_DIR}/fresnel.h
   imageblock.cpp   ${INC_DIR}/imageblock.h
-  signalblock.cpp   ${INC_DIR}/signalblock.h
+  signalblock.cpp  ${INC_DIR}/signalblock.h
   integrator.cpp   ${INC_DIR}/integrator.h
                    ${INC_DIR}/interaction.h
   kdtree.cpp       ${INC_DIR}/kdtree.h

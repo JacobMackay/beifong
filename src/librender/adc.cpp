@@ -5,29 +5,41 @@
 NAMESPACE_BEGIN(mitsuba)
 
 MTS_VARIANT ADC<Float, Spectrum>::ADC(const Properties &props) : Object() {
-    bool is_m_film = string::to_lower(props.plugin_name()) == "mfilm";
+    bool is_m_adc = string::to_lower(props.plugin_name()) == "madc";
 
-    // Horizontal and vertical film resolution in pixels
+    // Time/range and frequency/doppler ADC resolution in bins
     m_size = ScalarVector2i(
-        props.int_("width", is_m_film ? 1 : 768),
-        props.int_("height", is_m_film ? 1 : 576)
+        props.int_("tr_bins", is_m_adc ? 1 : 2e8),
+        props.int_("fd_bins", is_m_adc ? 1 : 2e8)
     );
 
-    // Crop window specified in pixels - by default, this matches the full sensor area.
-    ScalarPoint2i crop_offset = ScalarPoint2i(
-        props.int_("crop_offset_x", 0),
-        props.int_("crop_offset_y", 0)
+    // Window specified in bins - by default, this matches the full ADC range.
+    ScalarVector2i window_size = ScalarVector2i(
+        props.int_("window_tr_bins", m_size.x()),
+        props.int_("window_fd_bins", m_size.y())
     );
 
-    ScalarVector2i crop_size = ScalarVector2i(
-        props.int_("crop_width", m_size.x()),
-        props.int_("crop_height", m_size.y())
+    ScalarPoint2i window_offset = ScalarPoint2i(
+        props.int_("window_offset_tr", 0),
+        props.int_("window_offset_fd", 0)
     );
 
-    set_crop_window(crop_offset, crop_size);
+    set_window(window_offset, window_size);
 
-    /* If set to true, regions slightly outside of the film plane will also be
-       sampled, which improves the image quality at the edges especially with
+    // Time/range and frequency/doppler ADC bandwidth in s/m and Hz/(s/m)
+    m_bandwidth = ScalarVector2f(
+        (props.float_("tr_max", 1.f) - props.float_("tr_min", 1.f)),
+        props.float_("fd_bandwidth", 1.f)
+    );
+
+    // Time/range and frequency/doppler ADC centres
+    m_centres = ScalarVector2f(
+        (props.float_("tr_max", 0.f) + props.float_("tr_min", 0.f))/2,
+        props.float_("fd_centre", 0.f)
+    );
+
+    /* If set to true, regions slightly outside of the ADC range will also be
+       sampled, which improves the signal quality at the edges especially with
        large reconstruction filters. */
     m_high_quality_edges = props.bool_("high_quality_edges", false);
 
@@ -36,38 +48,41 @@ MTS_VARIANT ADC<Float, Spectrum>::ADC(const Properties &props) : Object() {
         auto *rfilter = dynamic_cast<ReconstructionFilter *>(obj.get());
         if (rfilter) {
             if (m_filter)
-                Throw("An adc can only have one reconstruction filter.");
+                Throw("An ADC can only have one reconstruction filter.");
             m_filter = rfilter;
             props.mark_queried(name);
         }
     }
 
     if (!m_filter) {
-        // No reconstruction filter has been selected. Load a Gaussian filter by default
-        m_filter =
-            PluginManager::instance()->create_object<ReconstructionFilter>(Properties("gaussian"));
+        // No reconstruction filter has been selected. Load a Gaussian filter
+        // by default
+        m_filter = PluginManager::instance()
+            ->create_object<ReconstructionFilter>(Properties("gaussian"));
     }
 }
 
 MTS_VARIANT ADC<Float, Spectrum>::~ADC() {}
 
-MTS_VARIANT void ADC<Float, Spectrum>::set_crop_window(const ScalarPoint2i &crop_offset,
-                                                        const ScalarVector2i &crop_size) {
-    if (any(crop_offset < 0 || crop_size <= 0 || crop_offset + crop_size > m_size))
-        Throw("Invalid crop window specification!\n"
-              "offset %s + crop size %s vs full size %s",
-              crop_offset, crop_size, m_size);
+MTS_VARIANT void ADC<Float, Spectrum>::
+    set_window(const ScalarPoint2i &window_offset,
+               const ScalarVector2i &window_size) {
+        if (any(window_offset < 0 || window_size <= 0 ||
+                window_offset + window_size > m_size))
+            Throw("Invalid window specification!\n"
+                  "offset %s + window size %s vs full size %s",
+                  window_offset, window_size, m_size);
 
-    m_crop_size   = crop_size;
-    m_crop_offset = crop_offset;
+        m_window_size   = window_size;
+        m_window_offset = window_offset;
 }
 
 MTS_VARIANT std::string ADC<Float, Spectrum>::to_string() const {
     std::ostringstream oss;
     oss << "ADC[" << std::endl
         << "  size = "        << m_size        << "," << std::endl
-        << "  crop_size = "   << m_crop_size   << "," << std::endl
-        << "  crop_offset = " << m_crop_offset << "," << std::endl
+        << "  window_size = "   << m_window_size   << "," << std::endl
+        << "  window_offset = " << m_window_offset << "," << std::endl
         << "  high_quality_edges = " << m_high_quality_edges << "," << std::endl
         << "  m_filter = " << m_filter << std::endl
         << "]";

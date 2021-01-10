@@ -78,13 +78,11 @@ public:
     /// Does the sampling technique require a sample for the aperture position?
     bool needs_aperture_sample() const { return m_needs_sample_3; }
 
-    /// Return the \ref Film instance associated with this sensor
-    // Film *film() { return m_film; }
-    ADC *adc() { return m_film; }
+    /// Return the \ref ADC instance associated with this sensor
+    ADC *adc() { return m_adc; }
 
-    /// Return the \ref Film instance associated with this sensor (const)
-    // const Film *film() const { return m_film.get(); }
-    const ADC *adc() const { return m_film.get(); }
+    /// Return the \ref ADC instance associated with this sensor (const)
+    const ADC *adc() const { return m_adc.get(); }
 
     /**
      * \brief Return the sensor's sample generator
@@ -114,12 +112,13 @@ public:
     void traverse(TraversalCallback *callback) override {
         callback->put_parameter("shutter_open", m_shutter_open);
         callback->put_parameter("shutter_open_time", m_shutter_open_time);
-        callback->put_object("film", m_film.get());
+        callback->put_object("adc", m_adc.get());
         callback->put_object("sampler", m_sampler.get());
     }
 
-    void parameters_changed(const std::vector<std::string> &/*keys*/ = {}) override {
-        m_resolution = ScalarVector2f(m_film->crop_size());
+    void parameters_changed(const std::vector<std::string> &/*keys*/ = {})
+        override {
+        m_resolution = ScalarVector2f(m_adc->window_size());
     }
 
     MTS_DECLARE_CLASS()
@@ -129,112 +128,16 @@ protected:
     virtual ~Receiver();
 
 protected:
-    ref<ADC> m_film;
+    ref<ADC> m_adc;
     ref<Sampler> m_sampler;
     ScalarVector2f m_resolution;
     ScalarFloat m_shutter_open;
-    ScalarFloat m_shutter_open_time; // Ignoring the tx, when does the receiver start measuring and for how long. This should correspond to the adc collection window. So if we're doing high res, long range it will be the whole thing. If we're doing high res, particular region we have this as well.
+    // Ignoring the tx, when does the receiver start measuring and for how long
+    // This should correspond to the adc collection window. So if we're doing
+    // high res, long range it will be the whole thing. If we're doing high res
+    // , particular region we have this as well.
+    ScalarFloat m_shutter_open_time;
 };
 
-
-/**
- * \brief Projective camera interface
- *
- * This class provides an abstract interface to several types of sensors that
- * are commonly used in computer graphics, such as perspective and orthographic
- * camera models.
- *
- * The interface is meant to be implemented by any kind of sensor, whose
- * world to clip space transformation can be explained using only linear
- * operations on homogeneous coordinates.
- *
- * A useful feature of \ref ProjectiveCamera sensors is that their view can be
- * rendered using the traditional OpenGL pipeline.
- *
- * \ingroup librender
- */
-// template <typename Float, typename Spectrum>
-// class MTS_EXPORT_RENDER ProjectiveCamera : public Receiver<Float, Spectrum> {
-// public:
-//     MTS_IMPORT_BASE(Receiver)
-//     MTS_IMPORT_TYPES()
-//
-//     /// Return the near clip plane distance
-//     ScalarFloat near_clip() const { return m_near_clip; }
-//
-//     /// Return the far clip plane distance
-//     ScalarFloat far_clip() const { return m_far_clip; }
-//
-//     /// Return the distance to the focal plane
-//     ScalarFloat focus_distance() const { return m_focus_distance; }
-//
-//     void traverse(TraversalCallback *callback) override {
-//         callback->put_parameter("near_clip", m_near_clip);
-//         callback->put_parameter("far_clip", m_far_clip);
-//         callback->put_parameter("focus_distance", m_focus_distance);
-//         Base::traverse(callback);
-//     }
-//
-//     MTS_DECLARE_CLASS()
-// protected:
-//     ProjectiveCamera(const Properties &props);
-//
-//     virtual ~ProjectiveCamera();
-//
-// protected:
-//     ScalarFloat m_near_clip;
-//     ScalarFloat m_far_clip;
-//     ScalarFloat m_focus_distance;
-// };
-//
-// // ========================================================================
-// //! @{ \name Functionality common to perspective cameras, projectors, etc.
-// // ========================================================================
-//
-// /// Helper function to parse the field of view field of a camera
-// extern MTS_EXPORT_RENDER float parse_fov(const Properties &props, float aspect);
-//
-// template <typename Float> Transform<Point<Float, 4>>
-// perspective_projection(const Vector<int, 2> &film_size,
-//                        const Vector<int, 2> &crop_size,
-//                        const Vector<int, 2> &crop_offset,
-//                        Float fov_x,
-//                        Float near_clip, Float far_clip) {
-//
-//     using Vector2f = Vector<Float, 2>;
-//     using Vector3f = Vector<Float, 3>;
-//     using Transform4f = Transform<Point<Float, 4>>;
-//
-//     Vector2f film_size_f = Vector2f(film_size),
-//              rel_size    = Vector2f(crop_size) / film_size_f,
-//              rel_offset  = Vector2f(crop_offset) / film_size_f;
-//
-//     Float aspect = film_size_f.x() / film_size_f.y();
-//
-//     /**
-//      * These do the following (in reverse order):
-//      *
-//      * 1. Create transform from camera space to [-1,1]x[-1,1]x[0,1] clip
-//      *    coordinates (not taking account of the aspect ratio yet)
-//      *
-//      * 2+3. Translate and scale to shift the clip coordinates into the
-//      *    range from zero to one, and take the aspect ratio into account.
-//      *
-//      * 4+5. Translate and scale the coordinates once more to account
-//      *     for a cropping window (if there is any)
-//      */
-//     return Transform4f::scale(
-//                Vector3f(1.f / rel_size.x(), 1.f / rel_size.y(), 1.f)) *
-//            Transform4f::translate(
-//                Vector3f(-rel_offset.x(), -rel_offset.y(), 0.f)) *
-//            Transform4f::scale(Vector3f(-0.5f, -0.5f * aspect, 1.f)) *
-//            Transform4f::translate(Vector3f(-1.f, -1.f / aspect, 0.f)) *
-//            Transform4f::perspective(fov_x, near_clip, far_clip);
-// }
-
-//! @}
-// ========================================================================
-
 MTS_EXTERN_CLASS_RENDER(Receiver)
-// MTS_EXTERN_CLASS_RENDER(ProjectiveCamera)
 NAMESPACE_END(mitsuba)

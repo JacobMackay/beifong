@@ -14,14 +14,14 @@ NAMESPACE_BEGIN(mitsuba)
 
 #if !defined(MTS_WAVELENGTH_MIN)
 // #  define MTS_WAVELENGTH_MIN 360.f
-// #  define MTS_WAVELENGTH_MIN 3191387.f
-#  define MTS_WAVELENGTH_MIN 8292683.f
+#  define MTS_WAVELENGTH_MIN 3191387.f // 94 GHz MMW Radar
+// #  define MTS_WAVELENGTH_MIN 8292683.f // Grahams Ultrasound
 #endif
 
 #if !defined(MTS_WAVELENGTH_MAX)
 // #  define MTS_WAVELENGTH_MAX 830.f
-// #  define MTS_WAVELENGTH_MAX 3191591.f
-#  define MTS_WAVELENGTH_MAX 8717949.f
+#  define MTS_WAVELENGTH_MAX 3191591.f // 94 GHz MMW Radar
+// #  define MTS_WAVELENGTH_MAX 8717949.f // Grahams Ultrasound
 #endif
 
 // =======================================================================
@@ -132,12 +132,16 @@ struct Spectrum<enoki::detail::MaskedArray<Value_>, Size_>
 // #define MTS_CIE_MIN           360.f
 // #define MTS_CIE_MAX           830.f
 // #define MTS_CIE_SAMPLES       95
-// #define MTS_CIE_MIN           3191387.f
-// #define MTS_CIE_MAX           3191591.f
-// #define MTS_CIE_SAMPLES       95
-#define MTS_CIE_MIN           8292683.f
-#define MTS_CIE_MAX           8717949.f
+
+// 94 GHz MMW Radar
+#define MTS_CIE_MIN           3191387.f
+#define MTS_CIE_MAX           3191591.f
 #define MTS_CIE_SAMPLES       95
+
+// Grahams Ultrasound
+// #define MTS_CIE_MIN           8292683.f
+// #define MTS_CIE_MAX           8717949.f
+// #define MTS_CIE_SAMPLES       95
 
 /* Scaling the CIE curves by the following constant ensures that
    a unit-valued spectrum integrates to a luminance of 1.0 */

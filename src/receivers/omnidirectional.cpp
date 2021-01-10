@@ -42,19 +42,19 @@ simply instantiate the desired sensor shape and specify an
 
 MTS_VARIANT class Omnidirectional final : public Receiver<Float, Spectrum> {
 public:
-    MTS_IMPORT_BASE(Receiver, m_film, m_world_transform, m_shape)
+    MTS_IMPORT_BASE(Receiver, m_adc, m_world_transform, m_shape)
     MTS_IMPORT_TYPES(Shape)
 
     Omnidirectional(const Properties &props) : Base(props) {
         if (props.has_property("to_world"))
             Throw("Found a 'to_world' transformation -- this is not allowed. "
-                  "The irradiance meter inherits this transformation from its parent "
-                  "shape.");
+                  "The omnidirectional receiver inherits this transformation "
+                  "from its parent shape.");
 
-        if (m_film->size() != ScalarPoint2i(1, 1))
-            Throw("This sensor only supports films of size 1x1 Pixels!");
+        // if (m_adc->size() != ScalarPoint2i(1, 1))
+        //     Throw("This sensor only supports films of size 1x1 Pixels!");
 
-        if (m_film->reconstruction_filter()->radius() >
+        if (m_adc->reconstruction_filter()->radius() >
             0.5f + math::RayEpsilon<Float>)
             Log(Warn, "This sensor should only be used with a reconstruction filter"
                "of radius 0.5 or lower(e.g. default box)");
@@ -62,30 +62,36 @@ public:
 
     std::pair<RayDifferential3f, Spectrum>
     sample_ray_differential(Float time, Float wavelength_sample,
-                            const Point2f & sample2,
-                            const Point2f & sample3,
+                            const Point2f & position_sample,
+                            const Point2f & direction_sample,
                             Mask active) const override {
 
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointSampleRay, active);
 
         // 1. Sample spatial component
-        PositionSample3f ps = m_shape->sample_position(time, sample2, active);
+        PositionSample3f ps =
+            m_shape->sample_position(time, position_sample, active);
 
         // 2. Sample directional component
-        Vector3f local = warp::square_to_cosine_hemisphere(sample3);
+        Vector3f local = warp::square_to_cosine_hemisphere(direction_sample);
 
         // 3. Sample spectrum
-        auto [wavelengths, wav_weight] = sample_wavelength<Float, Spectrum>(wavelength_sample);
+        auto [wavelengths, wav_weight] =
+            sample_wavelength<Float, Spectrum>(wavelength_sample);
 
         return std::make_pair(
-            RayDifferential3f(ps.p, Frame3f(ps.n).to_world(local), time, wavelengths),
-            unpolarized<Spectrum>(wav_weight) * math::Pi<ScalarFloat> / m_shape->surface_area()
+            RayDifferential3f(ps.p, Frame3f(ps.n).to_world(local), time,
+                wavelengths),
+            unpolarized<Spectrum>(wav_weight)
+                * math::Pi<ScalarFloat> / m_shape->surface_area()
         );
     }
 
     std::pair<DirectionSample3f, Spectrum>
-    sample_direction(const Interaction3f &it, const Point2f &sample, Mask active) const override {
-        return std::make_pair(m_shape->sample_direction(it, sample, active), math::Pi<ScalarFloat>);
+    sample_direction(const Interaction3f &it, const Point2f &sample,
+        Mask active) const override {
+        return std::make_pair(m_shape->sample_direction(it, sample, active),
+            math::Pi<ScalarFloat>);
     }
 
     Float pdf_direction(const Interaction3f &it, const DirectionSample3f &ds,
@@ -93,7 +99,8 @@ public:
         return m_shape->pdf_direction(it, ds, active);
     }
 
-    Spectrum eval(const SurfaceInteraction3f &/*si*/, Mask /*active*/) const override {
+    Spectrum eval(const SurfaceInteraction3f &/*si*/,
+        Mask /*active*/) const override {
         return math::Pi<ScalarFloat> / m_shape->surface_area();
     }
 
@@ -103,7 +110,7 @@ public:
         std::ostringstream oss;
         oss << "Omnidirectional[" << std::endl
             << "  shape = " << m_shape << "," << std::endl
-            << "  film = " << m_film << "," << std::endl
+            << "  ADC = " << m_adc << "," << std::endl
             << "]";
         return oss.str();
     }

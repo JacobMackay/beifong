@@ -99,6 +99,8 @@ public:
              Mask active = true) {
         if (unlikely(m_channel_count != 5))
             Throw("SignalBlock::put(): non-standard image block configuration! (AOVs?)");
+        // if (unlikely(m_channel_count != 3))
+        //     Throw("SignalBlock::put(): non-standard signal block configuration! (AOVs?)");
 
         UnpolarizedSpectrum value_u = depolarize(value);
 
@@ -115,6 +117,7 @@ public:
             // xyz = value_u.x();
         }
         Float values[5] = { xyz.x(), xyz.y(), xyz.z(), alpha, 1.f };
+        // Float values[3] = { xyz.x(), alpha, 1.f };
         return put(pos, values, active);
     }
 

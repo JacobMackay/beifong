@@ -1,7 +1,9 @@
 #include <mitsuba/render/scene.h>
 #include <mitsuba/render/sensor.h>
+#include <mitsuba/render/receiver.h>
 #include <mitsuba/render/emitter.h>
 #include <mitsuba/render/film.h>
+#include <mitsuba/render/adc.h>
 #include <mitsuba/render/mesh.h>
 #include <mitsuba/render/texture.h>
 #include <mitsuba/render/bsdf.h>
@@ -34,11 +36,14 @@ static py::object caster(Object *o) {
     PY_TRY_CAST(ProjectiveCamera);
     PY_TRY_CAST(Sensor);
 
+    PY_TRY_CAST(Receiver);
+
     PY_TRY_CAST(Emitter);
     PY_TRY_CAST(Endpoint);
 
     PY_TRY_CAST(BSDF);
     PY_TRY_CAST(Film);
+    PY_TRY_CAST(ADC);
 
     PY_TRY_CAST(MonteCarloIntegrator);
     PY_TRY_CAST(SamplingIntegrator);
@@ -57,8 +62,10 @@ MTS_PY_DECLARE(BSDF);
 MTS_PY_DECLARE(Emitter);
 MTS_PY_DECLARE(Endpoint);
 MTS_PY_DECLARE(Film);
+MTS_PY_DECLARE(ADC);
 MTS_PY_DECLARE(fresnel);
 MTS_PY_DECLARE(ImageBlock);
+MTS_PY_DECLARE(SignalBlock);
 MTS_PY_DECLARE(Integrator);
 MTS_PY_DECLARE(Interaction);
 MTS_PY_DECLARE(SurfaceInteraction);
@@ -73,6 +80,7 @@ MTS_PY_DECLARE(DirectionSample);
 MTS_PY_DECLARE(Sampler);
 MTS_PY_DECLARE(Scene);
 MTS_PY_DECLARE(Sensor);
+MTS_PY_DECLARE(Receiver);
 MTS_PY_DECLARE(Shape);
 MTS_PY_DECLARE(ShapeKDTree);
 MTS_PY_DECLARE(srgb);
@@ -107,14 +115,17 @@ PYBIND11_MODULE(MODULE_NAME, m) {
     MTS_PY_IMPORT(Endpoint);
     MTS_PY_IMPORT(Emitter);
     MTS_PY_IMPORT(Film);
+    MTS_PY_IMPORT(ADC);
     MTS_PY_IMPORT(fresnel);
     MTS_PY_IMPORT(ImageBlock);
+    MTS_PY_IMPORT(SignalBlock);
     MTS_PY_IMPORT(Integrator);
     MTS_PY_IMPORT_SUBMODULE(mueller);
     MTS_PY_IMPORT(MicrofacetDistribution);
     MTS_PY_IMPORT(PhaseFunction);
     MTS_PY_IMPORT(Sampler);
     MTS_PY_IMPORT(Sensor);
+    MTS_PY_IMPORT(Receiver);
     MTS_PY_IMPORT(ShapeKDTree);
     MTS_PY_IMPORT(srgb);
     MTS_PY_IMPORT(Texture);

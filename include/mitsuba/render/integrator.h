@@ -37,11 +37,11 @@ NAMESPACE_BEGIN(mitsuba)
 template <typename Float, typename Spectrum>
 class MTS_EXPORT_RENDER Integrator : public Object {
 public:
-    MTS_IMPORT_TYPES(Scene, Sensor)
+    MTS_IMPORT_TYPES(Scene, Sensor, Receiver)
 
     /// Perform the main rendering job. Returns \c true upon success
     virtual bool render(Scene *scene, Sensor *sensor) = 0;
-    virtual bool receive(Scene *scene, Sensor *sensor) = 0;
+    virtual bool receive(Scene *scene, Receiver *receiver) = 0;
 
     /**
      * \brief Cancel a running render job
@@ -72,7 +72,7 @@ template <typename Float, typename Spectrum>
 class MTS_EXPORT_RENDER SamplingIntegrator : public Integrator<Float, Spectrum> {
 public:
     MTS_IMPORT_BASE(Integrator)
-    MTS_IMPORT_TYPES(Scene, Sensor, Film, ImageBlock, SignalBlock, Medium, Sampler)
+    MTS_IMPORT_TYPES(Scene, Sensor, Film, ImageBlock, Receiver, ADC, SignalBlock, Medium, Sampler)
 
     /**
      * \brief Sample the incident radiance along a ray.
@@ -141,7 +141,7 @@ public:
     // =========================================================================
 
     bool render(Scene *scene, Sensor *sensor) override;
-    bool receive(Scene *scene, Sensor *sensor) override;
+    bool receive(Scene *scene, Receiver *receiver) override;
     void cancel() override;
 
     /**
@@ -183,17 +183,17 @@ protected:
                        Mask active = true) const;
 
     virtual void receive_block(const Scene *scene,
-                             const Sensor *sensor,
+                             const Receiver *receiver,
                              Sampler *sampler,
-                             ImageBlock *block,
+                             SignalBlock *block,
                              Float *aovs,
                              size_t sample_count,
                              size_t block_id) const;
 
     void receive_sample(const Scene *scene,
-                      const Sensor *sensor,
+                      const Receiver *receiver,
                       Sampler *sampler,
-                      ImageBlock *block,
+                      SignalBlock *block,
                       Float *aovs,
                       const Vector2f &pos,
                       ScalarFloat diff_scale_factor,

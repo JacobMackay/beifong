@@ -48,13 +48,28 @@ MTS_VARIANT ShapeKDTree<Float, Spectrum>::ShapeKDTree(const Properties &props)
 }
 
 MTS_VARIANT void ShapeKDTree<Float, Spectrum>::build() {
+
+    // // Original:
+    // Timer timer;
+    // Log(Info, "Building a SAH kd-tree (%i primitives) ..",
+    //     primitive_count());
+    //
+    // Base::build();
+    //
+    // Log(Info, "Finished. (%s of storage, took %s)",
+    //     util::mem_string(m_index_count * sizeof(Index) +
+    //                     m_node_count * sizeof(KDNode)),
+    //     util::time_string(timer.value())
+    // );
+
+    // Supress Logs"
     Timer timer;
-    Log(Info, "Building a SAH kd-tree (%i primitives) ..",
+    Log(Debug, "Building a SAH kd-tree (%i primitives) ..",
         primitive_count());
 
     Base::build();
 
-    Log(Info, "Finished. (%s of storage, took %s)",
+    Log(Debug, "Finished. (%s of storage, took %s)",
         util::mem_string(m_index_count * sizeof(Index) +
                         m_node_count * sizeof(KDNode)),
         util::time_string(timer.value())

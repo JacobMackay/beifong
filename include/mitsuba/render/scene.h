@@ -5,14 +5,15 @@
 #include <mitsuba/render/shapegroup.h>
 #include <mitsuba/render/fwd.h>
 #include <mitsuba/render/sensor.h>
+#include <mitsuba/render/receiver.h>
 
 NAMESPACE_BEGIN(mitsuba)
 
 template <typename Float, typename Spectrum>
 class MTS_EXPORT_RENDER Scene : public Object {
 public:
-    MTS_IMPORT_TYPES(BSDF, Emitter, EmitterPtr, Film, Sampler, Shape, ShapePtr,
-                     ShapeGroup, Sensor, Integrator, Medium, MediumPtr)
+    MTS_IMPORT_TYPES(BSDF, Emitter, EmitterPtr, Film, ADC, Sampler, Shape, ShapePtr,
+                     ShapeGroup, Sensor, Receiver, Integrator, Medium, MediumPtr)
 
     /// Instantiate a scene from a \ref Properties object
     Scene(const Properties &props);
@@ -142,6 +143,11 @@ public:
     /// Return the list of sensors (const version)
     const std::vector<ref<Sensor>> &sensors() const { return m_sensors; }
 
+    /// Return the list of receivers
+    std::vector<ref<Receiver>> &receivers() { return m_receivers; }
+    /// Return the list of receivers (const version)
+    const std::vector<ref<Receiver>> &receivers() const { return m_receivers; }
+
     /// Return the list of emitters
     host_vector<ref<Emitter>, Float> &emitters() { return m_emitters; }
     /// Return the list of emitters (const version)
@@ -216,6 +222,7 @@ protected:
     std::vector<ref<Shape>> m_shapes;
     std::vector<ref<ShapeGroup>> m_shapegroups;
     std::vector<ref<Sensor>> m_sensors;
+    std::vector<ref<Receiver>> m_receivers;
     std::vector<ref<Object>> m_children;
     ref<Integrator> m_integrator;
     ref<Emitter> m_environment;

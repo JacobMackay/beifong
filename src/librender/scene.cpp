@@ -26,6 +26,7 @@ MTS_VARIANT Scene<Float, Spectrum>::Scene(const Properties &props) {
         Shape *shape           = dynamic_cast<Shape *>(kv.second.get());
         Emitter *emitter       = dynamic_cast<Emitter *>(kv.second.get());
         Sensor *sensor         = dynamic_cast<Sensor *>(kv.second.get());
+        Receiver *receiver     = dynamic_cast<Receiver *>(kv.second.get());
         Integrator *integrator = dynamic_cast<Integrator *>(kv.second.get());
 
         if (shape) {
@@ -33,6 +34,8 @@ MTS_VARIANT Scene<Float, Spectrum>::Scene(const Properties &props) {
                 m_emitters.push_back(shape->emitter());
             if (shape->is_sensor())
                 m_sensors.push_back(shape->sensor());
+            if (shape->is_receiver())
+                m_receivers.push_back(shape->receiver());
             if (shape->is_shapegroup()) {
                 m_shapegroups.push_back((ShapeGroup*)shape);
             } else {
@@ -51,6 +54,8 @@ MTS_VARIANT Scene<Float, Spectrum>::Scene(const Properties &props) {
             }
         } else if (sensor) {
             m_sensors.push_back(sensor);
+        } else if (receiver) {
+            m_receivers.push_back(receiver);
         } else if (integrator) {
             if (m_integrator)
                 Throw("Only one integrator can be specified per scene.");
@@ -58,8 +63,8 @@ MTS_VARIANT Scene<Float, Spectrum>::Scene(const Properties &props) {
         }
     }
 
-    if (m_sensors.empty()) {
-        Log(Warn, "No sensors found! Instantiating a perspective camera..");
+    if (m_sensors.empty() && m_receivers.empty()) {
+        Log(Warn, "No sensors or receivers found! Instantiating a perspective camera..");
         Properties sensor_props("perspective");
         sensor_props.set_float("fov", 45.0f);
 

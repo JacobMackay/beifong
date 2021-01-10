@@ -3,6 +3,7 @@
 #include <mitsuba/render/emitter.h>
 #include <mitsuba/render/bsdf.h>
 #include <mitsuba/render/sensor.h>
+#include <mitsuba/render/receiver.h>
 #include <mitsuba/render/medium.h>
 #include <mitsuba/core/plugin.h>
 
@@ -40,6 +41,7 @@ MTS_VARIANT Shape<Float, Spectrum>::Shape(const Properties &props) : m_id(props.
     for (auto &[name, obj] : props.objects(false)) {
         Emitter *emitter = dynamic_cast<Emitter *>(obj.get());
         Sensor *sensor = dynamic_cast<Sensor *>(obj.get());
+        Receiver *receiver = dynamic_cast<Receiver *>(obj.get());
         BSDF *bsdf = dynamic_cast<BSDF *>(obj.get());
         Medium *medium = dynamic_cast<Medium *>(obj.get());
 
@@ -51,6 +53,10 @@ MTS_VARIANT Shape<Float, Spectrum>::Shape(const Properties &props) : m_id(props.
             if (m_sensor)
                 Throw("Only a single Sensor child object can be specified per shape.");
             m_sensor = sensor;
+        } else if (receiver) {
+            if (m_receiver)
+                Throw("Only a single Receiver child object can be specified per shape.");
+            m_receiver = receiver;
         } else if (bsdf) {
             if (m_bsdf)
                 Throw("Only a single BSDF child object can be specified per shape.");
@@ -426,6 +432,8 @@ MTS_VARIANT void Shape<Float, Spectrum>::traverse(TraversalCallback *callback) {
         callback->put_object("emitter", m_emitter.get());
     if (m_sensor)
         callback->put_object("sensor", m_sensor.get());
+    if (m_receiver)
+        callback->put_object("receiver", m_receiver.get());
     if (m_interior_medium)
         callback->put_object("interior_medium", m_interior_medium.get());
     if (m_exterior_medium)
@@ -438,6 +446,8 @@ void Shape<Float, Spectrum>::parameters_changed(const std::vector<std::string> &
         m_emitter->parameters_changed({"parent"});
     if (m_sensor)
         m_sensor->parameters_changed({"parent"});
+    if (m_receiver)
+        m_receiver->parameters_changed({"parent"});
 }
 
 MTS_VARIANT bool Shape<Float, Spectrum>::parameters_grad_enabled() const {
@@ -449,6 +459,8 @@ MTS_VARIANT void Shape<Float, Spectrum>::set_children() {
         m_emitter->set_shape(this);
     if (m_sensor)
         m_sensor->set_shape(this);
+    if (m_receiver)
+        m_receiver->set_shape(this);
 }
 
 MTS_VARIANT
@@ -462,6 +474,7 @@ MTS_VARIANT std::string Shape<Float, Spectrum>::get_children_string() const {
     children.push_back({ "bsdf", m_bsdf });
     if (m_emitter) children.push_back({ "emitter", m_emitter });
     if (m_sensor) children.push_back({ "sensor", m_sensor });
+    if (m_receiver) children.push_back({ "receiver", m_receiver });
     if (m_interior_medium) children.push_back({ "interior_medium", m_interior_medium });
     if (m_exterior_medium) children.push_back({ "exterior_medium", m_exterior_medium });
 

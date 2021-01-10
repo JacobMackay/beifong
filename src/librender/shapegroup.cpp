@@ -25,6 +25,8 @@ MTS_VARIANT ShapeGroup<Float, Spectrum>::ShapeGroup(const Properties &props) {
                 Throw("Instancing of emitters is not supported");
             if (shape->is_sensor())
                 Throw("Instancing of sensors is not supported");
+            if (shape->is_receiver())
+                Throw("Instancing of receivers is not supported");
             else {
 #if defined(MTS_ENABLE_EMBREE) || defined(MTS_ENABLE_OPTIX)
                 m_shapes.push_back(shape);

@@ -4,6 +4,7 @@
 #include <mitsuba/render/scene.h>
 #include <mitsuba/render/kdtree.h>
 #include <mitsuba/render/sensor.h>
+#include <mitsuba/render/receiver.h>
 #include <mitsuba/python/python.h>
 
 MTS_PY_EXPORT(ShapeKDTree) {
@@ -34,7 +35,7 @@ MTS_PY_EXPORT(ShapeKDTree) {
 }
 
 MTS_PY_EXPORT(Scene) {
-    MTS_PY_IMPORT_TYPES(Scene, Integrator, SamplingIntegrator, MonteCarloIntegrator, Sensor)
+    MTS_PY_IMPORT_TYPES(Scene, Integrator, SamplingIntegrator, MonteCarloIntegrator, Sensor, Receiver)
     MTS_PY_CLASS(Scene, Object)
         .def(py::init<const Properties>())
         .def("ray_intersect_preliminary",
@@ -63,6 +64,7 @@ MTS_PY_EXPORT(Scene) {
         // Accessors
         .def_method(Scene, bbox)
         .def("sensors", py::overload_cast<>(&Scene::sensors), D(Scene, sensors))
+        .def("receivers", py::overload_cast<>(&Scene::receivers), D(Scene, receivers))
         .def("emitters", py::overload_cast<>(&Scene::emitters), D(Scene, emitters))
         .def_method(Scene, environment)
         .def("shapes", [](const Scene &scene) {

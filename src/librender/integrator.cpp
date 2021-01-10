@@ -13,6 +13,7 @@
 #include <mitsuba/render/integrator.h>
 #include <mitsuba/render/sampler.h>
 #include <mitsuba/render/sensor.h>
+#include <mitsuba/render/receiver.h>
 #include <mitsuba/render/spiral.h>
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
@@ -126,9 +127,12 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
             [&](const tbb::blocked_range<size_t> &range) {
                 ScopedSetThreadEnvironment set_env(env);
                 ref<Sampler> sampler = sensor->sampler()->clone();
+                // ref<ImageBlock> block =
+                //     new ImageBlock(m_block_size, channels.size(),
+                //                     film->reconstruction_filter(), !has_aovs);
                 ref<ImageBlock> block =
                     new ImageBlock(m_block_size, channels.size(),
-                                    film->reconstruction_filter(), !has_aovs);
+                                    film->reconstruction_filter(), false);
                 scoped_flush_denormals flush_denormals(true);
                 std::unique_ptr<Float[]> aovs(new Float[channels.size()]);
 
@@ -172,9 +176,12 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
               idx /= (uint32_t) samples_per_pass;
           }
 
+          // ref<ImageBlock> block = new ImageBlock(film_size, channels.size(),
+          //                                      film->reconstruction_filter(),
+          //                                      !has_aovs);
           ref<ImageBlock> block = new ImageBlock(film_size, channels.size(),
                                                film->reconstruction_filter(),
-                                               !has_aovs);
+                                               false);
           block->clear();
           Vector2f pos = Vector2f(Float(idx % uint32_t(film_size[0])),
                                 Float(idx / uint32_t(film_size[0])));
@@ -310,8 +317,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 // Radar Receive Section
 // ============================================================================
 MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
-  receive(Scene *scene, Sensor *sensor) {
-      ScopedPhase sp(ProfilerPhase::Render);
+  receive(Scene *scene, Receiver *receiver) {
+      ScopedPhase sp(ProfilerPhase::Receive);
       m_stop = false;
 
       // Changing the film and receive characteristics is a deep fundamental
@@ -330,18 +337,18 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
       // What is a sensor? A sensor is an object which occupies some space, and
       // through interactions collects signals.
 
-      ref<Film> film = sensor->film();
-      ScalarVector2i film_rd_size = film->crop_size();
-      ScalarVector2i film_rd_offset = film->crop_offset();
-      ScalarVector2i film_px_size = (1, 1);
-      ScalarVector2i film_px_offset = (0, 0);
+      ref<ADC> adc = receiver->adc();
+      ScalarVector2i adc_rd_size = adc->window_size();
+      ScalarVector2i adc_rd_offset = adc->window_offset();
+      ScalarVector2i adc_px_size = (1, 1);
+      ScalarVector2i adc_px_offset = (0, 0);
 
       // I'll either need to make a different sensor or modify it. I guess This
       // is a deep change.
       // ref<Tess> tess = gamjigi->tess();
       // ScalarVector4i tess_size = tess->crop_size();
 
-      size_t total_spp = sensor->sampler()->sample_count();
+      size_t total_spp = receiver->sampler()->sample_count();
       size_t samples_per_pass = (m_samples_per_pass == (size_t) -1)
                                ? total_spp
                                : std::min(
@@ -363,7 +370,7 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
       // }
       for (size_t i = 0; i < 3; ++i) {
           channels.insert(channels.begin() + i, std::string(1, "YAW"[i]));
-          film->prepare(channels);
+          adc->prepare(channels);
       }
 
       // Actually...it makes more sense to be a time-frequency method...maybe..
@@ -377,13 +384,13 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
       if constexpr (false) {
           /// Render on the CPU using a spiral pattern
 
-          std::cout << "Hello" << std::endl;
+          // std::cout << "Hello" << std::endl;
 
           size_t n_threads = __global_thread_count;
-          Log(Info, "Starting render job (%ix%i rd, %ix%i xy,"
+          Log(Info, "Starting signal render job (%ix%i rd, %ix%i xy,"
             " %i sample%s,%s %i thread%s)",
-            film_rd_size.x(), film_rd_size.y(),
-            film_px_size.x(), film_px_size.y(),
+            adc_rd_size.x(), adc_rd_size.y(),
+            adc_px_size.x(), adc_px_size.y(),
             total_spp, total_spp == 1 ? "" : "s",
             n_passes > 1 ? tfm::format(" %d passes,", n_passes) : "",
             n_threads, n_threads == 1 ? "" : "s");
@@ -413,7 +420,7 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
                   // }
                   // New:
                   if (block_size == 1 ||
-                      hprod((film_px_size + block_size - 1) / block_size)
+                      hprod((adc_px_size + block_size - 1) / block_size)
                       >= n_threads) {
                           break;
                   }
@@ -431,7 +438,7 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
           // Old:
           // Spiral spiral(film, m_block_size, n_passes);
           // New:
-          Spiral spiral(film_px_size, film_px_offset, m_block_size, n_passes);
+          Spiral spiral(adc_px_size, adc_px_offset, m_block_size, n_passes);
 
           ThreadEnvironment env;
           ref<ProgressReporter> progress =
@@ -446,10 +453,12 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
             tbb::blocked_range<size_t>(0, total_blocks, 1),
             [&](const tbb::blocked_range<size_t> &range) {
                 ScopedSetThreadEnvironment set_env(env);
-                ref<Sampler> sampler = sensor->sampler()->clone();
-                ref<ImageBlock> block =
-                    new ImageBlock(m_block_size, channels.size(),
-                                    film->reconstruction_filter(), !has_aovs);
+                ref<Sampler> sampler = receiver->sampler()->clone();
+                ref<SignalBlock> block =
+                    // new SignalBlock(m_block_size, channels.size(),
+                    //                 adc->reconstruction_filter(), !has_aovs);
+                    new SignalBlock(m_block_size, channels.size(),
+                                    adc->reconstruction_filter(), false);
                 scoped_flush_denormals flush_denormals(true);
                 std::unique_ptr<Float[]> aovs(new Float[channels.size()]);
 
@@ -461,10 +470,10 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
                     block->set_size(size);
                     block->set_offset(offset);
 
-                    receive_block(scene, sensor, sampler, block,
+                    receive_block(scene, receiver, sampler, block,
                              aovs.get(), samples_per_pass, block_id);
                     // std::cout << "Hello2" << std::endl;
-                    film->put(block);
+                    adc->put(block);
 
                     /* Critical section: update progress bar */ {
                         std::lock_guard<std::mutex> lock(mutex);
@@ -573,9 +582,12 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
 
           // std::cout << "Hello_rd" << std::endl;
 
-          Log(Info, "Start signal rendering...");
+          // // Original:
+          // Log(Info, "Start signal rendering...");
+          // Supress Logs:
+          Log(Debug, "Start signal rendering...");
 
-          ref<Sampler> sampler = sensor->sampler();
+          ref<Sampler> sampler = receiver->sampler();
           // sampler->set_samples_per_wavefront((uint32_t) samples_per_pass);
 
           ScalarFloat diff_scale_factor =
@@ -608,9 +620,12 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
           //                                      film->reconstruction_filter(),
           //                                      !has_aovs);
             // New:
-          ref<ImageBlock> block = new ImageBlock(film_rd_size, channels.size(),
-                                               film->reconstruction_filter(),
-                                               !has_aovs);
+          // ref<SignalBlock> block = new SignalBlock(adc_rd_size, channels.size(),
+          //                                      adc->reconstruction_filter(),
+          //                                      !has_aovs);
+          ref<SignalBlock> block = new SignalBlock(adc_rd_size, channels.size(),
+                                               adc->reconstruction_filter(),
+                                               false);
           block->clear();
           // Modify something depending on film type.
           // Vector2f pos = Vector2f(Float(idx % uint32_t(film_size[0])),
@@ -640,12 +655,12 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
           // New:
           for (size_t i = 0; i < total_spp; i++) {
               // std::cout << i << std::endl;
-              receive_sample(scene, sensor, sampler, block, aovs.data(),
+              receive_sample(scene, receiver, sampler, block, aovs.data(),
                           pos, diff_scale_factor);
           }
 
 
-          film->put(block);
+          adc->put(block);
 
 
 
@@ -662,9 +677,13 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
       } else {
           std::cout << "Hello_c" << std::endl;
 
-          Log(Info, "Start rendering...");
+          // // Original:
+          // Log(Info, "Start signal rendering...");
+          // Supress Logs:
+          Log(Debug, "Start signal rendering...");
 
-          ref<Sampler> sampler = sensor->sampler();
+
+          ref<Sampler> sampler = receiver->sampler();
           sampler->set_samples_per_wavefront((uint32_t) samples_per_pass);
 
           ScalarFloat diff_scale_factor =
@@ -697,9 +716,12 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
           //                                      film->reconstruction_filter(),
           //                                      !has_aovs);
             // New:
-          ref<ImageBlock> block = new ImageBlock(film_rd_size, channels.size(),
-                                               film->reconstruction_filter(),
-                                               !has_aovs);
+          // ref<SignalBlock> block = new SignalBlock(adc_rd_size, channels.size(),
+          //                                      adc->reconstruction_filter(),
+          //                                      !has_aovs);
+          ref<SignalBlock> block = new SignalBlock(adc_rd_size, channels.size(),
+                                               adc->reconstruction_filter(),
+                                               false);
           block->clear();
           // Modify something depending on film type.
           // Vector2f pos = Vector2f(Float(idx % uint32_t(film_size[0])),
@@ -716,24 +738,31 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
           std::vector<Float> aovs(channels.size());
 
           for (size_t i = 0; i < n_passes; i++) {
-              receive_sample(scene, sensor, sampler, block, aovs.data(),
+              receive_sample(scene, receiver, sampler, block, aovs.data(),
                           pos, diff_scale_factor);
           }
 
-          film->put(block);
+          adc->put(block);
       }
 
+      // // Original:
+      // if (!m_stop) {
+      //   Log(Info, "Signal Rendering finished. (took %s)",
+      //       util::time_string(m_render_timer.value(), true));
+      // }
+      // Supress Logs:
       if (!m_stop) {
-        Log(Info, "Signal Rendering finished. (took %s)",
+        Log(Debug, "Signal Rendering finished. (took %s)",
             util::time_string(m_render_timer.value(), true));
       }
+
 
       return !m_stop;
 }
 
 MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
-  receive_block(const Scene *scene, const Sensor *sensor, Sampler *sampler,
-      ImageBlock *block, Float *aovs, size_t sample_count_, size_t block_id)
+  receive_block(const Scene *scene, const Receiver *receiver, Sampler *sampler,
+      SignalBlock *block, Float *aovs, size_t sample_count_, size_t block_id)
       const {
     block->clear();
     uint32_t pixel_count  = (uint32_t)(m_block_size * m_block_size),
@@ -754,7 +783,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 
             pos += block->offset();
             for (uint32_t j = 0; j < sample_count && !should_stop(); ++j) {
-                receive_sample(scene, sensor, sampler, block, aovs,
+                receive_sample(scene, receiver, sampler, block, aovs,
                               pos, diff_scale_factor);
             }
         }
@@ -772,12 +801,12 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
             pos += block->offset();
             // render_sample(scene, sensor, sampler, block, aovs,
             //     pos, diff_scale_factor, active);
-            receive_sample(scene, sensor, sampler, block, aovs,
+            receive_sample(scene, receiver, sampler, block, aovs,
                           pos, diff_scale_factor);
         }
     } else {
         ENOKI_MARK_USED(scene);
-        ENOKI_MARK_USED(sensor);
+        ENOKI_MARK_USED(receiver);
         ENOKI_MARK_USED(aovs);
         ENOKI_MARK_USED(diff_scale_factor);
         ENOKI_MARK_USED(pixel_count);
@@ -794,18 +823,23 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 // then must find a path that achieves this.
 
 MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
-  receive_sample(const Scene *scene, const Sensor *sensor, Sampler *sampler,
-                    ImageBlock *block, Float *aovs, const Vector2f &pos,
+  receive_sample(const Scene *scene, const Receiver *receiver, Sampler *sampler,
+                    SignalBlock *block, Float *aovs, const Vector2f &pos,
                     ScalarFloat diff_scale_factor, Mask active) const {
       // We've been given a location on the pixel grid, now we jitter it
+      // In terms of signal rendering, the position should be a time pos
+      // I would have a spiralling rangedoppler block, with a sampler random
+      // within that block; then a simple random direction and position.
       Vector2f position_sample = pos + sampler->next_2d(active);
 
       // std::cout << position_sample << std::endl;
 
       // If we are forcing rays to have a certain range-doppler, we don't need
       // a tuple because the result naturally falls in the wanted bin.
+
+      // This number goes from 0-1. Keep in mind for wigner and transforms
       Point2f aperture_sample(.5f);
-      if (sensor->needs_aperture_sample()) {
+      if (receiver->needs_aperture_sample()) {
           aperture_sample = sampler->next_2d(active);
       }
 
@@ -843,12 +877,75 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // Instead of breaking up pixels and sending blocks to the gpu, can we
       // have multiple scene descriptions and send those blockwise to gpu?
 
-      Float time = sensor->shutter_open();
-      if (sensor->shutter_open_time() > 0.f) {
-          time += sampler->next_1d(active) * sensor->shutter_open_time();
+      Float time = receiver->shutter_open();
+      if (receiver->shutter_open_time() > 0.f) {
+          time += sampler->next_1d(active) * receiver->shutter_open_time();
       } else {
           time = 0.f;
       }
+
+      // Receive time should be limited by the adc.
+      // No...receive time is our up or down chirp time.
+      // Then bins is our fft bins.
+      // Following davids picture, time can also be fft time
+      // I think I def need to do tx and rx time.
+      // It really should be a light tracer. leave time is from tx.
+
+      // chirp t = 250 e-6 s * 16k fft
+      // Maybe I do crop window?
+      // adc_samp_rate (eg 250 MSPS (2**18)), n_bins(eg 16k fft (2**14)/16*2**10)
+      // how long is out time period of collection?
+      // Output a time frequency mix
+
+      // The adc is before the fft...obvs.
+      // But that's not what I'm doing. I need power. I do wigner.
+
+      // digital in
+
+      // n samples vs fft bins
+      // 250 MSPS * 250 us per chirp = 62.5 k Samples...much higher than 16k fft
+      // 10k samps/chirp <--- this is what goes into fpga, 2**14 = 16k
+      // Dunno how they get this number, it says complex samples, maybe?
+
+      // High res version has 0.03m res, low res (what I must have been using)
+      // should be 0.1?
+
+      // chirp time (receive time), sample rate
+      // Might need to consider 'complex' sample rate?? I guess we can take
+      // sample rate for things like pulse, and fft bins for mixed. output bins
+      // for 16k, we have sample rate 80MSPS with 200us time. For the fft do
+      // we simply decimate? Or do we use true sample rate?
+      // I think we use true samples, then it's further software for fft.
+
+      // We can get truth range doppler easily, but should we simulate bins?
+      // Perhaps calculate range/doppler bin widths from true characteristics,
+      // then mess it up based on signals? If I want a comb, I can use the bin
+      // centre.
+
+      // Alternatively, is it so difficult to get the true time?
+
+      // From the integrator, rays come back with a time/wavelength/pathlength
+
+      // Float time = receiver->receive_start();
+      // if (receiver->receive_time() > 0.f) {
+      //     time += sampler->next_1d(active) * receiver->receive_time();
+      // } else {
+      //     time = 0.f;
+      // }
+
+      // Float time = transmitter->transmit_start();
+      // if (transmitter->transmit_time() > 0.f) {
+      //     time += sampler->next_1d(active) * transmitter->transmit_time();
+      // } else {
+      //     time = 0.f;
+      // }
+
+      // Leaves with a specified time and frequency from tx clock.
+      // Goes through scene, time evolving backward. When it hits the tx, mix
+      // the signals and get result. Not exactly correct wavelength wise, but
+      // an ok guess.
+
+      // I will have to stick to fmcw. If it's a pulse I'll need a light tracer.
 
       // The sensor and emitter are distinct from transmitter and receiver, But
       // closely related.
@@ -900,17 +997,24 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 
       // std::cout << aperture_sample << std::endl;
 
-      auto [ray, ray_weight] = sensor->sample_ray_differential(
+      // In the context of time, this differential should be which t,r/f,d bin
+      auto [ray, ray_weight] = receiver->sample_ray_differential(
           time, wavelength_sample, adjusted_position, aperture_sample);
       // this says that the incoming ray has a wavelength and time already.
       // These are the rays landing on the sensor, we propagate back into the
       // scene, lets interpret t and λ as tx values.
 
+      // I can't know the wavelength/freq until I know the travel time.
+
+      // This version guarentees a pixel hit, but time/freq is unconstrained
+
+      // Here we make a copy of ray.
+
       ray.scale_differential(diff_scale_factor);
 
       // std::cout << ray << std::endl;
 
-      const Medium *medium = sensor->medium();
+      const Medium *medium = receiver->medium();
       // std::tuple<Spectrum, Mask, Float> result =
       //   sample(scene, sampler, ray, medium, aovs+1, active);
       // When doing this, we only render the 'yellow'
@@ -918,6 +1022,13 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // sample(scene, sampler, ray, medium, aovs+5, active);
       std::tuple<Spectrum, Mask, Float> result =
       sample(scene, sampler, ray, medium, aovs+3, active);
+
+      // Make a new sample routine: one which allows the ray to be changed.
+      // In it, the ray's wavelength can change by hitting moving targets. It's
+      // time changes with propagation time and length (ray.t) changes with
+      // propagation distance. ray.t can be also updated to include phase
+      // changes at boundaries, or simply be phase.
+      // Maybe I don't even need...
 
       // ScalarVector2i rd = (std::get<2>(result)/
       //   (sensor->far_clip()-sensor->near_clip()), 0);
@@ -928,10 +1039,31 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       //   (10-0.1), 0);
       Vector2f rd;
       // range / range interval * nbins
-      rd[0] = std::get<2>(result)/(10.0-0.1)*400;
+      // rd[0] = std::get<2>(result)/(10.0-0.1)*400;
+      rd[0] = (std::get<2>(result) - (receiver->adc()->centres().x() - receiver->adc()->bandwidth().x()/2)) * receiver->adc()->size().x()/receiver->adc()->bandwidth().x();
+
+      // Which r bin?
+      // I probably want to capture the if signal
+
+      // realrange/(maxrange-minrange)*binsresolution
+      // realrange * bins/(rangebandwidth)
+      // r * samples/(dr)
       // rd[0] = std::get<2>(result);
       // Put it in the middle
       rd[1] = 0.5f;
+
+      // The point of this function is to get a real value and convert it to a
+      // bin idx. This should be similar to the hardware and include things
+      // like mixing, filtering etc. Note this is a single return value, the
+      // effects of multiple returns comes later.
+      //
+      // Fuck this, I think it needs to be t/f
+      // The internal representation is tf. My only concern is high res.
+      // Or is it just always magically delay time?
+      // Receiver n_bins
+      // Can I skip ahead or do i lose important info? I need to put things
+      // into the correct time bins because I need to account for interference.
+      receiver->process_signal
 
       // Change this back, but allow rays to be modified.
       // std::pair<Spectrum, Mask> result =
@@ -1001,6 +1133,12 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       aovs[1] = select(std::get<1>(result), Float(1.f), Float(0.f));
       aovs[2] = 1.f;
 
+      // For interference, what about a weighted sum of phase? Each ray
+      // contributes its phase * power. Or If all rays were equal, phase
+      // What about tracking phase variance?
+      // Or is it another aov?
+      // Normalised power*phase.
+
       // Modify sample so that ray is not const.The sample routine can now
       // change the ray.time and ray.wavelength.
       // aovs become result(basically power), time, wavelength....or can I
@@ -1014,6 +1152,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // block->put(position_sample, aovs, active);
       // New:
       block->put(rd, aovs, active);
+      // block should have tx channel and rx channel. These are aovs...maybe
+      // and nah, cause too fast.
 
       // block->put(position_sample, time_bin (as a fraction of the span), frequency_bin, aovs, active);
 
