@@ -260,57 +260,52 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
   render_sample(const Scene *scene, const Sensor *sensor, Sampler *sampler,
                     ImageBlock *block, Float *aovs, const Vector2f &pos,
                     ScalarFloat diff_scale_factor, Mask active) const {
-      Vector2f position_sample = pos + sampler->next_2d(active);
+        Vector2f position_sample = pos + sampler->next_2d(active);
 
-      Point2f aperture_sample(.5f);
-      if (sensor->needs_aperture_sample()) {
-          aperture_sample = sampler->next_2d(active);
-      }
+        Point2f aperture_sample(.5f);
+        if (sensor->needs_aperture_sample())
+            aperture_sample = sampler->next_2d(active);
 
-      Float time = sensor->shutter_open();
-      if (sensor->shutter_open_time() > 0.f) {
-          time += sampler->next_1d(active) * sensor->shutter_open_time();
-      } else {
-          time = 0.f;
-      }
+        Float time = sensor->shutter_open();
+        if (sensor->shutter_open_time() > 0.f)
+            time += sampler->next_1d(active) * sensor->shutter_open_time();
 
-      Float wavelength_sample = sampler->next_1d(active);
+        Float wavelength_sample = sampler->next_1d(active);
 
-      Vector2f adjusted_position =
-        (position_sample - sensor->film()->crop_offset()) /
-        sensor->film()->crop_size();
+        Vector2f adjusted_position =
+            (position_sample - sensor->film()->crop_offset()) /
+            sensor->film()->crop_size();
 
-      auto [ray, ray_weight] = sensor->sample_ray_differential(
-          time, wavelength_sample, adjusted_position, aperture_sample);
+        auto [ray, ray_weight] = sensor->sample_ray_differential(
+            time, wavelength_sample, adjusted_position, aperture_sample);
 
-      ray.scale_differential(diff_scale_factor);
+        ray.scale_differential(diff_scale_factor);
 
-      const Medium *medium = sensor->medium();
-      std::tuple<Spectrum, Mask, Float> result =
-        sample(scene, sampler, ray, medium, aovs + 5, active);
+        const Medium *medium = sensor->medium();
+        std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium, aovs + 5, active);
+        result.first = ray_weight * result.first;
 
-      std::get<0>(result) = ray_weight * std::get<0>(result);
-      UnpolarizedSpectrum spec_u = depolarize(std::get<0>(result));
+        UnpolarizedSpectrum spec_u = depolarize(result.first);
 
-      Color3f xyz;
-      if constexpr (is_monochromatic_v<Spectrum>) {
-          xyz = spec_u.x();
-      } else if constexpr (is_rgb_v<Spectrum>) {
-          xyz = srgb_to_xyz(spec_u, active);
-      } else {
-          static_assert(is_spectral_v<Spectrum>);
-          xyz = spectrum_to_xyz(spec_u, ray.wavelengths, active);
-      }
+        Color3f xyz;
+        if constexpr (is_monochromatic_v<Spectrum>) {
+            xyz = spec_u.x();
+        } else if constexpr (is_rgb_v<Spectrum>) {
+            xyz = srgb_to_xyz(spec_u, active);
+        } else {
+            static_assert(is_spectral_v<Spectrum>);
+            xyz = spectrum_to_xyz(spec_u, ray.wavelengths, active);
+        }
 
-      aovs[0] = xyz.x();
-      aovs[1] = xyz.y();
-      aovs[2] = xyz.z();
-      aovs[3] = select(std::get<1>(result), Float(1.f), Float(0.f));
-      aovs[4] = 1.f;
+        aovs[0] = xyz.x();
+        aovs[1] = xyz.y();
+        aovs[2] = xyz.z();
+        aovs[3] = select(result.second, Float(1.f), Float(0.f));
+        aovs[4] = 1.f;
 
-      block->put(position_sample, aovs, active);
+        block->put(position_sample, aovs, active);
 
-      sampler->advance();
+        sampler->advance();
 }
 
 // ============================================================================
@@ -1020,8 +1015,11 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // When doing this, we only render the 'yellow'
       // std::tuple<Spectrum, Mask, Float> result =
       // sample(scene, sampler, ray, medium, aovs+5, active);
-      std::tuple<Spectrum, Mask, Float> result =
-      sample(scene, sampler, ray, medium, aovs+3, active);
+      // std::tuple<Spectrum, Mask, Float> result =
+      // sample(scene, sampler, ray, medium, aovs+3, active);
+
+      std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium,
+          aovs + 3, active);
 
       // Make a new sample routine: one which allows the ray to be changed.
       // In it, the ray's wavelength can change by hitting moving targets. It's
@@ -1040,7 +1038,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       Vector2f rd;
       // range / range interval * nbins
       // rd[0] = std::get<2>(result)/(10.0-0.1)*400;
-      rd[0] = (std::get<2>(result) - (receiver->adc()->centres().x() - receiver->adc()->bandwidth().x()/2)) * receiver->adc()->size().x()/receiver->adc()->bandwidth().x();
+      // rd[0] = (std::get<2>(result) - (receiver->adc()->centres().x() - receiver->adc()->bandwidth().x()/2)) * receiver->adc()->size().x()/receiver->adc()->bandwidth().x();
+      rd[0] = (ray.time - (receiver->adc()->centres().x() - receiver->adc()->bandwidth().x()/2)) * receiver->adc()->size().x()/receiver->adc()->bandwidth().x();
 
       // Which r bin?
       // I probably want to capture the if signal
@@ -1099,8 +1098,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
         // tf anyway. How does this limit my ability to do diff rendering?
         // Let's build the code properly. Keep classic mods so that maybe we
         // can go back.
-      std::get<0>(result) = ray_weight * std::get<0>(result);
-      UnpolarizedSpectrum spec_u = depolarize(std::get<0>(result));
+      result.first = ray_weight * result.first;
+      UnpolarizedSpectrum spec_u = depolarize(result.first);
 
       // std::cout<<spec_u<<std::endl;
       // spec_u should be like radiances at wavelengths
@@ -1143,8 +1142,12 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // aovs[3] = select(std::get<1>(result), Float(1.f), Float(0.f));
       // aovs[4] = 1.f;
 
+      // aovs[0] = xyz.x();
+      // aovs[1] = select(std::get<1>(result), Float(1.f), Float(0.f));
+      // aovs[2] = 1.f;
+
       aovs[0] = xyz.x();
-      aovs[1] = select(std::get<1>(result), Float(1.f), Float(0.f));
+      aovs[1] = select(result.second, Float(1.f), Float(0.f));
       aovs[2] = 1.f;
 
       // For interference, what about a weighted sum of phase? Each ray
@@ -1174,17 +1177,37 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       sampler->advance();
 }
 
-MTS_VARIANT std::tuple<Spectrum,
-                        typename SamplingIntegrator<Float, Spectrum>::Mask,
-                        Float>SamplingIntegrator<Float, Spectrum>::
-  sample(const Scene * /* scene */,
-            Sampler * /* sampler */,
-            const RayDifferential3f & /* ray */,
-            const Medium * /* medium */,
-            Float * /* aovs */,
-            Mask /* active */) const {
-      NotImplementedError("sample");
+// MTS_VARIANT std::pair<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask>
+// SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
+//                                             Sampler * /* sampler */,
+//                                             const RayDifferential3f & /* ray */,
+//                                             const Medium * /* medium */,
+//                                             Float * /* aovs */,
+//                                             Mask /* active */) const {
+//     NotImplementedError("sample");
+// }
+
+MTS_VARIANT std::pair<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask>
+SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
+                                            Sampler * /* sampler */,
+                                            RayDifferential3f & /* ray */,
+                                            const Medium * /* medium */,
+                                            Float * /* aovs */,
+                                            Mask /* active */) const {
+    NotImplementedError("sample");
 }
+
+// MTS_VARIANT std::tuple<Spectrum,
+//                         typename SamplingIntegrator<Float, Spectrum>::Mask,
+//                         Float>SamplingIntegrator<Float, Spectrum>::
+//   sample(const Scene * /* scene */,
+//             Sampler * /* sampler */,
+//             const RayDifferential3f & /* ray */,
+//             const Medium * /* medium */,
+//             Float * /* aovs */,
+//             Mask /* active */) const {
+//       NotImplementedError("sample");
+// }
 
 // -----------------------------------------------------------------------------
 

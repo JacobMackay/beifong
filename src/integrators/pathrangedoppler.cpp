@@ -90,20 +90,37 @@ both direct and indirect illumination.
  */
 
 template <typename Float, typename Spectrum>
-class PathIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
-public:
+class PathRangeDopplerIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
+ public:
     MTS_IMPORT_BASE(MonteCarloIntegrator, m_max_depth, m_rr_depth)
     MTS_IMPORT_TYPES(Scene, Sampler, Medium, Emitter, EmitterPtr, BSDF, BSDFPtr)
 
-    PathIntegrator(const Properties &props) : Base(props) { }
+    explicit PathRangeDopplerIntegrator(const Properties &props) : Base(props) { }
+
+    // std::pair<Spectrum, Mask> sample(const Scene *scene,
+    //                                  Sampler *sampler,
+    //                                  const RayDifferential3f &ray_,
+    //                                  const Medium * /* medium */,
+    //                                  Float *aovs ,
+    //                                  Mask active) const override {
 
     std::pair<Spectrum, Mask> sample(const Scene *scene,
                                      Sampler *sampler,
                                      RayDifferential3f &ray_,
                                      const Medium * /* medium */,
-                                     Float * /* aovs */,
+                                     Float *aovs ,
                                      Mask active) const override {
+
+    // std::tuple<Spectrum, Mask, Float> sample(const Scene *scene,
+    //                                  Sampler *sampler,
+    //                                  const RayDifferential3f &ray_,
+    //                                  const Medium * /* medium */,
+    //                                  Float * /* aovs*/ ,
+    //                                  Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::SamplingIntegratorSample, active);
+
+        // Possibility to change ray from const so that when function returns
+        // we keep ray.
 
         RayDifferential3f ray = ray_;
 
@@ -114,6 +131,7 @@ public:
         Float emission_weight(1.f);
 
         Spectrum throughput(1.f), result(0.f);
+        // Float pathlength(0.f);
 
         // ---------------------- First intersection ----------------------
 
@@ -121,12 +139,30 @@ public:
         Mask valid_ray = si.is_valid();
         EmitterPtr emitter = si.emitter(scene);
 
-        for (int depth = 1;; ++depth) {
+        // pathlength = select(si.is_valid(), si.t, 0.f);
+        // pathlength = select(si.is_valid(), si.t, math::Infinity<Float>);
+        // pathlength = select(valid_ray, si.t, math::Infinity<Float>);
 
+        // pathlength += select(valid_ray, si.t, 0.f);
+        ray_.time += select(valid_ray, si.t, 0.f);
+        // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
+
+        // pathlength += select(si.is_valid(), si.t, 0.f);
+
+        // pathlength += si.t;
+        // pathlength[active] += si.t;
+
+        for (int depth = 1;; ++depth) {
             // ---------------- Intersection with emitters ----------------
 
-            if (any_or<true>(neq(emitter, nullptr)))
-                result[active] += emission_weight * throughput * emitter->eval(si, active);
+            if (any_or<true>(neq(emitter, nullptr))) {
+                result[active] +=
+                    emission_weight * throughput * emitter->eval(si, active);
+
+                // pathlength += select(si.is_valid(), si.t, 0.f);
+                ray_.time += select(si.is_valid(), si.t, 0.f);
+                // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
+            }
 
             active &= si.is_valid();
 
@@ -152,7 +188,8 @@ public:
 
             BSDFContext ctx;
             BSDFPtr bsdf = si.bsdf(ray);
-            Mask active_e = active && has_flag(bsdf->flags(), BSDFFlags::Smooth);
+            Mask active_e =
+                active && has_flag(bsdf->flags(), BSDFFlags::Smooth);
 
             if (likely(any_or<true>(active_e))) {
                 auto [ds, emitter_val] = scene->sample_emitter_direction(
@@ -164,18 +201,82 @@ public:
                 Spectrum bsdf_val = bsdf->eval(ctx, si, wo, active_e);
                 bsdf_val = si.to_world_mueller(bsdf_val, -wo, si.wi);
 
-                // Determine density of sampling that same direction using BSDF sampling
+                // Determine density of sampling that same direction using BSDF
+                // sampling
                 Float bsdf_pdf = bsdf->pdf(ctx, si, wo, active_e);
 
                 Float mis = select(ds.delta, 1.f, mis_weight(ds.pdf, bsdf_pdf));
                 result[active_e] += mis * throughput * bsdf_val * emitter_val;
+
+                // pathlength += select(si.is_valid(), si.t, 0.f);
+                ray_.time += select(si.is_valid(), si.t, 0.f);
+                // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
+                // output_wavelength = ray_wavelength - tx.get_wavelength
+                // put into mixed equation. get result.
+
+                // New class, like film But for tx.
+                // Transmitter has signal.
+                // Different types of signals with diff parameters
+                // But basically, given a time, return a wavelength/amplitude.
+                // Ideally it'd be a wdf.
+                // Can have a member, is delta. If it is, get exact result.
+
+                // The returned ray should have its time as time, and
+                // wavelength as beat wavelength.
+                // We do the AA filter later in rx.
+                // For a given time and frequency, the tx should have an amp.
+                // The signal should be analytic or texture.
+
+                // There's signal bandwidth, but also tx/rx bandwidth.
+
+                // Hardcode for now.
+                // Given a t and f, return the power; alternatively, given an t
+
+                // tx_type = continuous
+                // f(t, f) = antenna * power * delta(f)
+                // result_tx = select(eq(f, fc), antenna * power, 0.f);
+                // result_tx = antenna * power;
+                // return {result_tx, fc};
+
+                // tx_type = fmcw
+                // select(t < rise & t > 0, delta(f - 2*UP*t), 0.f)*
+                // select(t < rise+hold & t > rise, delta(f - 2*HOLD*t), 0.f)*
+                // select(t < rise & t > 0, delta(f - 2*DOWN*t), 0.f)*
+                // select(t < rise & t > 0, delta(f - 2*WAIT*t), 0.f)
+                // f(t, f) = antenna * power * delta(f - 2*k*t)
+
+                // float f(0.f);
+                // f0 = fc - bandwidth/2;
+                // f1 = fc + bandwidth/2;
+                //
+                // t1 = rise;
+                // t2 = t1 + hold;
+                // t3 = t2 + fall;
+                // t4 = t3 + wait;
+                // tn = t % t4;
+                //
+                // if (tn < t1) {
+                //     f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
+                // } else if (tn < t2) {
+                //     f = f1;
+                // } else if (tn < t3){
+                //     f = 2*((f0 - f1)/(t3 - t2))*t;
+                // } else {
+                //     f = f0;
+                // }
+                //
+                // result_tx = antenna * power;
+                // return {result_tx, f};
+
+                // Task: change interface to allow ray returning.
+
             }
 
             // ----------------------- BSDF sampling ----------------------
 
             // Sample BSDF * cos(theta)
-            auto [bs, bsdf_val] = bsdf->sample(ctx, si, sampler->next_1d(active),
-                                               sampler->next_2d(active), active);
+            auto [bs, bsdf_val] = bsdf->sample(ctx, si,
+                sampler->next_1d(active), sampler->next_2d(active), active);
             bsdf_val = si.to_world_mueller(bsdf_val, -bs.wo, si.wi);
 
             throughput = throughput * bsdf_val;
@@ -197,7 +298,8 @@ public:
 
             if (any_or<true>(neq(emitter, nullptr))) {
                 Float emitter_pdf =
-                    select(neq(emitter, nullptr) && !has_flag(bs.sampled_type, BSDFFlags::Delta),
+                    select(neq(emitter, nullptr) &&
+                        !has_flag(bs.sampled_type, BSDFFlags::Delta),
                            scene->pdf_emitter_direction(si, ds),
                            0.f);
 
@@ -205,16 +307,36 @@ public:
             }
 
             si = std::move(si_bsdf);
+            // pathlength += select(si.is_valid(), si.t, 0.f);
+            ray_.time += select(si.is_valid(), si.t, 0.f);
+            // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
+
+            // pathlength += select(si.is_valid(), si.t, math::Infinity<Float>);
+            // pathlength += select(active, si.t, math::Infinity<Float>);
+
+            // pathlength += select(active, si.t, 0.f);
+            // pathlength += select(si.is_valid(), si.t, 0.f);
+
+            // pathlength += select(active_e, si.t, math::Infinity<Float>);
+            // pathlength += select(active_e, si.t, 0.f);
+            // pathlength += si.t;
+            // pathlength[active] += si.t;
         }
 
-        return { result, valid_ray };
+        // std::cout << pathlength << std::endl;
+
+        // return { result, valid_ray, pathlength};
+
+        // ray_.time = pathlength / math::CVac<float>;
+
+        return {result, valid_ray};
     }
 
     //! @}
     // =============================================================
 
     std::string to_string() const override {
-        return tfm::format("PathIntegrator[\n"
+        return tfm::format("PathRangeDopplerIntegrator[\n"
             "  max_depth = %i,\n"
             "  rr_depth = %i\n"
             "]", m_max_depth, m_rr_depth);
@@ -224,11 +346,15 @@ public:
         pdf_a *= pdf_a;
         pdf_b *= pdf_b;
         return select(pdf_a > 0.f, pdf_a / (pdf_a + pdf_b), 0.f);
+        // return pdf_a / (pdf_a + pdf_b);
     }
 
     MTS_DECLARE_CLASS()
+
+// private:
+    // ref<Base> m_integrator;
 };
 
-MTS_IMPLEMENT_CLASS_VARIANT(PathIntegrator, MonteCarloIntegrator)
-MTS_EXPORT_PLUGIN(PathIntegrator, "Path Tracer integrator");
+MTS_IMPLEMENT_CLASS_VARIANT(PathRangeDopplerIntegrator, MonteCarloIntegrator)
+MTS_EXPORT_PLUGIN(PathRangeDopplerIntegrator, "PathTracerRangeDopplerintegrator");
 NAMESPACE_END(mitsuba)
