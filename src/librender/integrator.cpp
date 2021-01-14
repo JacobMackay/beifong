@@ -1063,7 +1063,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // Receiver n_bins
       // Can I skip ahead or do i lose important info? I need to put things
       // into the correct time bins because I need to account for interference.
-      receiver->process_signal
+
+      // receiver->process_signal
 
       // Change this back, but allow rays to be modified.
       // std::pair<Spectrum, Mask> result =
@@ -1071,6 +1072,19 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // Gives power, wavelength.
 
         // std::cout << std::get<0>(result) << std::endl;
+
+        // We currently have a path tracer. ie ray time is at rx.
+
+        // Unconstrained radar path tracer.
+        // t_rx is receive time
+        // w_rx is transmit/clock frequency now.
+        // We don't know what the wavelength will be, because the path time is
+        // unknown. Lets send the tx signal NOW, and do everything backward.
+
+        // propagate through scene.
+        // when it hits the transmitter, get the time, and tx freq.
+        // apply 'mixnfilter'. just do incoherent atm.  to do coherent, we'd
+        // need to append each ray landing in a block then do combination sum.
 
         // Each ray gets multiplied by a wigner layer wrt the path length..or t
         // Do we include bounces? Or does that already happen when we hit the
