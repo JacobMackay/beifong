@@ -154,7 +154,8 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
         // pathlength = select(valid_ray, si.t, math::Infinity<Float>);
 
         // pathlength += select(valid_ray, si.t, 0.f);
-        const_cast<RayDifferential3f&>(ray_).time -= select(valid_ray, si.t / math::CVac<float>, 0.f);
+        // const_cast<RayDifferential3f&>(ray_).time -= select(valid_ray, si.t / math::CVac<float>, 0.f);
+        ray.time -= select(valid_ray, si.t / math::CVac<float>, 0.f);
         // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
 
         // pathlength += select(si.is_valid(), si.t, 0.f);
@@ -170,7 +171,8 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                     emission_weight * throughput * emitter->eval(si, active);
 
                 // pathlength += select(si.is_valid(), si.t, 0.f);
-                const_cast<RayDifferential3f&>(ray_).time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
+                // const_cast<RayDifferential3f&>(ray_).time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
+                ray.time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
                 // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
             }
 
@@ -219,7 +221,8 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 result[active_e] += mis * throughput * bsdf_val * emitter_val;
 
                 // pathlength += select(si.is_valid(), si.t, 0.f);
-                const_cast<RayDifferential3f&>(ray_).time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
+                // const_cast<RayDifferential3f&>(ray_).time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
+                ray.time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
                 // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
                 // output_wavelength = ray_wavelength - tx.get_wavelength
                 // put into mixed equation. get result.
@@ -338,7 +341,8 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
             si = std::move(si_bsdf);
             // pathlength += select(si.is_valid(), si.t, 0.f);
             // const_cast<ray&>(ray_).time -= select(si.is_valid(), si.t/ math::CVac<float>, 0.f);
-            const_cast<RayDifferential3f&>(ray_).time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
+            // const_cast<RayDifferential3f&>(ray_).time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
+            ray.time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
             // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
 
             // pathlength += select(si.is_valid(), si.t, math::Infinity<Float>);
@@ -389,15 +393,20 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
         // }
 
         // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
-        f = ((f1 - f0)/(t2 - t1))*ray_.time + f0;
+        // f = ((f1 - f0)/(t2 - t1))*ray_.time + f0;
+        // f = ((f1 - f0)/(t2 - t1))*ray.time + f0;
+        f = 6e9/250e-6*ray.time + f0;
 
         // std::cout << ray_.time << " " << tn << " " << f << std::endl;
 
         // result_tx = antenna * power;
         // return {result_tx, f};
 
+        // What we probably want to return in ray time is actually length.
+
         // mix
-        const_cast<RayDifferential3f&>(ray_).wavelengths = (math::CVac<float>/(ray.wavelengths*1e-9) - f)/6e9;
+        // const_cast<RayDifferential3f&>(ray_).wavelengths = (math::CVac<float>/(ray.wavelengths*1e-9) - f)/6e9;
+        const_cast<RayDifferential3f&>(ray_).wavelengths = (abs(math::CVac<float>/(ray.wavelengths*1e-9) - f))*math::InvTwoPi<float>;
 
         // std::cout << f << " " << math::CVac<float>/(ray.wavelengths*1e-9) << (math::CVac<float>/(ray.wavelengths*1e-9) - f)/6e9  << std::endl;
         // std::cout<< ray_.time << std::endl;

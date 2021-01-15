@@ -1070,6 +1070,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // Put it in the middle
       rd[1] = (ray.wavelengths[0] - (receiver->adc()->centres().y() - receiver->adc()->bandwidth().y()/2)) * receiver->adc()->size().y()/receiver->adc()->bandwidth().y();
       // rd[1] = 0.5f;
+      // rd[1] = 1024;
 
       std::cout << rd << ray.time << ray.wavelengths[0] <<std::endl;
 
