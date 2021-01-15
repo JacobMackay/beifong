@@ -27,18 +27,24 @@ public:
 
     PySamplingIntegrator(const Properties &props) : SamplingIntegrator(props) { }
 
-    // std::pair<Spectrum, Mask> sample(const Scene *scene,
-    //                                  Sampler *sampler,
-    //                                  const RayDifferential3f &ray,
-    //                                  const Medium *medium,
-    //                                  Float *aovs,
-    //                                  Mask active) const override {
     std::pair<Spectrum, Mask> sample(const Scene *scene,
                                      Sampler *sampler,
-                                     RayDifferential3f &ray,
+                                     const RayDifferential3f &ray,
                                      const Medium *medium,
                                      Float *aovs,
                                      Mask active) const override {
+    // std::pair<Spectrum, Mask> sample(const Scene *scene,
+    //                                  Sampler *sampler,
+    //                                  RayDifferential3f &ray,
+    //                                  const Medium *medium,
+    //                                  Float *aovs,
+    //                                  Mask active) const override {
+    // std::pair<Spectrum, Mask> sample(const Scene *scene,
+    //                                  Sampler *sampler,
+    //                                  RayDifferential3f *ray,
+    //                                  const Medium *medium,
+    //                                  Float *aovs,
+    //                                  Mask active) const override {
     // std::tuple<Spectrum, Mask, Float> sample(const Scene *scene,
     //                                  Sampler *sampler,
     //                                  const RayDifferential3f &ray,
@@ -80,10 +86,23 @@ void bind_integrator_sample(Class &integrator) {
     MTS_IMPORT_OBJECT_TYPES()
 
     /// Python compatibility wrapper around SamplingIntegrator::sample(), default case
+    integrator.def(
+        "sample",
+        [](const SamplingIntegrator *integrator, const Scene *scene, Sampler *sampler,
+           const RayDifferential3f &ray, const Medium *medium, Mask active) {
+            py::gil_scoped_release release;
+            std::vector<Float> aovs(integrator->aov_names().size(), 0.f);
+            auto [spec, mask] = integrator->sample(scene, sampler, ray, medium, aovs.data(), active);
+
+            return std::make_tuple(spec, mask, aovs);
+        },
+        "scene"_a, "sampler"_a, "ray"_a, "medium"_a = nullptr, "active"_a = true,
+        D(SamplingIntegrator, sample));
+
     // integrator.def(
     //     "sample",
     //     [](const SamplingIntegrator *integrator, const Scene *scene, Sampler *sampler,
-    //        const RayDifferential3f &ray, const Medium *medium, Mask active) {
+    //         RayDifferential3f &ray, const Medium *medium, Mask active) {
     //         py::gil_scoped_release release;
     //         std::vector<Float> aovs(integrator->aov_names().size(), 0.f);
     //         auto [spec, mask] = integrator->sample(scene, sampler, ray, medium, aovs.data(), active);
@@ -93,18 +112,18 @@ void bind_integrator_sample(Class &integrator) {
     //     "scene"_a, "sampler"_a, "ray"_a, "medium"_a = nullptr, "active"_a = true,
     //     D(SamplingIntegrator, sample));
 
-    integrator.def(
-        "sample",
-        [](const SamplingIntegrator *integrator, const Scene *scene, Sampler *sampler,
-            RayDifferential3f &ray, const Medium *medium, Mask active) {
-            py::gil_scoped_release release;
-            std::vector<Float> aovs(integrator->aov_names().size(), 0.f);
-            auto [spec, mask] = integrator->sample(scene, sampler, ray, medium, aovs.data(), active);
-
-            return std::make_tuple(spec, mask, aovs);
-        },
-        "scene"_a, "sampler"_a, "ray"_a, "medium"_a = nullptr, "active"_a = true,
-        D(SamplingIntegrator, sample));
+    // integrator.def(
+    //     "sample",
+    //     [](const SamplingIntegrator *integrator, const Scene *scene, Sampler *sampler,
+    //         RayDifferential3f *ray, const Medium *medium, Mask active) {
+    //         py::gil_scoped_release release;
+    //         std::vector<Float> aovs(integrator->aov_names().size(), 0.f);
+    //         auto [spec, mask] = integrator->sample(scene, sampler, ray, medium, aovs.data(), active);
+    //
+    //         return std::make_tuple(spec, mask, aovs);
+    //     },
+    //     "scene"_a, "sampler"_a, "ray"_a, "medium"_a = nullptr, "active"_a = true,
+    //     D(SamplingIntegrator, sample));
 
     // integrator.def(
     //     "sample",
@@ -129,11 +148,43 @@ void bind_integrator_sample(Class &integrator) {
     MTS_IMPORT_TYPES()
     MTS_IMPORT_OBJECT_TYPES()
 
-    /// Python compatibility wrapper around SamplingIntegrator::sample(), default case
+    // / Python compatibility wrapper around SamplingIntegrator::sample(), default case
+    integrator.def(
+        "sample",
+        [](const SamplingIntegrator *integrator, const Scene *scene, Sampler *sampler,
+           const RayDifferential3f &ray, const Medium *medium, Mask active) {
+            std::vector<Float> result_aovs(integrator->aov_names().size());
+            std::vector<FloatP> aovs_packet(result_aovs.size());
+            Spectrum result_spec;
+            Mask result_mask;
+
+            set_slices(result_spec, slices(ray));
+            set_slices(result_mask, slices(ray));
+            set_slices(active, slices(ray));
+            for (size_t j = 0; j < result_aovs.size(); ++j)
+                set_slices(result_aovs[j], slices(ray));
+
+            for (size_t i = 0; i < packets(ray); ++i) {
+                auto [spec, mask] = integrator->sample(scene, sampler, packet(ray, i), medium,
+                                                       aovs_packet.data(),
+                                                       packet(active, i));
+                packet(result_spec, i) = spec;
+                packet(result_mask, i) = mask;
+                for (size_t j = 0; j < result_aovs.size(); ++i)
+                    packet(result_aovs[j], i) = aovs_packet[j];
+            }
+
+            return std::make_tuple(result_spec, result_mask, result_aovs);
+        },
+        "scene"_a, "sampler"_a, "ray"_a, "medium"_a, "active"_a = true, D(SamplingIntegrator, sample));
+
+    // ################## I've commented this out because const problem. Dunno
+    // the effect but will leave it for now.
+
     // integrator.def(
     //     "sample",
     //     [](const SamplingIntegrator *integrator, const Scene *scene, Sampler *sampler,
-    //        const RayDifferential3f &ray, const Medium *medium, Mask active) {
+    //        RayDifferential3f &ray, const Medium *medium, Mask active) {
     //         std::vector<Float> result_aovs(integrator->aov_names().size());
     //         std::vector<FloatP> aovs_packet(result_aovs.size());
     //         Spectrum result_spec;
@@ -159,13 +210,10 @@ void bind_integrator_sample(Class &integrator) {
     //     },
     //     "scene"_a, "sampler"_a, "ray"_a, "medium"_a, "active"_a = true, D(SamplingIntegrator, sample));
 
-    // ################## I've commented this out because const problem. Dunno
-    // the effect but will leave it for now.
-
     // integrator.def(
     //     "sample",
     //     [](const SamplingIntegrator *integrator, const Scene *scene, Sampler *sampler,
-    //        RayDifferential3f &ray, const Medium *medium, Mask active) {
+    //        RayDifferential3f *ray, const Medium *medium, Mask active) {
     //         std::vector<Float> result_aovs(integrator->aov_names().size());
     //         std::vector<FloatP> aovs_packet(result_aovs.size());
     //         Spectrum result_spec;

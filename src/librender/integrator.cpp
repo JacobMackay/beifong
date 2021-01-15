@@ -283,6 +283,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 
         const Medium *medium = sensor->medium();
         std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium, aovs + 5, active);
+        // std::pair<Spectrum, Mask> result = sample(scene, sampler, &ray, medium, aovs + 5, active);
         result.first = ray_weight * result.first;
 
         UnpolarizedSpectrum spec_u = depolarize(result.first);
@@ -872,12 +873,21 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // Instead of breaking up pixels and sending blocks to the gpu, can we
       // have multiple scene descriptions and send those blockwise to gpu?
 
+      // Is the problem many inactive lanes?
+
+      // std::cout << receiver->shutter_open() << " " << receiver->shutter_open_time() << std::endl;
+
       Float time = receiver->shutter_open();
       if (receiver->shutter_open_time() > 0.f) {
           time += sampler->next_1d(active) * receiver->shutter_open_time();
-      } else {
+      }
+      else {
           time = 0.f;
       }
+
+      // Float time = receiver->shutter_open() + sampler->next_1d(active) * receiver->shutter_open_time()
+
+      // std::cout << receiver->shutter_open_time()<< receiver->shutter_open()<< time << std::endl;
 
       // Receive time should be limited by the adc.
       // No...receive time is our up or down chirp time.
@@ -1018,6 +1028,15 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // std::tuple<Spectrum, Mask, Float> result =
       // sample(scene, sampler, ray, medium, aovs+3, active);
 
+      // std::cout<<ray.time<<std::endl;
+
+      // std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium,
+      //     aovs + 3, active);
+
+      // ray* rp = &ray;
+
+      // std::pair<Spectrum, Mask> result = sample(scene, sampler, &ray, medium,
+      //     aovs + 3, active);
       std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium,
           aovs + 3, active);
 
@@ -1049,7 +1068,12 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // r * samples/(dr)
       // rd[0] = std::get<2>(result);
       // Put it in the middle
-      rd[1] = 0.5f;
+      rd[1] = (ray.wavelengths[0] - (receiver->adc()->centres().y() - receiver->adc()->bandwidth().y()/2)) * receiver->adc()->size().y()/receiver->adc()->bandwidth().y();
+      // rd[1] = 0.5f;
+
+      std::cout << rd << ray.time << ray.wavelengths[0] <<std::endl;
+
+      // std::cout << rd << std::endl;
 
       // The point of this function is to get a real value and convert it to a
       // bin idx. This should be similar to the hardware and include things
@@ -1177,25 +1201,35 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       sampler->advance();
 }
 
+MTS_VARIANT std::pair<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask>
+SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
+                                            Sampler * /* sampler */,
+                                            const RayDifferential3f & /* ray */,
+                                            const Medium * /* medium */,
+                                            Float * /* aovs */,
+                                            Mask /* active */) const {
+    NotImplementedError("sample");
+}
+
 // MTS_VARIANT std::pair<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask>
 // SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
 //                                             Sampler * /* sampler */,
-//                                             const RayDifferential3f & /* ray */,
+//                                             RayDifferential3f & /* ray */,
 //                                             const Medium * /* medium */,
 //                                             Float * /* aovs */,
 //                                             Mask /* active */) const {
 //     NotImplementedError("sample");
 // }
 
-MTS_VARIANT std::pair<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask>
-SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
-                                            Sampler * /* sampler */,
-                                            RayDifferential3f & /* ray */,
-                                            const Medium * /* medium */,
-                                            Float * /* aovs */,
-                                            Mask /* active */) const {
-    NotImplementedError("sample");
-}
+// MTS_VARIANT std::pair<Spectrum, typename SamplingIntegrator<Float, Spectrum>::Mask>
+// SamplingIntegrator<Float, Spectrum>::sample(const Scene * /* scene */,
+//                                             Sampler * /* sampler */,
+//                                             RayDifferential3f * /* ray */,
+//                                             const Medium * /* medium */,
+//                                             Float * /* aovs */,
+//                                             Mask /* active */) const {
+//     NotImplementedError("sample");
+// }
 
 // MTS_VARIANT std::tuple<Spectrum,
 //                         typename SamplingIntegrator<Float, Spectrum>::Mask,

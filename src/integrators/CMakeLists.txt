@@ -2,7 +2,7 @@ set(MTS_PLUGIN_PREFIX "integrators")
 
 # add_plugin(depth   depth.cpp)
 # add_plugin(direct  direct.cpp)
-add_plugin(path    path.cpp)
+# add_plugin(path    path.cpp)
 
 # add_plugin(pathtime    pathtime.cpp)
 # add_plugin(pathlength    pathlength.cpp)

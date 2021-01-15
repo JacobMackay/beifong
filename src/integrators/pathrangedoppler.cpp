@@ -97,19 +97,26 @@ class PathRangeDopplerIntegrator : public MonteCarloIntegrator<Float, Spectrum> 
 
     explicit PathRangeDopplerIntegrator(const Properties &props) : Base(props) { }
 
+    std::pair<Spectrum, Mask> sample(const Scene *scene,
+                                     Sampler *sampler,
+                                     const RayDifferential3f &ray_,
+                                     const Medium * /* medium */,
+                                     Float *aovs ,
+                                     Mask active) const override {
+
     // std::pair<Spectrum, Mask> sample(const Scene *scene,
     //                                  Sampler *sampler,
-    //                                  const RayDifferential3f &ray_,
+    //                                  RayDifferential3f &ray_,
     //                                  const Medium * /* medium */,
     //                                  Float *aovs ,
     //                                  Mask active) const override {
 
-    std::pair<Spectrum, Mask> sample(const Scene *scene,
-                                     Sampler *sampler,
-                                     RayDifferential3f &ray_,
-                                     const Medium * /* medium */,
-                                     Float *aovs ,
-                                     Mask active) const override {
+    // std::pair<Spectrum, Mask> sample(const Scene *scene,
+    //                                  Sampler *sampler,
+    //                                  RayDifferential3f *ray_,
+    //                                  const Medium * /* medium */,
+    //                                  Float *aovs ,
+    //                                  Mask active) const override {
 
     // std::tuple<Spectrum, Mask, Float> sample(const Scene *scene,
     //                                  Sampler *sampler,
@@ -122,6 +129,7 @@ class PathRangeDopplerIntegrator : public MonteCarloIntegrator<Float, Spectrum> 
         // Possibility to change ray from const so that when function returns
         // we keep ray.
 
+        // RayDifferential3f ray = *ray_;
         RayDifferential3f ray = ray_;
 
         // Tracks radiance scaling due to index of refraction changes
@@ -144,7 +152,7 @@ class PathRangeDopplerIntegrator : public MonteCarloIntegrator<Float, Spectrum> 
         // pathlength = select(valid_ray, si.t, math::Infinity<Float>);
 
         // pathlength += select(valid_ray, si.t, 0.f);
-        ray_.time += select(valid_ray, si.t, 0.f);
+        const_cast<RayDifferential3f&>(ray_).time += select(valid_ray, si.t, 0.f);
         // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
 
         // pathlength += select(si.is_valid(), si.t, 0.f);
@@ -160,7 +168,7 @@ class PathRangeDopplerIntegrator : public MonteCarloIntegrator<Float, Spectrum> 
                     emission_weight * throughput * emitter->eval(si, active);
 
                 // pathlength += select(si.is_valid(), si.t, 0.f);
-                ray_.time += select(si.is_valid(), si.t, 0.f);
+                const_cast<RayDifferential3f&>(ray_).time += select(si.is_valid(), si.t, 0.f);
                 // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
             }
 
@@ -209,7 +217,7 @@ class PathRangeDopplerIntegrator : public MonteCarloIntegrator<Float, Spectrum> 
                 result[active_e] += mis * throughput * bsdf_val * emitter_val;
 
                 // pathlength += select(si.is_valid(), si.t, 0.f);
-                ray_.time += select(si.is_valid(), si.t, 0.f);
+                const_cast<RayDifferential3f&>(ray_).time += select(si.is_valid(), si.t, 0.f);
                 // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
                 // output_wavelength = ray_wavelength - tx.get_wavelength
                 // put into mixed equation. get result.
@@ -308,7 +316,7 @@ class PathRangeDopplerIntegrator : public MonteCarloIntegrator<Float, Spectrum> 
 
             si = std::move(si_bsdf);
             // pathlength += select(si.is_valid(), si.t, 0.f);
-            ray_.time += select(si.is_valid(), si.t, 0.f);
+            const_cast<RayDifferential3f&>(ray_).time += select(si.is_valid(), si.t, 0.f);
             // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
 
             // pathlength += select(si.is_valid(), si.t, math::Infinity<Float>);

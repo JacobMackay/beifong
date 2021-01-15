@@ -97,19 +97,26 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
 
     explicit PathTimeFrequencyIntegrator(const Properties &props) : Base(props) { }
 
+    std::pair<Spectrum, Mask> sample(const Scene *scene,
+                                     Sampler *sampler,
+                                     const RayDifferential3f &ray_,
+                                     const Medium * /* medium */,
+                                     Float *aovs ,
+                                     Mask active) const override {
+
     // std::pair<Spectrum, Mask> sample(const Scene *scene,
     //                                  Sampler *sampler,
-    //                                  const RayDifferential3f &ray_,
+    //                                  RayDifferential3f &ray_,
     //                                  const Medium * /* medium */,
     //                                  Float *aovs ,
     //                                  Mask active) const override {
 
-    std::pair<Spectrum, Mask> sample(const Scene *scene,
-                                     Sampler *sampler,
-                                     RayDifferential3f &ray_,
-                                     const Medium * /* medium */,
-                                     Float *aovs ,
-                                     Mask active) const override {
+    // std::pair<Spectrum, Mask> sample(const Scene *scene,
+    //                                  Sampler *sampler,
+    //                                  RayDifferential3f *ray_,
+    //                                  const Medium * /* medium */,
+    //                                  Float *aovs ,
+    //                                  Mask active) const override {
 
     // std::tuple<Spectrum, Mask, Float> sample(const Scene *scene,
     //                                  Sampler *sampler,
@@ -122,7 +129,10 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
         // Possibility to change ray from const so that when function returns
         // we keep ray.
 
+        // RayDifferential3f ray = *ray_;
         RayDifferential3f ray = ray_;
+
+        // std::cout << ray.time << std:: endl;
 
         // Tracks radiance scaling due to index of refraction changes
         Float eta(1.f);
@@ -144,7 +154,7 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
         // pathlength = select(valid_ray, si.t, math::Infinity<Float>);
 
         // pathlength += select(valid_ray, si.t, 0.f);
-        ray_.time -= select(valid_ray, si.t / math::CVac<float>, 0.f);
+        const_cast<RayDifferential3f&>(ray_).time -= select(valid_ray, si.t / math::CVac<float>, 0.f);
         // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
 
         // pathlength += select(si.is_valid(), si.t, 0.f);
@@ -160,7 +170,7 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                     emission_weight * throughput * emitter->eval(si, active);
 
                 // pathlength += select(si.is_valid(), si.t, 0.f);
-                ray_.time -= select(si.is_valid(), si.t/ math::CVac<float>, 0.f);
+                const_cast<RayDifferential3f&>(ray_).time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
                 // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
             }
 
@@ -209,7 +219,7 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 result[active_e] += mis * throughput * bsdf_val * emitter_val;
 
                 // pathlength += select(si.is_valid(), si.t, 0.f);
-                ray_.time -= select(si.is_valid(), si.t/ math::CVac<float>, 0.f);
+                const_cast<RayDifferential3f&>(ray_).time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
                 // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
                 // output_wavelength = ray_wavelength - tx.get_wavelength
                 // put into mixed equation. get result.
@@ -245,33 +255,49 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 // select(t < rise & t > 0, delta(f - 2*WAIT*t), 0.f)
                 // f(t, f) = antenna * power * delta(f - 2*k*t)
 
-                // float f(0.f);
-                // f0 = fc - bandwidth/2;
-                // f1 = fc + bandwidth/2;
+                // Float f(0.f);
+                // // f0 = fc - bandwidth/2;
+                // // f1 = fc + bandwidth/2;
+                // //
+                // // t1 = rise;
+                // // t2 = t1 + hold;
+                // // t3 = t2 + fall;
+                // // t4 = t3 + wait;
+                // // tn = t % t4;
                 //
-                // t1 = rise;
-                // t2 = t1 + hold;
-                // t3 = t2 + fall;
-                // t4 = t3 + wait;
-                // tn = t % t4;
+                // Float f0 = 94e9 - 6e9/2;
+                // Float f1 = 94e9 + 6e9/2;
                 //
-                // if (tn < t1) {
-                //     f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
-                // } else if (tn < t2) {
-                //     f = f1;
-                // } else if (tn < t3){
-                //     f = 2*((f0 - f1)/(t3 - t2))*t;
-                // } else {
-                //     f = f0;
-                // }
+                // Float t1 = 200e-6;
+                // Float t2 = t1 + 50e-6;
+                // Float t3 = t2 + 200e-6;
+                // Float t4 = t3 + 50e-6;
+                // Float tn = math::modulo(ray_.time, t4);
                 //
-                // result_tx = antenna * power;
-                // return {result_tx, f};
-
-                // mix
-                // ray_.wavelength = ray.wavelength - f.wavelength;
-
-                // Task: change interface to allow ray returning.
+                // // if (any(tn < t1)) {
+                // //     f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
+                // // } else if (any(tn < t2)) {
+                // //     f = f1;
+                // // } else if (any(tn < t3)){
+                // //     f = 2*((f0 - f1)/(t3 - t2))*tn;
+                // // } else {
+                // //     f = f0;
+                // // }
+                //
+                // // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
+                // f = ((f1 - f0)/(t2 - t1))*ray_.time + f0;
+                //
+                // // std::cout << ray_.time << " " << tn << " " << f << std::endl;
+                //
+                // // result_tx = antenna * power;
+                // // return {result_tx, f};
+                //
+                // // mix
+                // const_cast<RayDifferential3f&>(ray_).wavelengths = math::CVac<float>/(ray.wavelengths*1e-9) - f;
+                //
+                // std::cout << f << " " << math::CVac<float>/(ray.wavelengths*1e-9) << math::CVac<float>/(ray.wavelengths*1e-9) - f  << std::endl;
+                //
+                // // Task: change interface to allow ray returning.
 
             }
 
@@ -311,7 +337,8 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
 
             si = std::move(si_bsdf);
             // pathlength += select(si.is_valid(), si.t, 0.f);
-            ray_.time -= select(si.is_valid(), si.t/ math::CVac<float>, 0.f);
+            // const_cast<ray&>(ray_).time -= select(si.is_valid(), si.t/ math::CVac<float>, 0.f);
+            const_cast<RayDifferential3f&>(ray_).time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
             // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
 
             // pathlength += select(si.is_valid(), si.t, math::Infinity<Float>);
@@ -331,6 +358,51 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
         // return { result, valid_ray, pathlength};
 
         // ray_.time = pathlength / math::CVac<float>;
+
+        Float f(0.f);
+        // f0 = fc - bandwidth/2;
+        // f1 = fc + bandwidth/2;
+        //
+        // t1 = rise;
+        // t2 = t1 + hold;
+        // t3 = t2 + fall;
+        // t4 = t3 + wait;
+        // tn = t % t4;
+
+        Float f0 = 94e9 - 6e9/2;
+        Float f1 = 94e9 + 6e9/2;
+
+        Float t1 = 200e-6;
+        Float t2 = t1 + 50e-6;
+        Float t3 = t2 + 200e-6;
+        Float t4 = t3 + 50e-6;
+        Float tn = math::modulo(ray_.time, t4);
+
+        // if (any(tn < t1)) {
+        //     f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
+        // } else if (any(tn < t2)) {
+        //     f = f1;
+        // } else if (any(tn < t3)){
+        //     f = 2*((f0 - f1)/(t3 - t2))*tn;
+        // } else {
+        //     f = f0;
+        // }
+
+        // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
+        f = ((f1 - f0)/(t2 - t1))*ray_.time + f0;
+
+        // std::cout << ray_.time << " " << tn << " " << f << std::endl;
+
+        // result_tx = antenna * power;
+        // return {result_tx, f};
+
+        // mix
+        const_cast<RayDifferential3f&>(ray_).wavelengths = (math::CVac<float>/(ray.wavelengths*1e-9) - f)/6e9;
+
+        // std::cout << f << " " << math::CVac<float>/(ray.wavelengths*1e-9) << (math::CVac<float>/(ray.wavelengths*1e-9) - f)/6e9  << std::endl;
+        // std::cout<< ray_.time << std::endl;
+
+        // Task: change interface to allow ray returning.
 
         return {result, valid_ray};
     }
