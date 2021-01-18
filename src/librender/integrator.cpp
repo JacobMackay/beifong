@@ -622,6 +622,8 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
           ref<SignalBlock> block = new SignalBlock(adc_rd_size, channels.size(),
                                                adc->reconstruction_filter(),
                                                false);
+           block->set_offset(receiver->adc()->window_offset());
+           block->set_size(receiver->adc()->window_size());
           block->clear();
           // Modify something depending on film type.
           // Vector2f pos = Vector2f(Float(idx % uint32_t(film_size[0])),
@@ -1054,25 +1056,47 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // Alternatively from our integrator.
       // ScalarVector2i rd = (std::get<2>(result)/
       //   (10-0.1), 0);
-      Vector2f rd;
-      // range / range interval * nbins
-      // rd[0] = std::get<2>(result)/(10.0-0.1)*400;
-      // rd[0] = (std::get<2>(result) - (receiver->adc()->centres().x() - receiver->adc()->bandwidth().x()/2)) * receiver->adc()->size().x()/receiver->adc()->bandwidth().x();
-      rd[0] = (ray.time - (receiver->adc()->centres().x() - receiver->adc()->bandwidth().x()/2)) * receiver->adc()->size().x()/receiver->adc()->bandwidth().x();
+      Vector2f rd = {ray.time, ray.wavelengths[0]};
+      rd = (rd - (receiver->adc()->centres() - receiver->adc()->bandwidth()/2))/receiver->adc()->bandwidth() * receiver->adc()->size();
+      // rd = (rd - (receiver->adc()->centres() - receiver->adc()->bandwidth()/2))/receiver->adc()->bandwidth() * receiver->adc()->window_size();
+      // rd = (rd - (receiver->adc()->centres() - receiver->adc()->bandwidth()/2))/receiver->adc()->bandwidth();
 
-      // Which r bin?
-      // I probably want to capture the if signal
+      // 0-1 location
+      // rd[0] = (ray.time - (receiver->adc()->centres().x() - receiver->adc()->bandwidth().x()/2))/receiver->adc()->bandwidth().x();
+      // rd[1] = (ray.wavelengths[0] - (receiver->adc()->centres().y() - receiver->adc()->bandwidth().y()/2))/receiver->adc()->bandwidth().y();
 
-      // realrange/(maxrange-minrange)*binsresolution
-      // realrange * bins/(rangebandwidth)
-      // r * samples/(dr)
-      // rd[0] = std::get<2>(result);
-      // Put it in the middle
-      rd[1] = (ray.wavelengths[0] - (receiver->adc()->centres().y() - receiver->adc()->bandwidth().y()/2)) * receiver->adc()->size().y()/receiver->adc()->bandwidth().y();
-      // rd[1] = 0.5f;
-      // rd[1] = 1024;
+      // // 0-full location
+      // rd[0] = (ray.time - (receiver->adc()->centres().x() - receiver->adc()->bandwidth().x()/2)) * receiver->adc()->size().x()/receiver->adc()->bandwidth().x();
+      // rd[1] = (ray.wavelengths[0] - (receiver->adc()->centres().y() - receiver->adc()->bandwidth().y()/2)) * receiver->adc()->size().y()/receiver->adc()->bandwidth().y();
 
-      std::cout << rd << ray.time << ray.wavelengths[0] <<std::endl;
+      // rd*=receiver->adc()->size();
+      // rd*=receiver->adc()->window_size();
+      // rd = (rd - receiver->adc()->window_offset()) / receiver->adc()->window_size();
+      // rd = (rd + receiver->adc()->window_offset());
+      // rd[0] = (rd[0] - receiver->adc()->window_offset().x());
+      // rd[1] = (rd[1] - receiver->adc()->window_offset().y());
+      // rd[1] = (rd[1] + receiver->adc()->window_offset().y());
+      // rd[1] = rd[1] +  receiver->adc()->window_size().y() - receiver->adc()->window_offset().y();
+      // rd[1] = rd[1] - receiver->adc()->window_offset().y();
+      // rd[1] = rd[1];
+
+      // rd -= receiver->adc()->window_offset();
+      // rd[0] -= receiver->adc()->window_offset().y();
+      // rd[1] -= receiver->adc()->window_offset().y();
+
+      // This work?
+      // block->set_offset(receiver->adc()->window_offset());
+      // block->set_size(receiver->adc()->window_size());
+
+
+
+
+
+      std::cout << rd << ray.wavelengths[0] << receiver->adc()->window_size() << receiver->adc()->size() <<std::endl;
+
+      // Vector2f adjusted_position =
+      //     (position_sample - sensor->film()->crop_offset()) /
+      //     sensor->film()->crop_size();
 
       // std::cout << rd << std::endl;
 

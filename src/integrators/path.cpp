@@ -99,7 +99,7 @@ public:
 
     std::pair<Spectrum, Mask> sample(const Scene *scene,
                                      Sampler *sampler,
-                                     RayDifferential3f &ray_,
+                                     const RayDifferential3f &ray_,
                                      const Medium * /* medium */,
                                      Float * /* aovs */,
                                      Mask active) const override {

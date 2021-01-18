@@ -131,6 +131,7 @@ class PathRangeDopplerIntegrator : public MonteCarloIntegrator<Float, Spectrum> 
 
         // RayDifferential3f ray = *ray_;
         RayDifferential3f ray = ray_;
+        const_cast<RayDifferential3f&>(ray_).time = 0.f;
 
         // Tracks radiance scaling due to index of refraction changes
         Float eta(1.f);
@@ -336,6 +337,9 @@ class PathRangeDopplerIntegrator : public MonteCarloIntegrator<Float, Spectrum> 
         // return { result, valid_ray, pathlength};
 
         // ray_.time = pathlength / math::CVac<float>;
+
+        // const_cast<RayDifferential3f&>(ray_).wavelengths = 0.005f;
+        const_cast<RayDifferential3f&>(ray_).wavelengths = 0.5f;
 
         return {result, valid_ray};
     }

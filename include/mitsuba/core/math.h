@@ -38,7 +38,7 @@ template <typename T> constexpr auto Epsilon         = std::numeric_limits<scala
 template <typename T> constexpr auto RayEpsilon      = Epsilon<T> * 1500;
 template <typename T> constexpr auto ShadowEpsilon   = RayEpsilon<T> * 10;
 template <typename T> constexpr auto CVac   = scalar_t<T>(299792458.0);
-template <typename T> constexpr auto CAirUS   = scalar_t<T>(340.0);
+template <typename T> constexpr auto CAir   = scalar_t<T>(340.0);
 
 //! @}
 // -----------------------------------------------------------------------
