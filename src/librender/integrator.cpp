@@ -374,6 +374,8 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
       // For now, let's not do the spiral method for range-doppler
       // We would have to do something like:
 
+      // Can consider blocks now.
+
       m_render_timer.reset();
       // if constexpr (!is_cuda_array_v<Float>) {
       // This doesn't make sense for radar atm...
@@ -625,6 +627,9 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
            block->set_offset(receiver->adc()->window_offset());
            block->set_size(receiver->adc()->window_size());
           block->clear();
+
+          // Maybe add noise
+
           // Modify something depending on film type.
           // Vector2f pos = Vector2f(Float(idx % uint32_t(film_size[0])),
           //                       Float(idx / uint32_t(film_size[0])));
@@ -721,6 +726,9 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
                                                adc->reconstruction_filter(),
                                                false);
           block->clear();
+
+          // Maybe put noise here?
+
           // Modify something depending on film type.
           // Vector2f pos = Vector2f(Float(idx % uint32_t(film_size[0])),
           //                       Float(idx / uint32_t(film_size[0])));
@@ -887,6 +895,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
           time = 0.f;
       }
 
+      // time = receiver-start + block-start...lets not forget, but put on pause
+
       // Float time = receiver->shutter_open() + sampler->next_1d(active) * receiver->shutter_open_time()
 
       // std::cout << receiver->shutter_open_time()<< receiver->shutter_open()<< time << std::endl;
@@ -984,7 +994,42 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // Float frequency_sample = sampler->next_1d(active);
       // Wavelength/time is not random. Do I do a mapping, or a sampling.
       // I guess I need to do a ray-weight as well.
-      Float wavelength_sample = sampler->next_1d(active);
+      // Float wavelength_sample = sampler->next_1d(active);
+
+      // The wavelength should be the tx wavelength at this time
+      Float f(0.f);
+      Float f0 = 94e9 - 6e9/2;
+      Float f1 = 94e9 + 6e9/2;
+
+      Float t1 = 240e-6;
+      Float t2 = t1 + 10e-6;
+      Float t3 = t2 + 240e-6;
+      Float t4 = t3 + 10e-6;
+      // Float tn = math::modulo(ray_.time, t4);
+      // Float tn = math::modulo(ray.time, t4);
+      Float tn = math::modulo(t4, time);
+      // Float tn = math::modulo(time, t4);
+      // Float tn = ray.time;
+
+      // These are definitely the culprit
+      if (all(tn < t1)) {
+          // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
+          f = 2*((6e9)/(240e-6))*tn + f0;
+      } else if (all(tn < t2)) {
+          f = f1;
+      } else if (all(tn < t3)){
+          // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
+          f = 2*((-6e9)/(240e-6))*tn + f1;
+      } else {
+          f = f0;
+      }
+
+
+      // Float wavelength_sample = math::CVac<float>/f;
+      // Float wavelength_sample = (f-f0)/(f1-f0);
+      Float wavelength_sample = (f-f0)/(f1-f0);
+
+      std::cout << tn *1e6 << " " << wavelength_sample <<  " " << f << std::endl;
 
       // This is just a real (local) position.
       // Get the sample from 0-1, take away the
@@ -1042,6 +1087,25 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium,
           aovs + 3, active);
 
+          // this is returning an intensity, but also a modified ray. This ray
+          // will have an updated time and wavelength.
+
+          // Then do receiver-> process.
+          // receiver MAY have a signal, gets it from transmitter.
+          // Now, what do we do if we don't have a signal?
+
+          // Each 'block' should be its own render
+          // receiver bandwidth = sps
+          // receiver df = bandwidth / bins
+          // receiver dt = 1 / bandwidth
+          // receiver t = bins / bandwidth
+
+          // t0 should come from the external render block.
+
+          // (ray.time - t0)
+          //
+          // tf_pos /= bandwidth * bins
+
       // Make a new sample routine: one which allows the ray to be changed.
       // In it, the ray's wavelength can change by hitting moving targets. It's
       // time changes with propagation time and length (ray.t) changes with
@@ -1057,7 +1121,25 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // ScalarVector2i rd = (std::get<2>(result)/
       //   (10-0.1), 0);
       Vector2f rd = {ray.time, ray.wavelengths[0]};
-      rd = (rd - (receiver->adc()->centres() - receiver->adc()->bandwidth()/2))/receiver->adc()->bandwidth() * receiver->adc()->size();
+      // rd = (rd - (receiver->adc()->centres() - receiver->adc()->bandwidth()/2))/receiver->adc()->bandwidth() * receiver->adc()->size();
+
+      // We get real value, eg time, range, doppler, freq
+      // rd = (rd - (receiver->adc()->centres() - receiver->adc()->bandwidth()/2))
+      //   /receiver->adc()->bandwidth() * receiver->adc()->size();
+
+      rd *= receiver->adc()->size() / receiver->adc()->bandwidth();
+
+        // val/range * bins
+
+        // Get time/freq from sim
+        // call receiver->process
+
+        // Basically I need a method which optionally takes 2 rays and converts
+        // their time/wavelength into bin indices.
+
+        // receiver->process()
+
+
       // rd = (rd - (receiver->adc()->centres() - receiver->adc()->bandwidth()/2))/receiver->adc()->bandwidth() * receiver->adc()->window_size();
       // rd = (rd - (receiver->adc()->centres() - receiver->adc()->bandwidth()/2))/receiver->adc()->bandwidth();
 
@@ -1092,7 +1174,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 
 
 
-      std::cout << rd << ray.wavelengths[0] << receiver->adc()->window_size() << receiver->adc()->size() <<std::endl;
+      // std::cout << rd << ray.wavelengths[0] << receiver->adc()->window_size() << receiver->adc()->size() <<std::endl;
 
       // Vector2f adjusted_position =
       //     (position_sample - sensor->film()->crop_offset()) /
@@ -1112,7 +1194,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // Can I skip ahead or do i lose important info? I need to put things
       // into the correct time bins because I need to account for interference.
 
-      // receiver->process_signal
+      // if we have a pulse, it should come in with a spread frequency.
+      // receiver->process_signal()
 
       // Change this back, but allow rays to be modified.
       // std::pair<Spectrum, Mask> result =
@@ -1198,6 +1281,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       aovs[0] = xyz.x();
       aovs[1] = select(result.second, Float(1.f), Float(0.f));
       aovs[2] = 1.f;
+      // aovs[3] = cos(phase)
 
       // For interference, what about a weighted sum of phase? Each ray
       // contributes its phase * power. Or If all rays were equal, phase
@@ -1218,6 +1302,10 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // block->put(position_sample, aovs, active);
       // New:
       block->put(rd, aovs, active);
+
+      // This should be for coherent sum
+      // block->append(rd, aovs, active);
+
       // block should have tx channel and rx channel. These are aovs...maybe
       // and nah, cause too fast.
 

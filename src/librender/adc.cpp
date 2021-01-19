@@ -8,10 +8,20 @@ MTS_VARIANT ADC<Float, Spectrum>::ADC(const Properties &props) : Object() {
     bool is_m_adc = string::to_lower(props.plugin_name()) == "madc";
 
     // Time/range and frequency/doppler ADC resolution in bins
+    // m_size = ScalarVector2i(
+    //     props.int_("tr_bins", is_m_adc ? 1 : 2e8),
+    //     props.int_("fd_bins", is_m_adc ? 1 : 2e8)
+    // );
+
+    // Number of discreet bins in the ADC, either fft or shift register,
+    // default 1024x1024
     m_size = ScalarVector2i(
-        props.int_("tr_bins", is_m_adc ? 1 : 2e8),
-        props.int_("fd_bins", is_m_adc ? 1 : 2e8)
+        props.int_("bins", is_m_adc ? 1 : 1024),
+        props.int_("bins", is_m_adc ? 1 : 1024)
     );
+
+    // Sample rate, default 250MSPS
+    // m_sample_rate = props.float_("sample_rate", 2e28);
 
     // Window specified in bins - by default, this matches the full ADC range.
     ScalarVector2i window_size = ScalarVector2i(
@@ -28,15 +38,15 @@ MTS_VARIANT ADC<Float, Spectrum>::ADC(const Properties &props) : Object() {
 
     // Time/range and frequency/doppler ADC bandwidth in s/m and Hz/(s/m)
     m_bandwidth = ScalarVector2f(
-        (props.float_("tr_max", 1.f) - props.float_("tr_min", 1.f)),
-        props.float_("fd_bandwidth", 1.f)
+        (static_cast<float>(props.int_("bins", is_m_adc ? 1 : 1024)) / props.float_("sample_rate", 2e28)),
+        props.float_("sample_rate", 2e28)
     );
 
-    // Time/range and frequency/doppler ADC centres
-    m_centres = ScalarVector2f(
-        (props.float_("tr_max", 0.f) + props.float_("tr_min", 0.f))/2,
-        props.float_("fd_centre", 0.f)
-    );
+    // // Time/range and frequency/doppler ADC centres
+    // m_centres = ScalarVector2f(
+    //     (props.float_("tr_max", 0.f) + props.float_("tr_min", 0.f))/2,
+    //     props.float_("fd_centre", 0.f)
+    // );
 
     /* If set to true, regions slightly outside of the ADC range will also be
        sampled, which improves the signal quality at the edges especially with

@@ -71,6 +71,10 @@ public:
     // doppler bins) of the ADC
     const ScalarVector2i &size() const { return m_size; }
 
+    /// Ignoring the crop window, return the resolution (number of range and
+    // doppler bins) of the ADC
+    // const ScalarFloat &sample_rate() const { return m_sample_rate; }
+
     /// Return the size of the crop window
     const ScalarVector2i &window_size() const { return m_window_size; }
 
@@ -79,9 +83,9 @@ public:
 
     /// Return the bandwidth of the ADC
     const ScalarVector2f &bandwidth() const { return m_bandwidth; }
-
-    /// Return the centres of the ADC
-    const ScalarVector2f &centres() const { return m_centres; }
+    //
+    // /// Return the centres of the ADC
+    // const ScalarVector2f &centres() const { return m_centres; }
 
     /// Set the size and offset of the crop window.
     void set_window(const ScalarPoint2i &window_offset,
@@ -107,10 +111,11 @@ protected:
 
 protected:
     ScalarVector2i m_size;
+    // ScalarFloat m_sample_rate;
     ScalarVector2i m_window_size;
     ScalarPoint2i m_window_offset;
     ScalarVector2f m_bandwidth;
-    ScalarVector2f m_centres;
+    // ScalarVector2f m_centres;
     bool m_high_quality_edges;
     ref<ReconstructionFilter> m_filter;
 };

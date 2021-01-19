@@ -338,8 +338,10 @@ class PathRangeDopplerIntegrator : public MonteCarloIntegrator<Float, Spectrum> 
 
         // ray_.time = pathlength / math::CVac<float>;
 
-        // const_cast<RayDifferential3f&>(ray_).wavelengths = 0.005f;
-        const_cast<RayDifferential3f&>(ray_).wavelengths = 0.5f;
+        // const_cast<RayDifferential3f&>(ray_).wavelengths = math::Epsilon<float>;
+        const_cast<RayDifferential3f&>(ray_).wavelengths = 0.001f;
+        // const_cast<RayDifferential3f&>(ray_).wavelengths = 0.f;
+        // const_cast<RayDifferential3f&>(ray_).wavelengths = 0.5f;
 
         return {result, valid_ray};
     }

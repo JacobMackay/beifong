@@ -373,6 +373,9 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
         // t4 = t3 + wait;
         // tn = t % t4;
 
+        // Given a time, return the transmit frequency.
+        // This means that the transmitter needs to have a signal.
+
         Float f0 = 94e9 - 6e9/2;
         Float f1 = 94e9 + 6e9/2;
 
@@ -380,17 +383,27 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
         Float t2 = t1 + 10e-6;
         Float t3 = t2 + 240e-6;
         Float t4 = t3 + 10e-6;
-        Float tn = math::modulo(ray_.time, t4);
+        // Float tn = math::modulo(ray_.time, t4);
+        // Float tn = math::modulo(ray.time, t4);
+        Float tn = math::modulo(t4, ray.time);
+        // Float tn = ray.time;
 
         if (all(tn < t1)) {
-            f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
+            // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
+            f = 2*((6e9)/(240e-6))*tn + f0;
         } else if (all(tn < t2)) {
             f = f1;
         } else if (all(tn < t3)){
-            f = 2*((f0 - f1)/(t3 - t2))*tn;
+            // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
+            f = 2*((-6e9)/(240e-6))*tn + f1;
         } else {
             f = f0;
         }
+
+        // std::cout << tn * 1e6 << " " << f <<std::endl;
+
+        // I have wigner, time/frequency. I want to convert it to ambiguity to
+        // get range/doppler
 
         // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
         // f = ((f1 - f0)/(t2 - t1))*ray_.time + f0;
@@ -408,7 +421,7 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
 
         // mix
         // const_cast<RayDifferential3f&>(ray_).wavelengths = (math::CVac<float>/(ray.wavelengths*1e-9) - f)/6e9;
-        const_cast<RayDifferential3f&>(ray_).wavelengths = 0.5*(abs(math::CVac<float>/(ray.wavelengths*1e-9) - f))*math::InvTwoPi<float>;
+        const_cast<RayDifferential3f&>(ray_).wavelengths = 0.5*(abs(f - math::CVac<float>/(ray.wavelengths*1e-9)))*math::InvTwoPi<float>;
         // const_cast<RayDifferential3f&>(ray_).wavelengths = (abs(math::CVac<float>/(ray.wavelengths*1e-9) - f));
 
         // std::cout << f << " " << math::CVac<float>/(ray.wavelengths*1e-9) << (math::CVac<float>/(ray.wavelengths*1e-9) - f)/6e9  << std::endl;
