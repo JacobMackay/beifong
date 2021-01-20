@@ -231,8 +231,10 @@ template <typename T> T ulpdiff(T ref, T val) {
 }
 
 /// Always-positive modulo function
+// Modify for grouping
 template <typename T> T modulo(T a, T b) {
-    T result = a - (a / b) * b;
+    // T result = a - (a / b) * b;
+    T result = -(a - (a / b)) * b;
     return select(result < 0, result + b, result);
 }
 

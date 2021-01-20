@@ -994,42 +994,44 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // Float frequency_sample = sampler->next_1d(active);
       // Wavelength/time is not random. Do I do a mapping, or a sampling.
       // I guess I need to do a ray-weight as well.
-      // Float wavelength_sample = sampler->next_1d(active);
+      Float wavelength_sample = sampler->next_1d(active);
 
       // The wavelength should be the tx wavelength at this time
-      Float f(0.f);
-      Float f0 = 94e9 - 6e9/2;
-      Float f1 = 94e9 + 6e9/2;
+      // Float f(0.f);
+      // Float f0 = 94e9 - 6e9/2;
+      // Float f1 = 94e9 + 6e9/2;
+      //
+      // Float t1 = 240e-6;
+      // Float t2 = t1 + 10e-6;
+      // Float t3 = t2 + 240e-6;
+      // Float t4 = t3 + 10e-6;
+      //
+      // // Float tn = math::modulo(time, t4);
+      // Float tn = time;
+      //
+      // // These are definitely the culprit
+      // if (all(tn < t1)) {
+      //     // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
+      //     // f = 2*((6e9)/(240e-6))*tn + f0;
+      //     f = ((6e9)/(240e-6))*tn + f0;
+      // } else if (all(tn < t2)) {
+      //     f = f1;
+      // } else if (all(tn < t3)){
+      //     // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
+      //     // f = 2*((-6e9)/(240e-6))*tn + f1;
+      //     f = ((-6e9)/(240e-6))*tn + f1;
+      // } else {
+      //     f = f0;
+      // }
+      //
+      //
+      // // Float wavelength_sample = math::CVac<float>/f;
+      // // Float wavelength_sample = (f-f0)/(f1-f0);
+      // // Wavelength sample is reversed from frequency.
+      // Float wavelength_sample = 1.f - (f-f0)/(f1-f0);
 
-      Float t1 = 240e-6;
-      Float t2 = t1 + 10e-6;
-      Float t3 = t2 + 240e-6;
-      Float t4 = t3 + 10e-6;
-      // Float tn = math::modulo(ray_.time, t4);
-      // Float tn = math::modulo(ray.time, t4);
-      Float tn = math::modulo(t4, time);
-      // Float tn = math::modulo(time, t4);
-      // Float tn = ray.time;
 
-      // These are definitely the culprit
-      if (all(tn < t1)) {
-          // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
-          f = 2*((6e9)/(240e-6))*tn + f0;
-      } else if (all(tn < t2)) {
-          f = f1;
-      } else if (all(tn < t3)){
-          // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
-          f = 2*((-6e9)/(240e-6))*tn + f1;
-      } else {
-          f = f0;
-      }
-
-
-      // Float wavelength_sample = math::CVac<float>/f;
-      // Float wavelength_sample = (f-f0)/(f1-f0);
-      Float wavelength_sample = (f-f0)/(f1-f0);
-
-      std::cout << tn *1e6 << " " << wavelength_sample <<  " " << f << std::endl;
+      // std::cout << tn *1e6 << " " << wavelength_sample <<  " " << f << std::endl;
 
       // This is just a real (local) position.
       // Get the sample from 0-1, take away the
@@ -1064,7 +1066,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 
       ray.scale_differential(diff_scale_factor);
 
-      // std::cout << ray << std::endl;
+      // std::cout << ray.wavelengths << std::endl;
 
       const Medium *medium = receiver->medium();
       // std::tuple<Spectrum, Mask, Float> result =
@@ -1084,6 +1086,43 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 
       // std::pair<Spectrum, Mask> result = sample(scene, sampler, &ray, medium,
       //     aovs + 3, active);
+
+      Wavelength f(0.f);
+      Wavelength f0 = 94e9 - 6e9/2;
+      Wavelength f1 = 94e9 + 6e9/2;
+
+      Float t1 = 240e-6;
+      Float t2 = t1 + 10e-6;
+      Float t3 = t2 + 240e-6;
+      Float t4 = t3 + 10e-6;
+
+      // Float tn = math::modulo(time, t4);
+      Float tn = time;
+
+      // These are definitely the culprit
+      if (all(tn < t1)) {
+          // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
+          // f = 2*((6e9)/(240e-6))*tn + f0;
+          f = ((6e9)/(240e-6))*tn + f0;
+      } else if (all(tn < t2)) {
+          f = f1;
+      } else if (all(tn < t3)){
+          // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
+          // f = 2*((-6e9)/(240e-6))*tn + f1;
+          f = ((-6e9)/(240e-6))*tn + f1;
+      } else {
+          f = f0;
+      }
+
+
+      // Float wavelength_sample = math::CVac<float>/f;
+      // Float wavelength_sample = (f-f0)/(f1-f0);
+      // Wavelength sample is reversed from frequency.
+      ray.wavelengths = math::CVac<double>/f * 1e9;
+
+      // std::cout<<ray.wavelengths<<std::endl;
+
+      // std::cout << ray.wavelengths << std::endl;
       std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium,
           aovs + 3, active);
 

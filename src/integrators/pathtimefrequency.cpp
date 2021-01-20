@@ -245,62 +245,62 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 // Hardcode for now.
                 // Given a t and f, return the power; alternatively, given an t
 
-                // tx_type = continuous
-                // f(t, f) = antenna * power * delta(f)
-                // result_tx = select(eq(f, fc), antenna * power, 0.f);
-                // result_tx = antenna * power;
-                // return {result_tx, fc};
+                Wavelength f_tx(0.f);
+                // f0 = fc - bandwidth/2;
+                // f1 = fc + bandwidth/2;
+                //
+                // t1 = rise;
+                // t2 = t1 + hold;
+                // t3 = t2 + fall;
+                // t4 = t3 + wait;
+                // tn = t % t4;
 
-                // tx_type = fmcw
-                // select(t < rise & t > 0, delta(f - 2*UP*t), 0.f)*
-                // select(t < rise+hold & t > rise, delta(f - 2*HOLD*t), 0.f)*
-                // select(t < rise & t > 0, delta(f - 2*DOWN*t), 0.f)*
-                // select(t < rise & t > 0, delta(f - 2*WAIT*t), 0.f)
-                // f(t, f) = antenna * power * delta(f - 2*k*t)
+                // Given a time, return the transmit frequency.
+                // This means that the transmitter needs to have a signal.
 
-                // Float f(0.f);
-                // // f0 = fc - bandwidth/2;
-                // // f1 = fc + bandwidth/2;
-                // //
-                // // t1 = rise;
-                // // t2 = t1 + hold;
-                // // t3 = t2 + fall;
-                // // t4 = t3 + wait;
-                // // tn = t % t4;
-                //
-                // Float f0 = 94e9 - 6e9/2;
-                // Float f1 = 94e9 + 6e9/2;
-                //
-                // Float t1 = 200e-6;
-                // Float t2 = t1 + 50e-6;
-                // Float t3 = t2 + 200e-6;
-                // Float t4 = t3 + 50e-6;
-                // Float tn = math::modulo(ray_.time, t4);
-                //
-                // // if (any(tn < t1)) {
-                // //     f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
-                // // } else if (any(tn < t2)) {
-                // //     f = f1;
-                // // } else if (any(tn < t3)){
-                // //     f = 2*((f0 - f1)/(t3 - t2))*tn;
-                // // } else {
-                // //     f = f0;
-                // // }
-                //
-                // // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
-                // f = ((f1 - f0)/(t2 - t1))*ray_.time + f0;
-                //
-                // // std::cout << ray_.time << " " << tn << " " << f << std::endl;
-                //
-                // // result_tx = antenna * power;
-                // // return {result_tx, f};
-                //
-                // // mix
-                // const_cast<RayDifferential3f&>(ray_).wavelengths = math::CVac<float>/(ray.wavelengths*1e-9) - f;
-                //
-                // std::cout << f << " " << math::CVac<float>/(ray.wavelengths*1e-9) << math::CVac<float>/(ray.wavelengths*1e-9) - f  << std::endl;
-                //
-                // // Task: change interface to allow ray returning.
+                Wavelength f0 = 94e9 - 6e9/2;
+                Wavelength f1 = 94e9 + 6e9/2;
+
+                Float t1 = 240e-6;
+                Float t2 = t1 + 10e-6;
+                Float t3 = t2 + 240e-6;
+                Float t4 = t3 + 10e-6;
+
+                // Float tn = math::modulo(ray.time, t4);
+                Float tn = ray.time;
+
+                // std::cout << tn << ", " << ray.time << std::endl;
+
+                if (all(tn < t1)) {
+                    // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
+                    // f = 2*((6e9)/(240e-6))*tn + f0;
+                    f_tx = ((6e9)/(240e-6))*tn + f0;
+                } else if (all(tn < t2)) {
+                    f_tx = f1;
+                } else if (all(tn < t3)){
+                    // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
+                    // f = 2*((-6e9)/(240e-6))*tn + f1;
+                    f_tx = ((-6e9)/(240e-6))*tn + f1;
+                } else {
+                    f_tx = f0;
+                }
+
+                const_cast<RayDifferential3f&>(ray_).wavelengths = math::CVac<double>/f_tx *1e9;
+
+                // std::cout << "tx_t: " << tn * 1e6 << " rx_t: " << ray_.time * 1e6
+                //     << " tx_f: " << f_tx[0]*1e-9 << " rx_f: " << math::CVac<double>/(ray.wavelengths[0]*1e-9)*1e-9
+                //     << " d_f: " << (f_tx[0] - math::CVac<double>/(ray.wavelengths[0]*1e-9))
+                //     << " tx_λ: " << ray_.wavelengths[0]*1e-9*1e3 << " rx_λ: " << ray.wavelengths[0]*1e-9*1e3 << std::endl;
+
+                // const_cast<RayDifferential3f&>(ray_).wavelengths = 0.5*(abs(f - math::CVac<double>/(ray.wavelengths*1e-9)))*math::InvTwoPi<double>;
+                // const_cast<RayDifferential3f&>(ray_).wavelengths = (abs(f - math::CVac<double>/(ray.wavelengths*1e-9)))*math::InvTwoPi<double>;
+                // const_cast<RayDifferential3f&>(ray_).wavelengths = (abs(f_tx - math::CVac<double>/(ray.wavelengths*1e-9)));
+                // const_cast<RayDifferential3f&>(ray_).wavelengths -= ray.wavelengths;
+
+                // const_cast<RayDifferential3f&>(ray_).wavelengths = (math::CVac<double>/ray.wavelengths - math::CVac<double>/ray_.wavelengths)*1e9;
+                const_cast<RayDifferential3f&>(ray_).wavelengths = abs(f_tx[0] - math::CVac<double>/(ray.wavelengths[0]*1e-9));
+
+                // std::cout << ray_.wavelengths[0] << std::endl;
 
             }
 
@@ -363,71 +363,55 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
 
         // ray_.time = pathlength / math::CVac<float>;
 
-        Float f(0.f);
-        // f0 = fc - bandwidth/2;
-        // f1 = fc + bandwidth/2;
+        // Float f_tx(0.f);
+        // // f0 = fc - bandwidth/2;
+        // // f1 = fc + bandwidth/2;
+        // //
+        // // t1 = rise;
+        // // t2 = t1 + hold;
+        // // t3 = t2 + fall;
+        // // t4 = t3 + wait;
+        // // tn = t % t4;
         //
-        // t1 = rise;
-        // t2 = t1 + hold;
-        // t3 = t2 + fall;
-        // t4 = t3 + wait;
-        // tn = t % t4;
-
-        // Given a time, return the transmit frequency.
-        // This means that the transmitter needs to have a signal.
-
-        Float f0 = 94e9 - 6e9/2;
-        Float f1 = 94e9 + 6e9/2;
-
-        Float t1 = 240e-6;
-        Float t2 = t1 + 10e-6;
-        Float t3 = t2 + 240e-6;
-        Float t4 = t3 + 10e-6;
-        // Float tn = math::modulo(ray_.time, t4);
-        // Float tn = math::modulo(ray.time, t4);
-        Float tn = math::modulo(t4, ray.time);
+        // // Given a time, return the transmit frequency.
+        // // This means that the transmitter needs to have a signal.
+        //
+        // Float f0 = 94e9 - 6e9/2;
+        // Float f1 = 94e9 + 6e9/2;
+        //
+        // Float t1 = 240e-6;
+        // Float t2 = t1 + 10e-6;
+        // Float t3 = t2 + 240e-6;
+        // Float t4 = t3 + 10e-6;
+        // // Float tn = math::modulo(ray_.time, t4);
+        //
+        // // Float tn = math::modulo(t4, ray.time);
+        // // Float tn = math::modulo(ray.time, t4);
         // Float tn = ray.time;
-
-        if (all(tn < t1)) {
-            // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
-            f = 2*((6e9)/(240e-6))*tn + f0;
-        } else if (all(tn < t2)) {
-            f = f1;
-        } else if (all(tn < t3)){
-            // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
-            f = 2*((-6e9)/(240e-6))*tn + f1;
-        } else {
-            f = f0;
-        }
-
-        // std::cout << tn * 1e6 << " " << f <<std::endl;
-
-        // I have wigner, time/frequency. I want to convert it to ambiguity to
-        // get range/doppler
-
-        // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
-        // f = ((f1 - f0)/(t2 - t1))*ray_.time + f0;
-        // f = ((f1 - f0)/(t2 - t1))*ray.time + f0;
-        // f = 6e9/250e-6*ray.time + f0;
-
-        // f = 6e9/250e-6*tn + f0;
-
-        // std::cout << ray_.time << " " << tn << " " << f << std::endl;
-
-        // result_tx = antenna * power;
-        // return {result_tx, f};
-
-        // What we probably want to return in ray time is actually length.
-
-        // mix
-        // const_cast<RayDifferential3f&>(ray_).wavelengths = (math::CVac<float>/(ray.wavelengths*1e-9) - f)/6e9;
-        const_cast<RayDifferential3f&>(ray_).wavelengths = 0.5*(abs(f - math::CVac<float>/(ray.wavelengths*1e-9)))*math::InvTwoPi<float>;
-        // const_cast<RayDifferential3f&>(ray_).wavelengths = (abs(math::CVac<float>/(ray.wavelengths*1e-9) - f));
-
-        // std::cout << f << " " << math::CVac<float>/(ray.wavelengths*1e-9) << (math::CVac<float>/(ray.wavelengths*1e-9) - f)/6e9  << std::endl;
-        // std::cout<< ray_.time << std::endl;
-
-        // Task: change interface to allow ray returning.
+        //
+        // // Float tn = ray.time % t4;
+        //
+        // // std::cout << tn << ", " << ray.time << std::endl;
+        //
+        // if (all(tn < t1)) {
+        //     // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
+        //     // f = 2*((6e9)/(240e-6))*tn + f0;
+        //     f_tx = ((6e9)/(240e-6))*tn + f0;
+        // } else if (all(tn < t2)) {
+        //     f_tx = f1;
+        // } else if (all(tn < t3)){
+        //     // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
+        //     // f = 2*((-6e9)/(240e-6))*tn + f1;
+        //     f_tx = ((-6e9)/(240e-6))*tn + f1;
+        // } else {
+        //     f_tx = f0;
+        // }
+        //
+        // std::cout << tn * 1e6 << " " << f_tx*1e-9 << " " << math::CVac<double>/(ray.wavelengths[0]*1e-9)*1e-9  << " " << ray.wavelengths[0]*1e-9 << std::endl;
+        //
+        // // const_cast<RayDifferential3f&>(ray_).wavelengths = 0.5*(abs(f - math::CVac<double>/(ray.wavelengths*1e-9)))*math::InvTwoPi<double>;
+        // // const_cast<RayDifferential3f&>(ray_).wavelengths = (abs(f - math::CVac<double>/(ray.wavelengths*1e-9)))*math::InvTwoPi<double>;
+        // const_cast<RayDifferential3f&>(ray_).wavelengths = (abs(f_tx - math::CVac<double>/(ray.wavelengths*1e-9)));
 
         return {result, valid_ray};
     }
