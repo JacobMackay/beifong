@@ -743,6 +743,7 @@ MTS_VARIANT bool SamplingIntegrator<Float, Spectrum>::
                                 Float(idx / uint32_t(1)));
           std::vector<Float> aovs(channels.size());
 
+          // Perhaps after each slow time we update the scene?
           for (size_t i = 0; i < n_passes; i++) {
               receive_sample(scene, receiver, sampler, block, aovs.data(),
                           pos, diff_scale_factor);
@@ -1096,22 +1097,26 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       Float t3 = t2 + 240e-6;
       Float t4 = t3 + 10e-6;
 
-      // Float tn = math::modulo(time, t4);
-      Float tn = time;
+      Float tn = math::modulo(time, t4);
+      // Float tn = time;
 
       // These are definitely the culprit
       if (all(tn < t1)) {
           // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
           // f = 2*((6e9)/(240e-6))*tn + f0;
           f = ((6e9)/(240e-6))*tn + f0;
+          // std::cout << "t1: tn: " << tn << " t: " << time << " f: " << f << std::endl;
       } else if (all(tn < t2)) {
           f = f1;
+          // std::cout << "t2: tn: " << tn << " t: " << time << " f: " << f << std::endl;
       } else if (all(tn < t3)){
           // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
           // f = 2*((-6e9)/(240e-6))*tn + f1;
-          f = ((-6e9)/(240e-6))*tn + f1;
+          f = ((-6e9)/(240e-6))*(tn - t2) + f1;
+          // std::cout << "t3: tn: " << tn << " t: " << time << " f: " << f << std::endl;
       } else {
           f = f0;
+          // std::cout << "t4: tn: " << tn << " t: " << time << " f: " << f << std::endl;
       }
 
 
@@ -1159,14 +1164,25 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // Alternatively from our integrator.
       // ScalarVector2i rd = (std::get<2>(result)/
       //   (10-0.1), 0);
-      Vector2f rd = {ray.time, ray.wavelengths[0]};
+      // Vector2f rd = {ray.time, ray.wavelengths[0]};
+
+      Vector2f rd = {time - receiver->shutter_open(), ray.wavelengths[0]};
+      // Vector2f rd = {time, ray.wavelengths[0]};
+
       // rd = (rd - (receiver->adc()->centres() - receiver->adc()->bandwidth()/2))/receiver->adc()->bandwidth() * receiver->adc()->size();
 
       // We get real value, eg time, range, doppler, freq
       // rd = (rd - (receiver->adc()->centres() - receiver->adc()->bandwidth()/2))
       //   /receiver->adc()->bandwidth() * receiver->adc()->size();
 
+      // std::cout << rd << " " << rd[0]* receiver->adc()->size().x() / receiver->adc()->bandwidth().x() << std::endl;
+      // std::cout << receiver->adc()->size().x() << receiver->adc()->bandwidth().x() << std::endl;
+
       rd *= receiver->adc()->size() / receiver->adc()->bandwidth();
+      // rd[0] *= receiver->adc()->size().x() / receiver->adc()->bandwidth().x();
+      // rd[1] *= receiver->adc()->size().y() / receiver->adc()->bandwidth().y();
+
+      // std::cout << rd << std::endl;
 
         // val/range * bins
 

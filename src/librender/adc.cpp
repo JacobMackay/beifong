@@ -16,8 +16,8 @@ MTS_VARIANT ADC<Float, Spectrum>::ADC(const Properties &props) : Object() {
     // Number of discreet bins in the ADC, either fft or shift register,
     // default 1024x1024
     m_size = ScalarVector2i(
-        props.int_("bins", is_m_adc ? 1 : 1024),
-        props.int_("bins", is_m_adc ? 1 : 1024)
+        props.int_("t_bins", is_m_adc ? 1 : 1024),
+        props.int_("f_bins", is_m_adc ? 1 : 1024)
     );
 
     // Sample rate, default 250MSPS
@@ -25,21 +25,24 @@ MTS_VARIANT ADC<Float, Spectrum>::ADC(const Properties &props) : Object() {
 
     // Window specified in bins - by default, this matches the full ADC range.
     ScalarVector2i window_size = ScalarVector2i(
-        props.int_("window_tr_bins", m_size.x()),
-        props.int_("window_fd_bins", m_size.y())
+        props.int_("window_t_bins", m_size.x()),
+        props.int_("window_f_bins", m_size.y())
     );
 
     ScalarPoint2i window_offset = ScalarPoint2i(
-        props.int_("window_offset_tr", 0),
-        props.int_("window_offset_fd", 0)
+        props.int_("window_offset_t", 0),
+        props.int_("window_offset_f", 0)
     );
 
     set_window(window_offset, window_size);
 
-    // Time/range and frequency/doppler ADC bandwidth in s/m and Hz/(s/m)
+    // Time/range and frequency/doppler ADC bandwidth in s and Hz
+    // m_bandwidth = ScalarVector2f(
+    //     (static_cast<float>(props.int_("t_bins", is_m_adc ? 1 : 1024)) / props.float_("sample_rate", 2e28)),
+    //     props.float_("sample_rate", 2e28)
+    // );
     m_bandwidth = ScalarVector2f(
-        (static_cast<float>(props.int_("bins", is_m_adc ? 1 : 1024)) / props.float_("sample_rate", 2e28)),
-        props.float_("sample_rate", 2e28)
+        props.float_("t_bandwidth", 3.81e-6), props.float_("f_bandwidth", 250e6)
     );
 
     // // Time/range and frequency/doppler ADC centres

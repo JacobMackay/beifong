@@ -174,6 +174,11 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 // const_cast<RayDifferential3f&>(ray_).time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
                 ray.time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
                 // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
+                // Lets say the transmitter is moving at 10 m/s
+                // ray.wavelengths += (100.f/math::CVac<float>)*ray.wavelengths;
+                // delf = delv/c * f0
+                // c/dell = delv /c * c/l0
+                // del l = c / delv * l0
             }
 
             active &= si.is_valid();
@@ -266,8 +271,8 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 Float t3 = t2 + 240e-6;
                 Float t4 = t3 + 10e-6;
 
-                // Float tn = math::modulo(ray.time, t4);
-                Float tn = ray.time;
+                Float tn = math::modulo(ray.time, t4);
+                // Float tn = ray.time;
 
                 // std::cout << tn << ", " << ray.time << std::endl;
 
@@ -280,12 +285,16 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 } else if (all(tn < t3)){
                     // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
                     // f = 2*((-6e9)/(240e-6))*tn + f1;
-                    f_tx = ((-6e9)/(240e-6))*tn + f1;
+                    f_tx = ((-6e9)/(240e-6))*(tn-t2) + f1;
                 } else {
                     f_tx = f0;
                 }
 
-                const_cast<RayDifferential3f&>(ray_).wavelengths = math::CVac<double>/f_tx *1e9;
+                // const_cast<RayDifferential3f&>(ray_).wavelengths = math::CVac<double>/f_tx *1e9;
+
+                // ray.wavelengths += (100.f/math::CVac<float>)*ray.wavelengths;
+                // Imagine the tx is moving at 20 m/s
+                f_tx += 20.f/math::CVac<float> * f_tx;
 
                 // std::cout << "tx_t: " << tn * 1e6 << " rx_t: " << ray_.time * 1e6
                 //     << " tx_f: " << f_tx[0]*1e-9 << " rx_f: " << math::CVac<double>/(ray.wavelengths[0]*1e-9)*1e-9
