@@ -1088,7 +1088,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // std::pair<Spectrum, Mask> result = sample(scene, sampler, &ray, medium,
       //     aovs + 3, active);
 
-      Wavelength f(0.f);
+      Wavelength f_rx(0.f);
       Wavelength f0 = 94e9 - 6e9/2;
       Wavelength f1 = 94e9 + 6e9/2;
 
@@ -1104,28 +1104,30 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       if (all(tn < t1)) {
           // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
           // f = 2*((6e9)/(240e-6))*tn + f0;
-          f = ((6e9)/(240e-6))*tn + f0;
-          // std::cout << "t1: tn: " << tn << " t: " << time << " f: " << f << std::endl;
+          f_rx = ((6e9)/(240e-6))*tn + f0;
+          std::cout << "t1: tn: " << tn << " t: " << time << " f: " << f_rx[0] << std::endl;
       } else if (all(tn < t2)) {
-          f = f1;
-          // std::cout << "t2: tn: " << tn << " t: " << time << " f: " << f << std::endl;
+          f_rx = f1;
+          std::cout << "t2: tn: " << tn << " t: " << time << " f: " << f_rx[0] << std::endl;
       } else if (all(tn < t3)){
           // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
           // f = 2*((-6e9)/(240e-6))*tn + f1;
-          f = ((-6e9)/(240e-6))*(tn - t2) + f1;
-          // std::cout << "t3: tn: " << tn << " t: " << time << " f: " << f << std::endl;
+          f_rx = ((-6e9)/(240e-6))*(tn - t2) + f1;
+          std::cout << "t3: tn: " << tn << " t: " << time << " f: " << f_rx[0] << std::endl;
       } else {
-          f = f0;
-          // std::cout << "t4: tn: " << tn << " t: " << time << " f: " << f << std::endl;
+          f_rx = f0;
+          std::cout << "t4: tn: " << tn << " t: " << time << " f: " << f_rx[0] << std::endl;
       }
 
+
+      // std::cout << time << " " << tn << std::endl;
 
       // Float wavelength_sample = math::CVac<float>/f;
       // Float wavelength_sample = (f-f0)/(f1-f0);
       // Wavelength sample is reversed from frequency.
-      ray.wavelengths = math::CVac<double>/f * 1e9;
+      ray.wavelengths = math::CVac<double>/f_rx * 1e9;
 
-      // std::cout<<ray.wavelengths<<std::endl;
+      // std::cout<<"λ: " << ray.wavelengths << "f: " << f<<std::endl;
 
       // std::cout << ray.wavelengths << std::endl;
       std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium,
@@ -1177,6 +1179,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 
       // std::cout << rd << " " << rd[0]* receiver->adc()->size().x() / receiver->adc()->bandwidth().x() << std::endl;
       // std::cout << receiver->adc()->size().x() << receiver->adc()->bandwidth().x() << std::endl;
+
+      // std::cout << rd << std::endl;
 
       rd *= receiver->adc()->size() / receiver->adc()->bandwidth();
       // rd[0] *= receiver->adc()->size().x() / receiver->adc()->bandwidth().x();

@@ -234,8 +234,16 @@ template <typename T> T ulpdiff(T ref, T val) {
 // Modify for grouping
 template <typename T> T modulo(T a, T b) {
     // T result = a - (a / b) * b;
-    T result = -(a - (a / b)) * b;
-    return select(result < 0, result + b, result);
+    // return select(result < 0, result + b, result);
+
+    T left = 0, right = a;
+    while (any(left < right)) {
+        T m = (left + right) / 2;
+        left = select((a - m*b >= b), m + 1, 0);
+        right = select((a - m*b < b), m, 0);
+    }
+    // return a - left*b;
+    return select(a - left*b < 0, a - left*b + b, a - left*b);
 }
 
 /// Check whether the provided integer is a power of two
