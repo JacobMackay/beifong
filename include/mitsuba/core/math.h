@@ -76,6 +76,23 @@ Value tri(const T &x) {
     return select(abs(x) < 0.5, 1.0 - 2.0*abs(x), 0.f);
 }
 
+/// Modulo function for floats. Linear search, slow. The original is used
+// elsewhere. A binary search would be better but can't implement correctly atm
+template <typename T> T fmodulo(T a, T b) {
+    T result = abs(a);
+
+    // while (any(result >= abs(b))) {
+    while (any(result - abs(b) >=  Epsilon<T> )) {
+        result -= select(result - abs(b) >=  Epsilon<T>, abs(b), 0);
+    }
+
+    result = select(a < 0, abs(b) - result, result);
+    result += select(b < 0, b, 0);
+
+    return result;
+}
+
+
 //! @}
 // -----------------------------------------------------------------------
 
@@ -231,19 +248,9 @@ template <typename T> T ulpdiff(T ref, T val) {
 }
 
 /// Always-positive modulo function
-// Modify for grouping
 template <typename T> T modulo(T a, T b) {
-    // T result = a - (a / b) * b;
-    // return select(result < 0, result + b, result);
-
-    T left = 0, right = a;
-    while (any(left < right)) {
-        T m = (left + right) / 2;
-        left = select((a - m*b >= b), m + 1, 0);
-        right = select((a - m*b < b), m, 0);
-    }
-    // return a - left*b;
-    return select(a - left*b < 0, a - left*b + b, a - left*b);
+    T result = a - (a / b) * b;
+    return select(result < 0, result + b, result);
 }
 
 /// Check whether the provided integer is a power of two

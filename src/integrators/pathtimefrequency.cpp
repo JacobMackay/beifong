@@ -271,7 +271,10 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 Float t3 = t2 + 240e-6;
                 Float t4 = t3 + 10e-6;
 
-                Float tn = math::modulo(ray.time, t4);
+                // std::cout << "pt in" << std::endl;
+                Float tn = math::fmodulo(ray.time, t4);
+                // Float tn = math::modulo(ray.time, t4);
+                // std::cout << "pt out" << std::endl;
                 // Float tn = ray.time;
 
                 // std::cout << tn << ", " << ray.time << std::endl;

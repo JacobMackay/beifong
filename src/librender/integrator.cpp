@@ -1097,7 +1097,10 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       Float t3 = t2 + 240e-6;
       Float t4 = t3 + 10e-6;
 
-      Float tn = math::modulo(time, t4);
+      // std::cout << "int in" << std::endl;
+      Float tn = math::fmodulo(time, t4);
+      // Float tn = math::modulo(time, t4);
+      // std::cout << "int out" << std::endl;
       // Float tn = time;
 
       // These are definitely the culprit
@@ -1105,18 +1108,18 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
           // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
           // f = 2*((6e9)/(240e-6))*tn + f0;
           f_rx = ((6e9)/(240e-6))*tn + f0;
-          std::cout << "t1: tn: " << tn << " t: " << time << " f: " << f_rx[0] << std::endl;
+          // std::cout << "t1: tn: " << tn << " t: " << time << " f: " << f_rx[0] << std::endl;
       } else if (all(tn < t2)) {
           f_rx = f1;
-          std::cout << "t2: tn: " << tn << " t: " << time << " f: " << f_rx[0] << std::endl;
+          // std::cout << "t2: tn: " << tn << " t: " << time << " f: " << f_rx[0] << std::endl;
       } else if (all(tn < t3)){
           // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
           // f = 2*((-6e9)/(240e-6))*tn + f1;
           f_rx = ((-6e9)/(240e-6))*(tn - t2) + f1;
-          std::cout << "t3: tn: " << tn << " t: " << time << " f: " << f_rx[0] << std::endl;
+          // std::cout << "t3: tn: " << tn << " t: " << time << " f: " << f_rx[0] << std::endl;
       } else {
           f_rx = f0;
-          std::cout << "t4: tn: " << tn << " t: " << time << " f: " << f_rx[0] << std::endl;
+          // std::cout << "t4: tn: " << tn << " t: " << time << " f: " << f_rx[0] << std::endl;
       }
 
 
