@@ -297,7 +297,7 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
 
                 // ray.wavelengths += (100.f/math::CVac<float>)*ray.wavelengths;
                 // Imagine the tx is moving at 20 m/s
-                f_tx += 20.f/math::CVac<float> * f_tx;
+                f_tx += -100.f/math::CVac<float> * f_tx;
 
                 // std::cout << ray.time << " " << tn << std::endl;
 
