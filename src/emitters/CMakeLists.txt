@@ -8,9 +8,7 @@ add_plugin(directional directional.cpp)
 add_plugin(spot        spot.cpp)
 add_plugin(projector   projector.cpp)
 
-# add_plugin(transmitter   transmitter.cpp)
-# add_plugin(pointtransmitter   pointtransmitter.cpp)
-add_plugin(wignertransmitter   wignertransmitter.cpp)
+add_plugin(wigner   wigner.cpp)
 
 # Register the test directory
 add_tests(${CMAKE_CURRENT_SOURCE_DIR}/tests)

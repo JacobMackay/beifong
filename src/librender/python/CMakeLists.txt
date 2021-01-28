@@ -15,6 +15,7 @@ foreach (MTS_VARIANT ${MTS_VARIANTS})
     main_v.cpp
     bsdf_v.cpp
     emitter_v.cpp
+    transmitter_v.cpp
     endpoint_v.cpp
     film_v.cpp
     adc_v.cpp
@@ -54,6 +55,7 @@ endforeach()
 
 add_mitsuba_python_library(render_ext
   emitter.cpp
+  transmitter.cpp
   main.cpp
   bsdf.cpp
   interaction.cpp

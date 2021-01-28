@@ -2,6 +2,7 @@
 
 MTS_PY_DECLARE(BSDFContext);
 MTS_PY_DECLARE(EmitterExtras);
+MTS_PY_DECLARE(TransmitterExtras);
 MTS_PY_DECLARE(HitComputeFlags);
 MTS_PY_DECLARE(MicrofacetType);
 MTS_PY_DECLARE(PhaseFunctionExtras);
@@ -13,6 +14,7 @@ PYBIND11_MODULE(render_ext, m) {
 
     MTS_PY_IMPORT(BSDFContext);
     MTS_PY_IMPORT(EmitterExtras);
+    MTS_PY_IMPORT(TransmitterExtras);
     MTS_PY_IMPORT(HitComputeFlags);
     MTS_PY_IMPORT(MicrofacetType);
     MTS_PY_IMPORT(PhaseFunctionExtras);

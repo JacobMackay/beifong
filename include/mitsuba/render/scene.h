@@ -2,6 +2,7 @@
 
 #include <mitsuba/core/spectrum.h>
 #include <mitsuba/render/emitter.h>
+#include <mitsuba/render/transmitter.h>
 #include <mitsuba/render/shapegroup.h>
 #include <mitsuba/render/fwd.h>
 #include <mitsuba/render/sensor.h>
@@ -12,7 +13,8 @@ NAMESPACE_BEGIN(mitsuba)
 template <typename Float, typename Spectrum>
 class MTS_EXPORT_RENDER Scene : public Object {
 public:
-    MTS_IMPORT_TYPES(BSDF, Emitter, EmitterPtr, Film, ADC, Sampler, Shape, ShapePtr,
+    MTS_IMPORT_TYPES(BSDF, Emitter, EmitterPtr, Transmitter, TransmitterPtr,
+                     Film, ADC, Sampler, Shape, ShapePtr,
                      ShapeGroup, Sensor, Receiver, Integrator, Medium, MediumPtr)
 
     /// Instantiate a scene from a \ref Properties object
@@ -128,6 +130,54 @@ public:
                                 const DirectionSample3f &ds,
                                 Mask active = true) const;
 
+    /**
+     * \brief Direct illumination sampling routine
+     *
+     * Given an arbitrary reference point in the scene, this method samples a
+     * direction from the reference point to towards a transmitter.
+     *
+     * Ideally, the implementation should importance sample the product of the
+     * emission profile and the geometry term between the reference point and
+     * the position on the transmitter.
+     *
+     * \param ref
+     *    A reference point somewhere within the scene
+     *
+     * \param sample
+     *    A uniformly distributed 2D vector
+     *
+     * \param test_visibility
+     *    When set to \c true, a shadow ray will be cast to ensure that the
+     *    sampled transmitter position and the reference point are mutually visible.
+     *
+     * \return
+     *    Radiance received along the sampled ray divided by the sample
+     *    probability.
+     */
+    std::pair<DirectionSample3f, Spectrum>
+    sample_transmitter_direction(const Interaction3f &ref,
+                             const Point2f &sample,
+                             bool test_visibility = true,
+                             Mask active = true) const;
+
+    /**
+     * \brief Evaluate the probability density of the  \ref
+     * sample_transmitter_direct() technique given an filled-in \ref
+     * DirectionSample record.
+     *
+     * \param ref
+     *    A reference point somewhere within the scene
+     *
+     * \param ds
+     *    A direction sampling record, which specifies the query location.
+     *
+     * \return
+     *    The solid angle density expressed of the sample
+     */
+    Float pdf_transmitter_direction(const Interaction3f &ref,
+                                const DirectionSample3f &ds,
+                                Mask active = true) const;
+
     //! @}
     // =============================================================
 
@@ -153,8 +203,16 @@ public:
     /// Return the list of emitters (const version)
     const host_vector<ref<Emitter>, Float> &emitters() const { return m_emitters; }
 
+    /// Return the list of transmitters
+    host_vector<ref<Transmitter>, Float> &transmitters() { return m_transmitters; }
+    /// Return the list of transmitters (const version)
+    const host_vector<ref<Transmitter>, Float> &transmitters() const { return m_transmitters; }
+
     /// Return the environment emitter (if any)
     const Emitter *environment() const { return m_environment.get(); }
+
+    // /// Return the environment transmitter (if any) (may cause error)
+    // const Transmitter *environment() const { return m_environment.get(); }
 
     /// Return the list of shapes
     std::vector<ref<Shape>> &shapes() { return m_shapes; }
@@ -219,13 +277,14 @@ protected:
     ScalarBoundingBox3f m_bbox;
 
     host_vector<ref<Emitter>, Float> m_emitters;
+    host_vector<ref<Transmitter>, Float> m_transmitters;
     std::vector<ref<Shape>> m_shapes;
     std::vector<ref<ShapeGroup>> m_shapegroups;
     std::vector<ref<Sensor>> m_sensors;
     std::vector<ref<Receiver>> m_receivers;
     std::vector<ref<Object>> m_children;
     ref<Integrator> m_integrator;
-    ref<Emitter> m_environment;
+    ref<Emitter> m_environment; // Note no such thing as environment transmitter
 
     bool m_shapes_grad_enabled;
 };
@@ -240,7 +299,11 @@ void DirectionSample<Float, Spectrum>::set_query(const Ray3f &ray, const Surface
     n      = si.sh_frame.n;
     uv     = si.uv;
     time   = si.time;
-    object = static_cast<ObjectPtr>(si.shape->emitter());
+    if(any(si.shape->emitter())){
+        object = static_cast<ObjectPtr>(si.shape->emitter());
+    } else {
+        object = static_cast<ObjectPtr>(si.shape->transmitter());
+    }
     d      = ray.d;
     dist   = si.t;
 }
@@ -256,6 +319,28 @@ SurfaceInteraction<Float, Spectrum>::emitter(const Scene *scene, Mask active) co
             return scene->environment();
     } else {
         return select(is_valid(), shape->emitter(active), scene->environment());
+    }
+}
+
+// See interaction.h
+template <typename Float, typename Spectrum>
+typename SurfaceInteraction<Float, Spectrum>::TransmitterPtr
+SurfaceInteraction<Float, Spectrum>::transmitter(const Scene *scene, Mask active) const {
+    // if constexpr (!is_array_v<ShapePtr>) {
+    //     if (is_valid())
+    //         return shape->transmitter(active);
+    //     else
+    //         return scene->environment();
+    // } else {
+    //     return select(is_valid(), shape->transmitter(active), scene->environment());
+    // }
+    if constexpr (!is_array_v<ShapePtr>) {
+        if (is_valid())
+            return shape->transmitter(active);
+        else
+            return nullptr;
+    } else {
+        return select(is_valid(), shape->transmitter(active), nullptr);
     }
 }
 

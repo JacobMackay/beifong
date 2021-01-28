@@ -12,6 +12,7 @@ struct BSDFContext;
 template <typename Float, typename Spectrum> class ADC;
 template <typename Float, typename Spectrum> class BSDF;
 template <typename Float, typename Spectrum> class Emitter;
+template <typename Float, typename Spectrum> class Transmitter;
 template <typename Float, typename Spectrum> class Endpoint;
 template <typename Float, typename Spectrum> class Film;
 template <typename Float, typename Spectrum> class ImageBlock;
@@ -87,6 +88,7 @@ template <typename Float_, typename Spectrum_> struct RenderAliases {
     using Receiver               = mitsuba::Receiver<FloatU, SpectrumU>;
     using ProjectiveCamera       = mitsuba::ProjectiveCamera<FloatU, SpectrumU>;
     using Emitter                = mitsuba::Emitter<FloatU, SpectrumU>;
+    using Transmitter            = mitsuba::Transmitter<FloatU, SpectrumU>;
     using Endpoint               = mitsuba::Endpoint<FloatU, SpectrumU>;
     using Medium                 = mitsuba::Medium<FloatU, SpectrumU>;
     using PhaseFunction          = mitsuba::PhaseFunction<FloatU, SpectrumU>;
@@ -106,6 +108,7 @@ template <typename Float_, typename Spectrum_> struct RenderAliases {
     using PhaseFunctionPtr       = replace_scalar_t<Float, const PhaseFunction *>;
     using ShapePtr               = replace_scalar_t<Float, const Shape *>;
     using EmitterPtr             = replace_scalar_t<Float, const Emitter *>;
+    using TransmitterPtr         = replace_scalar_t<Float, const Transmitter *>;
 };
 
 #define MTS_IMPORT_RENDER_BASIC_TYPES()                                                            \
@@ -147,6 +150,7 @@ template <typename Float_, typename Spectrum_> struct RenderAliases {
     using Receiver               = typename RenderAliases::Receiver;                               \
     using ProjectiveCamera       = typename RenderAliases::ProjectiveCamera;                       \
     using Emitter                = typename RenderAliases::Emitter;                                \
+    using Transmitter            = typename RenderAliases::Transmitter;                            \
     using Endpoint               = typename RenderAliases::Endpoint;                               \
     using Medium                 = typename RenderAliases::Medium;                                 \
     using PhaseFunction          = typename RenderAliases::PhaseFunction;                          \
@@ -161,7 +165,8 @@ template <typename Float_, typename Spectrum_> struct RenderAliases {
     using BSDFPtr                = typename RenderAliases::BSDFPtr;                                \
     using MediumPtr              = typename RenderAliases::MediumPtr;                              \
     using ShapePtr               = typename RenderAliases::ShapePtr;                               \
-    using EmitterPtr             = typename RenderAliases::EmitterPtr;
+    using EmitterPtr             = typename RenderAliases::EmitterPtr;                             \
+    using TransmitterPtr         = typename RenderAliases::TransmitterPtr;
 
 // -----------------------------------------------------------------------------
 

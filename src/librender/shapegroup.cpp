@@ -23,6 +23,8 @@ MTS_VARIANT ShapeGroup<Float, Spectrum>::ShapeGroup(const Properties &props) {
                 Throw("Nested ShapeGroup is not permitted");
             if (shape->is_emitter())
                 Throw("Instancing of emitters is not supported");
+            if (shape->is_transmitter())
+                Throw("Instancing of transmitters is not supported");
             if (shape->is_sensor())
                 Throw("Instancing of sensors is not supported");
             if (shape->is_receiver())

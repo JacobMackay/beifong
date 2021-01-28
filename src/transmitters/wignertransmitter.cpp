@@ -1,7 +1,7 @@
 #include <mitsuba/core/properties.h>
 #include <mitsuba/core/warp.h>
 #include <mitsuba/core/spectrum.h>
-#include <mitsuba/render/emitter.h>
+#include <mitsuba/render/transmitter.h>
 #include <mitsuba/render/medium.h>
 #include <mitsuba/render/shape.h>
 #include <mitsuba/render/texture.h>
@@ -11,7 +11,7 @@
 NAMESPACE_BEGIN(mitsuba)
 /**!
 
-.. _emitter-area:
+.. _transmitter-area:
 
 Area light (:monosp:`area`)
 ---------------------------
@@ -20,33 +20,33 @@ Area light (:monosp:`area`)
 
  * - radiance
    - |spectrum|
-   - Specifies the emitted radiance in units of power per unit area per unit steradian.
+   - Specifies the transmitted radiance in units of power per unit area per unit steradian.
 
-This plugin implements an area light, i.e. a light source that emits
+This plugin implements an area light, i.e. a light source that transmits
 diffuse illumination from the exterior of an arbitrary shape.
-Since the emission profile of an area light is completely diffuse, it
+Since the transmission profile of an area light is completely diffuse, it
 has the same apparent brightness regardless of the observer's viewing
 direction. Furthermore, since it occupies a nonzero amount of space, an
 area light generally causes scene objects to cast soft shadows.
 
 To create an area light source, simply instantiate the desired
-emitter shape and specify an :monosp:`area` instance as its child:
+transmitter shape and specify an :monosp:`area` instance as its child:
 
 .. code-block:: xml
     :name: sphere-light
 
     <shape type="sphere">
-        <emitter type="area">
+        <transmitter type="area">
             <spectrum name="radiance" value="1.0"/>
-        </emitter>
+        </transmitter>
     </shape>
 
  */
 
 template <typename Float, typename Spectrum>
-class WignerTransmitter final : public Emitter<Float, Spectrum> {
+class WignerTransmitter final : public Transmitter<Float, Spectrum> {
 public:
-    MTS_IMPORT_BASE(Emitter, m_flags, m_shape, m_medium)
+    MTS_IMPORT_BASE(Transmitter, m_flags, m_shape, m_medium)
     MTS_IMPORT_TYPES(Scene, Shape, Texture)
 
     WignerTransmitter(const Properties &props) : Base(props) {
@@ -57,15 +57,15 @@ public:
 
         m_radiance = props.texture<Texture>("radiance", Texture::D65(1.f));
 
-        m_flags = +EmitterFlags::Surface;
+        m_flags = +TransmitterFlags::Surface;
         if (m_radiance->is_spatially_varying())
-            m_flags |= +EmitterFlags::SpatiallyVarying;
+            m_flags |= +TransmitterFlags::SpatiallyVarying;
     }
 
     Spectrum eval(const SurfaceInteraction3f &si, Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointEvaluate, active);
 
-        // Ensures only forward emission
+        // Ensures only forward transmission
         return select(
             Frame3f::cos_theta(si.wi) > 0.f,
             unpolarized<Spectrum>(m_radiance->eval(si, active)),
@@ -170,7 +170,7 @@ public:
     std::pair<DirectionSample3f, Spectrum>
     sample_direction(const Interaction3f &it, const Point2f &sample, Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointSampleDirection, active);
-        Assert(m_shape, "Can't sample from an area emitter without an associated Shape.");
+        Assert(m_shape, "Can't sample from an area transmitter without an associated Shape.");
         DirectionSample3f ds;
         Spectrum spec;
 
@@ -296,6 +296,6 @@ private:
     ref<Texture> m_radiance;
 };
 
-MTS_IMPLEMENT_CLASS_VARIANT(WignerTransmitter, Emitter)
+MTS_IMPLEMENT_CLASS_VARIANT(WignerTransmitter, Transmitter)
 MTS_EXPORT_PLUGIN(WignerTransmitter, "Wigner transmitter")
 NAMESPACE_END(mitsuba)

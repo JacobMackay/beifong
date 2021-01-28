@@ -1626,7 +1626,7 @@ Parameter ``ray``:
     towards ``si``.p.
 
 Parameter ``si``:
-    A surface intersection record (usually on an emitter).
+    A surface intersection record (usually on an emitter, transmitter).
 
 \note Defined in scene.h)doc";
 
@@ -1943,6 +1943,43 @@ static const char *__doc_mitsuba_Emitter_flags = R"doc(Flags for all components 
 static const char *__doc_mitsuba_Emitter_is_environment = R"doc(Is this an environment map light emitter?)doc";
 
 static const char *__doc_mitsuba_Emitter_m_flags = R"doc(Combined flags for all properties of this emitter.)doc";
+
+
+static const char *__doc_mitsuba_Transmitter = R"doc()doc";
+
+static const char *__doc_mitsuba_Transmitter_2 = R"doc()doc";
+
+static const char *__doc_mitsuba_Transmitter_3 = R"doc()doc";
+
+static const char *__doc_mitsuba_Transmitter_4 = R"doc()doc";
+
+static const char *__doc_mitsuba_TransmitterFlags =
+R"doc(This list of flags is used to classify the different types of
+transmitters.)doc";
+
+static const char *__doc_mitsuba_TransmitterFlags_Delta = R"doc(Delta function in either position or direction)doc";
+
+static const char *__doc_mitsuba_TransmitterFlags_DeltaDirection = R"doc(The transmitter transmits light in a single direction)doc";
+
+static const char *__doc_mitsuba_TransmitterFlags_DeltaPosition = R"doc(The transmitter lies at a single point in space)doc";
+
+static const char *__doc_mitsuba_TransmitterFlags_Infinite = R"doc(The transmitter is placed at infinity (e.g. environment maps))doc";
+
+static const char *__doc_mitsuba_TransmitterFlags_None = R"doc(No flags set (default value))doc";
+
+static const char *__doc_mitsuba_TransmitterFlags_SpatiallyVarying = R"doc(The transmission depends on the UV coordinates)doc";
+
+static const char *__doc_mitsuba_TransmitterFlags_Surface = R"doc(The transmitter is attached to a surface (e.g. area transmitters))doc";
+
+static const char *__doc_mitsuba_Transmitter_Transmitter = R"doc()doc";
+
+static const char *__doc_mitsuba_Transmitter_class = R"doc()doc";
+
+static const char *__doc_mitsuba_Transmitter_flags = R"doc(Flags for all components combined.)doc";
+
+static const char *__doc_mitsuba_Transmitter_is_environment = R"doc(Is this an environment map light transitter?)doc";
+
+static const char *__doc_mitsuba_Transmitter_m_flags = R"doc(Combined flags for all properties of this transmitter.)doc";
 
 static const char *__doc_mitsuba_Endpoint =
 R"doc(Endpoint: an abstract interface to light sources and sensors
@@ -3506,6 +3543,8 @@ static const char *__doc_mitsuba_Medium_m_phase_function = R"doc()doc";
 
 static const char *__doc_mitsuba_Medium_m_sample_emitters = R"doc()doc";
 
+static const char *__doc_mitsuba_Medium_m_sample_transmitters = R"doc()doc";
+
 static const char *__doc_mitsuba_Medium_operator_delete = R"doc()doc";
 
 static const char *__doc_mitsuba_Medium_operator_delete_2 = R"doc()doc";
@@ -3550,6 +3589,8 @@ Returns:
 static const char *__doc_mitsuba_Medium_to_string = R"doc(Return a human-readable representation of the Medium)doc";
 
 static const char *__doc_mitsuba_Medium_use_emitter_sampling = R"doc(Returns whether this specific medium instance uses emitter sampling)doc";
+
+static const char *__doc_mitsuba_Medium_use_transmitter_sampling = R"doc(Returns whether this specific medium instance uses transmitter sampling)doc";
 
 static const char *__doc_mitsuba_MemoryMappedFile =
 R"doc(Basic cross-platform abstraction for memory mapped files
@@ -4524,6 +4565,10 @@ static const char *__doc_mitsuba_ProfilerPhase_SampleEmitterDirection = R"doc()d
 
 static const char *__doc_mitsuba_ProfilerPhase_SampleEmitterRay = R"doc()doc";
 
+static const char *__doc_mitsuba_ProfilerPhase_SampleTransmitterDirection = R"doc()doc";
+
+static const char *__doc_mitsuba_ProfilerPhase_SampleTransmitterRay = R"doc()doc";
+
 static const char *__doc_mitsuba_ProfilerPhase_SamplingIntegratorSample = R"doc()doc";
 
 static const char *__doc_mitsuba_ProfilerPhase_TextureEvaluate = R"doc()doc";
@@ -5302,6 +5347,8 @@ static const char *__doc_mitsuba_SamplingIntegrator_m_block_size = R"doc(Size of
 
 static const char *__doc_mitsuba_SamplingIntegrator_m_hide_emitters = R"doc(Flag for disabling direct visibility of emitters)doc";
 
+static const char *__doc_mitsuba_SamplingIntegrator_m_hide_transmitters = R"doc(Flag for disabling direct visibility of transmitters)doc";
+
 static const char *__doc_mitsuba_SamplingIntegrator_m_render_timer = R"doc(Timer used to enforce the timeout.)doc";
 
 static const char *__doc_mitsuba_SamplingIntegrator_m_samples_per_pass =
@@ -5400,6 +5447,10 @@ static const char *__doc_mitsuba_Scene_emitters = R"doc(Return the list of emitt
 
 static const char *__doc_mitsuba_Scene_emitters_2 = R"doc(Return the list of emitters (const version))doc";
 
+static const char *__doc_mitsuba_Scene_transmitters = R"doc(Return the list of transmitters)doc";
+
+static const char *__doc_mitsuba_Scene_transmitters_2 = R"doc(Return the list of transmitters (const version))doc";
+
 static const char *__doc_mitsuba_Scene_environment = R"doc(Return the environment emitter (if any))doc";
 
 static const char *__doc_mitsuba_Scene_integrator = R"doc(Return the scene's integrator)doc";
@@ -5413,6 +5464,8 @@ static const char *__doc_mitsuba_Scene_m_bbox = R"doc()doc";
 static const char *__doc_mitsuba_Scene_m_children = R"doc()doc";
 
 static const char *__doc_mitsuba_Scene_m_emitters = R"doc()doc";
+
+static const char *__doc_mitsuba_Scene_m_transmitters = R"doc()doc";
 
 static const char *__doc_mitsuba_Scene_m_environment = R"doc()doc";
 
@@ -5430,6 +5483,19 @@ static const char *__doc_mitsuba_Scene_parameters_changed = R"doc(Update interna
 
 static const char *__doc_mitsuba_Scene_pdf_emitter_direction =
 R"doc(Evaluate the probability density of the sample_emitter_direct()
+technique given an filled-in DirectionSample record.
+
+Parameter ``ref``:
+    A reference point somewhere within the scene
+
+Parameter ``ds``:
+    A direction sampling record, which specifies the query location.
+
+Returns:
+    The solid angle density expressed of the sample)doc";
+
+static const char *__doc_mitsuba_Scene_pdf_transmitter_direction =
+R"doc(Evaluate the probability density of the sample_transmitter_direct()
 technique given an filled-in DirectionSample record.
 
 Parameter ``ref``:
@@ -5514,6 +5580,31 @@ Parameter ``sample``:
 Parameter ``test_visibility``:
     When set to ``True``, a shadow ray will be cast to ensure that the
     sampled emitter position and the reference point are mutually
+    visible.
+
+Returns:
+    Radiance received along the sampled ray divided by the sample
+    probability.)doc";
+
+static const char *__doc_mitsuba_Scene_sample_transmitter_direction =
+R"doc(Direct illumination sampling routine
+
+Given an arbitrary reference point in the scene, this method samples a
+direction from the reference point to towards an transmitter.
+
+Ideally, the implementation should importance sample the product of
+the transmission profile and the geometry term between the reference point
+and the position on the transmitter.
+
+Parameter ``ref``:
+    A reference point somewhere within the scene
+
+Parameter ``sample``:
+    A uniformly distributed 2D vector
+
+Parameter ``test_visibility``:
+    When set to ``True``, a shadow ray will be cast to ensure that the
+    sampled transmitter position and the reference point are mutually
     visible.
 
 Returns:
@@ -5886,6 +5977,10 @@ static const char *__doc_mitsuba_Shape_emitter = R"doc(Return the area emitter a
 
 static const char *__doc_mitsuba_Shape_emitter_2 = R"doc(Return the area emitter associated with this shape (if any))doc";
 
+static const char *__doc_mitsuba_Shape_transmitter = R"doc(Return the area transmitter associated with this shape (if any))doc";
+
+static const char *__doc_mitsuba_Shape_transmitter_2 = R"doc(Return the area transmitter associated with this shape (if any))doc";
+
 static const char *__doc_mitsuba_Shape_eval_attribute =
 R"doc(Evaluate a specific shape attribute at the given surface interaction.
 
@@ -5961,6 +6056,8 @@ static const char *__doc_mitsuba_Shape_interior_medium = R"doc(Return the medium
 
 static const char *__doc_mitsuba_Shape_is_emitter = R"doc(Is this shape also an area emitter?)doc";
 
+static const char *__doc_mitsuba_Shape_is_transmitter = R"doc(Is this shape also an area transmitter?)doc";
+
 static const char *__doc_mitsuba_Shape_is_medium_transition = R"doc(Does the surface of this shape mark a medium transition?)doc";
 
 static const char *__doc_mitsuba_Shape_is_mesh = R"doc(Is this shape a triangle mesh?)doc";
@@ -5972,6 +6069,8 @@ static const char *__doc_mitsuba_Shape_is_receiver = R"doc(Is this shape also an
 static const char *__doc_mitsuba_Shape_m_bsdf = R"doc()doc";
 
 static const char *__doc_mitsuba_Shape_m_emitter = R"doc()doc";
+
+static const char *__doc_mitsuba_Shape_m_transmitter = R"doc()doc";
 
 static const char *__doc_mitsuba_Shape_m_exterior_medium = R"doc()doc";
 
@@ -6747,6 +6846,10 @@ static const char *__doc_mitsuba_SurfaceInteraction_duv_dy = R"doc(UV partials w
 
 static const char *__doc_mitsuba_SurfaceInteraction_emitter =
 R"doc(Return the emitter associated with the intersection (if any) \note
+Defined in scene.h)doc";
+
+static const char *__doc_mitsuba_SurfaceInteraction_transmitter =
+R"doc(Return the transmitter associated with the intersection (if any) \note
 Defined in scene.h)doc";
 
 static const char *__doc_mitsuba_SurfaceInteraction_has_n_partials = R"doc()doc";
@@ -8226,6 +8329,10 @@ static const char *__doc_mitsuba_detail_variant_helper_visit = R"doc()doc";
 
 static const char *__doc_mitsuba_emitter =
 R"doc(Return the emitter associated with the intersection (if any) \note
+Defined in scene.h)doc";
+
+static const char *__doc_mitsuba_transmitter =
+R"doc(Return the transmitter associated with the intersection (if any) \note
 Defined in scene.h)doc";
 
 static const char *__doc_mitsuba_eval_reflectance = R"doc()doc";

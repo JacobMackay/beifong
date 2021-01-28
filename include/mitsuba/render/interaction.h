@@ -171,8 +171,17 @@ struct SurfaceInteraction : Interaction<Float_, Spectrum_> {
      */
     EmitterPtr emitter(const Scene *scene, Mask active = true) const;
 
+    /**
+     * Return the transmitter associated with the intersection (if any)
+     * \note Defined in scene.h
+     */
+    TransmitterPtr transmitter(const Scene *scene, Mask active = true) const;
+
     /// Is the intersected shape also a sensor?
     Mask is_sensor() const { return shape->is_sensor(); }
+
+    /// Is the intersected shape also a receiver?
+    Mask is_receiver() const { return shape->is_receiver(); }
 
     /// Does the surface mark a transition between two media?
     Mask is_medium_transition() const { return shape->is_medium_transition(); }
@@ -350,6 +359,30 @@ struct SurfaceInteraction : Interaction<Float_, Spectrum_> {
         else
             return any_nested(neq(dn_du, 0.f) || neq(dn_dv, 0.f));
     }
+
+    // Wavelength doppler() const {
+    //
+    //     // if (shape) {
+    //
+    //         // Transform4f vel = shape->velocity;
+    //         // ScalarTransform4f vel = shape->velocity();
+    //         ScalarTransform4f vel = ScalarTransform4f(shape->velocity());
+    //         // DirectionSample3f ws = m_shape->sample_wigner(ds, wavelength, active);
+    //
+    //         // return dot(wi, shape.velocity*Point3f(to_local(p)))/math::CVac<float>*wavelengths;
+    //         return dot(wi, vel*Point3f(to_local(p)))/math::CVac<float>*wavelengths;
+    //         // return dot(wi, shape.velocity*Point3f(to_local(p)))/math::CVac<float>*wavelengths;
+    //
+    //
+    //         // return dot(si.wi, m_velocity*Point3f(si.to_local(si.p)))/math::CVac<float>*si.wavelengths;
+    //
+    //     // } else {
+    //     //     return 0;
+    //     // }
+    //
+    //
+    //
+    // }
 
     //! @}
     // =============================================================
@@ -591,6 +624,12 @@ struct PreliminaryIntersection {
         si.wi = select(active, si.to_local(-ray.d), -ray.d);
 
         si.duv_dx = si.duv_dy = zero<Point2f>();
+
+        // ScalarTransform4f vel = instance->velocity();
+        // Float vel = target->velocity();
+        // Float dop = target->doppler(si);
+        // Wavelength dop = target->doppler(si);
+        // ScalarTransform4f vel = target->velocity();
 
         return si;
     }

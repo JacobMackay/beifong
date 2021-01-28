@@ -23,7 +23,7 @@ static void (*sigint_handler_prev)(int) = nullptr;
 /// Trampoline for derived types implemented in Python
 MTS_VARIANT class PySamplingIntegrator : public SamplingIntegrator<Float, Spectrum> {
 public:
-    MTS_IMPORT_TYPES(SamplingIntegrator, Scene, Sampler, Medium, Emitter, EmitterPtr, BSDF, BSDFPtr)
+    MTS_IMPORT_TYPES(SamplingIntegrator, Scene, Sampler, Medium, Emitter, EmitterPtr, Transmitter, TransmitterPtr, BSDF, BSDFPtr)
 
     PySamplingIntegrator(const Properties &props) : SamplingIntegrator(props) { }
 

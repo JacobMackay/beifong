@@ -21,8 +21,9 @@ NAMESPACE_BEGIN(mitsuba)
  */
 template <typename Float, typename Spectrum>
 class MTS_EXPORT_RENDER Shape : public Object {
+ENOKI_CALL_SUPPORT_FRIEND()
 public:
-    MTS_IMPORT_TYPES(BSDF, Medium, Emitter, Sensor, Receiver, MeshAttribute);
+    MTS_IMPORT_TYPES(BSDF, Medium, Emitter, Transmitter, Sensor, Receiver, MeshAttribute);
 
     // Use 32 bit indices to keep track of indices to conserve memory
     using ScalarIndex = uint32_t;
@@ -159,6 +160,9 @@ public:
 
     virtual DirectionSample3f sample_wigner(const DirectionSample3f &ds, Wavelength wavelength, Mask active = true) const;
 
+    // virtual Wavelength doppler(const DirectionSample3f &ds, Wavelength wavelength, Mask active = true) const;
+    // virtual ScalarTransform4f velocity() const;
+
     //! @}
     // =============================================================
 
@@ -230,6 +234,20 @@ public:
                                                              PreliminaryIntersection3f pi,
                                                              HitComputeFlags flags = HitComputeFlags::All,
                                                              Mask active = true) const;
+
+    // virtual ScalarTransform4f velocity() const;
+    // ScalarTransform4f velocity() const {return m_velocity;};
+    // Float velocity() const {return 1.f;};
+    // Wavelength doppler(SurfaceInteraction3f si) const {
+    //     // return dot(si.wi, m_velocity*Point3f(si.to_local(si.p))) / math::CVac<float>
+    //     //  * si.wavelengths;
+    //     // std::cout << "Point: " << si.p << " To local: " << Point3f(si.to_local(si.p)) << " m_vel: " << m_velocity << " Product: " << m_velocity*Point3f(si.to_local(si.p)) << " Final: " << dot(Vector3f(1,1,1), m_velocity*Point3f(si.to_local(si.p))) / math::CVac<float>
+    //     //  * si.wavelengths << std::endl;
+    //     return dot(Vector3f(1,1,1), m_velocity*Point3f(si.to_local(si.p))) / math::CVac<float>
+    //      * si.wavelengths;
+    // };
+
+    virtual Wavelength doppler(SurfaceInteraction3f si, Mask active) const;
 
     /**
      * \brief Test for an intersection and return detailed information
@@ -383,6 +401,9 @@ public:
     virtual SurfaceInteraction3f eval_parameterization(const Point2f &uv,
                                                        Mask active = true) const;
 
+    // // Given a surface interaction, return the doppler shift/effect on wavelength
+    // virtual Wavelength eval_doppler(const SurfaceInteraction3f &si) const;
+
     //! @}
     // =============================================================
 
@@ -392,6 +413,19 @@ public:
 
     /// Return a string identifier
     std::string id() const override;
+
+    // const Transform4f velocity() const;
+    // const ScalarTransform4f velocity() const;
+    // virtual ScalarTransform4f velocity() const;
+    // ScalarTransform4f velocity() const;
+    // ScalarTransform4f m_velocity;
+    // Transform4f velocity();
+    // const ScalarTransform4f velocity() const;
+    // const ScalarTransform4f velocity(){return m_velocity;} const;
+    // ScalarTransform4f const velocity(){return m_velocity;};
+    // const ScalarTransform4f const velocity(){ return m_velocity; };
+    // const Medium *exterior_medium() const { return m_exterior_medium.get(); }
+    // virtual DirectionSample3f sample_wigner(const DirectionSample3f &ds, Wavelength wavelength, Mask active = true) const;
 
     /// Is this shape a triangle mesh?
     bool is_mesh() const { return class_()->derives_from(Mesh<Float, Spectrum>::m_class); }
@@ -427,6 +461,15 @@ public:
     /// Return the area emitter associated with this shape (if any)
     Emitter *emitter(Mask /* unused */ = false) { return m_emitter.get(); }
 
+    /// Is this shape also an area transmitter?
+    bool is_transmitter() const { return (bool) m_transmitter; }
+
+    /// Return the area transmitter associated with this shape (if any)
+    const Transmitter *transmitter(Mask /* unused */ = false) const { return m_transmitter.get(); }
+
+    /// Return the area transmitter associated with this shape (if any)
+    Transmitter *transmitter(Mask /* unused */ = false) { return m_transmitter.get(); }
+
     /// Is this shape also an area sensor?
     bool is_sensor() const { return (bool) m_sensor; }
 
@@ -461,7 +504,12 @@ public:
     virtual ScalarSize effective_primitive_count() const;
 
     // return the world transform of the shape
-    const Transform4f to_world() {return m_to_world;}
+    // const ScalarTransform4f to_world() {return m_to_world;}
+    // const ScalarTransform4f velocity() const {return m_velocity;}
+    // ScalarTransform4f velocity() const {return m_velocity;}
+
+
+
 
 
 #if defined(MTS_ENABLE_EMBREE)
@@ -571,12 +619,13 @@ protected:
     inline Shape() { }
     virtual ~Shape();
 
-    /// Explicitly register this shape as the parent of the provided sub-objects (emitters, etc.)
+    /// Explicitly register this shape as the parent of the provided sub-objects (emitters, transmitters, etc.)
     void set_children();
     std::string get_children_string() const;
 protected:
     ref<BSDF> m_bsdf;
     ref<Emitter> m_emitter;
+    ref<Transmitter> m_transmitter;
     ref<Sensor> m_sensor;
     ref<Receiver> m_receiver;
     ref<Medium> m_interior_medium;
@@ -585,6 +634,9 @@ protected:
 
     ScalarTransform4f m_to_world;
     ScalarTransform4f m_to_object;
+
+    ScalarTransform4f m_velocity;
+    // Transform4f m_velocity;
 
 #if defined(MTS_ENABLE_OPTIX)
     /// OptiX hitgroup data buffer
@@ -604,19 +656,29 @@ ENOKI_CALL_SUPPORT_TEMPLATE_BEGIN(mitsuba::Shape)
     ENOKI_CALL_SUPPORT_METHOD(eval_attribute)
     ENOKI_CALL_SUPPORT_METHOD(eval_attribute_1)
     ENOKI_CALL_SUPPORT_METHOD(eval_attribute_3)
+    ENOKI_CALL_SUPPORT_METHOD(doppler)
     ENOKI_CALL_SUPPORT_GETTER_TYPE(emitter, m_emitter, const typename Class::Emitter *)
+    ENOKI_CALL_SUPPORT_GETTER_TYPE(transmitter, m_transmitter, const typename Class::Transmitter *)
     ENOKI_CALL_SUPPORT_GETTER_TYPE(sensor, m_sensor, const typename Class::Sensor *)
     ENOKI_CALL_SUPPORT_GETTER_TYPE(receiver, m_receiver, const typename Class::Receiver *)
     ENOKI_CALL_SUPPORT_GETTER_TYPE(bsdf, m_bsdf, const typename Class::BSDF *)
+    // ENOKI_CALL_SUPPORT_GETTER_TYPE(velocity, m_velocity, const typename Class::Wavelength)
+    // ENOKI_CALL_SUPPORT_GETTER_TYPE(velocity, m_velocity, const typename Class::Transform)
+    // ENOKI_CALL_SUPPORT_GETTER_TYPE(velocity, m_velocity, const typename Class::ScalarTransform4f)
     ENOKI_CALL_SUPPORT_GETTER_TYPE(interior_medium, m_interior_medium,
                                    const typename Class::Medium *)
     ENOKI_CALL_SUPPORT_GETTER_TYPE(exterior_medium, m_exterior_medium,
                                    const typename Class::Medium *)
     auto is_emitter() const { return neq(emitter(), nullptr); }
+    auto is_transmitter() const { return neq(transmitter(), nullptr); }
     auto is_sensor() const { return neq(sensor(), nullptr); }
     auto is_receiver() const { return neq(receiver(), nullptr); }
     auto is_medium_transition() const { return neq(interior_medium(), nullptr) ||
                                                neq(exterior_medium(), nullptr); }
+    // auto velocity() const { return velocity(); }
+    // auto velocity() const { return m_velocity; }
+    // auto velocity() const { return const velocity(); }
+    // ENOKI_CALL_SUPPORT_GETTER(velocity, m_velocity)
 ENOKI_CALL_SUPPORT_TEMPLATE_END(mitsuba::Shape)
 
 //! @}

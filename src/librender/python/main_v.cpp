@@ -2,6 +2,7 @@
 #include <mitsuba/render/sensor.h>
 #include <mitsuba/render/receiver.h>
 #include <mitsuba/render/emitter.h>
+#include <mitsuba/render/transmitter.h>
 #include <mitsuba/render/film.h>
 #include <mitsuba/render/adc.h>
 #include <mitsuba/render/mesh.h>
@@ -39,6 +40,7 @@ static py::object caster(Object *o) {
     PY_TRY_CAST(Receiver);
 
     PY_TRY_CAST(Emitter);
+    PY_TRY_CAST(Transmitter);
     PY_TRY_CAST(Endpoint);
 
     PY_TRY_CAST(BSDF);
@@ -60,6 +62,7 @@ static py::object caster(Object *o) {
 MTS_PY_DECLARE(BSDFSample);
 MTS_PY_DECLARE(BSDF);
 MTS_PY_DECLARE(Emitter);
+MTS_PY_DECLARE(Transmitter);
 MTS_PY_DECLARE(Endpoint);
 MTS_PY_DECLARE(Film);
 MTS_PY_DECLARE(ADC);
@@ -114,6 +117,7 @@ PYBIND11_MODULE(MODULE_NAME, m) {
     MTS_PY_IMPORT(Shape);
     MTS_PY_IMPORT(Endpoint);
     MTS_PY_IMPORT(Emitter);
+    MTS_PY_IMPORT(Transmitter);
     MTS_PY_IMPORT(Film);
     MTS_PY_IMPORT(ADC);
     MTS_PY_IMPORT(fresnel);

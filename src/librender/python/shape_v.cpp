@@ -2,6 +2,7 @@
 #include <mitsuba/core/properties.h>
 #include <mitsuba/render/bsdf.h>
 #include <mitsuba/render/emitter.h>
+#include <mitsuba/render/transmitter.h>
 #include <mitsuba/render/sensor.h>
 #include <mitsuba/render/receiver.h>
 #include <mitsuba/render/medium.h>
@@ -29,6 +30,9 @@ MTS_PY_EXPORT(Shape) {
              "ray"_a, "flags"_a = HitComputeFlags::All, "active"_a = true,
              D(Shape, ray_intersect))
         .def("ray_test", vectorize(&Shape::ray_test), "ray"_a, "active"_a = true)
+        // .def("velocity", vectorize(&Shape::velocity))
+        .def("doppler", vectorize(&Shape::doppler), "si"_a, "active"_a)
+        // .def("velocity", &Shape::velocity)
         .def("compute_surface_interaction", &Shape::compute_surface_interaction,
                 "ray"_a, "pi"_a, "flags"_a = HitComputeFlags::All, "active"_a = true)
         .def("bbox", py::overload_cast<>(
@@ -39,14 +43,18 @@ MTS_PY_EXPORT(Shape) {
             &Shape::bbox, py::const_), D(Shape, bbox, 3), "index"_a, "clip"_a)
         .def_method(Shape, surface_area)
         .def_method(Shape, id)
+        // .def_method(Shape, velocity)
         .def_method(Shape, is_mesh)
         .def_method(Shape, is_medium_transition)
         .def_method(Shape, interior_medium)
         .def_method(Shape, exterior_medium)
         .def_method(Shape, is_emitter)
+        .def_method(Shape, is_transmitter)
         .def_method(Shape, is_sensor)
         .def_method(Shape, is_receiver)
         .def("emitter", vectorize(py::overload_cast<Mask>(&Shape::emitter, py::const_)),
+                "active"_a = true)
+        .def("transmitter", vectorize(py::overload_cast<Mask>(&Shape::transmitter, py::const_)),
                 "active"_a = true)
         .def("sensor", py::overload_cast<>(&Shape::sensor, py::const_))
         .def("receiver", py::overload_cast<>(&Shape::receiver, py::const_))

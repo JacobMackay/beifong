@@ -3,7 +3,8 @@
 #include <mitsuba/core/transform.h>
 #include <mitsuba/core/util.h>
 #include <mitsuba/core/warp.h>
-#include <mitsuba/render/emitter.h>
+#include <mitsuba/render/emitter.h>  //Why?
+#include <mitsuba/render/transmitter.h>
 #include <mitsuba/render/interaction.h>
 #include <mitsuba/render/mesh.h>
 #include <mitsuba/render/records.h>

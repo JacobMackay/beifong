@@ -66,7 +66,7 @@ The following XML snippet showcases a simple example of a textured rectangle:
 template <typename Float, typename Spectrum>
 class Rectangle final : public Shape<Float, Spectrum> {
 public:
-    MTS_IMPORT_BASE(Shape, m_to_world, m_to_object, set_children,
+    MTS_IMPORT_BASE(Shape, m_to_world, m_velocity, m_to_object, set_children,
                     get_children_string, parameters_grad_enabled)
     MTS_IMPORT_TYPES()
 
@@ -78,7 +78,6 @@ public:
 
         update();
         set_children();
-        // std::cout << props << std::endl;
     }
 
     void update() {
@@ -320,6 +319,12 @@ public:
         return si;
     }
 
+    // Transform4f velocity() const override {
+    //     Transform4f vel = m_velocity;
+    //     // Transform4f vel = m_to_world;
+    //     return vel;
+    // }
+
     void traverse(TraversalCallback *callback) override {
         Base::traverse(callback);
     }
@@ -352,6 +357,7 @@ public:
         std::ostringstream oss;
         oss << "Rectangle[" << std::endl
             << "  to_world = " << string::indent(m_to_world, 13) << "," << std::endl
+            << "  velocity = " << string::indent(m_velocity, 13) << "," << std::endl
             << "  frame = " << string::indent(m_frame) << "," << std::endl
             << "  surface_area = " << surface_area() << "," << std::endl
             << "  " << string::indent(get_children_string()) << std::endl

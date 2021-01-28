@@ -69,7 +69,7 @@ struct PositionSample {
       * \brief Optional: pointer to an associated object
       *
       * In some uses of this record, sampling a position also involves choosing
-      * one of several objects (shapes, emitters, ..) on which the position
+      * one of several objects (shapes, emitters, transmitters, ..) on which the position
       * lies. In that case, the \c object attribute stores a pointer to this
       * object.
       */
@@ -193,7 +193,7 @@ struct DirectionSample : public PositionSample<Float_, Spectrum_> {
      *     towards \c si.p.
      *
      * \param si
-     *     A surface intersection record (usually on an emitter).
+     *     A surface intersection record (usually on an emitter, or transmitter).
      *
      * \note Defined in scene.h
      */

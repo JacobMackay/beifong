@@ -995,6 +995,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // Float frequency_sample = sampler->next_1d(active);
       // Wavelength/time is not random. Do I do a mapping, or a sampling.
       // I guess I need to do a ray-weight as well.
+      // This will become deterministic plus an offset. It will become a beat
+      // frequency, and then a wavelength.
       Float wavelength_sample = sampler->next_1d(active);
 
       // The wavelength should be the tx wavelength at this time
@@ -1053,6 +1055,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // std::cout << aperture_sample << std::endl;
 
       // In the context of time, this differential should be which t,r/f,d bin
+      // This should probably take a frequency sample, then change it based
+      // on receiver characteristics, eg matched filter or receiver bandwidth
       auto [ray, ray_weight] = receiver->sample_ray_differential(
           time, wavelength_sample, adjusted_position, aperture_sample);
       // this says that the incoming ray has a wavelength and time already.
@@ -1128,11 +1132,110 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // Float wavelength_sample = math::CVac<float>/f;
       // Float wavelength_sample = (f-f0)/(f1-f0);
       // Wavelength sample is reversed from frequency.
-      ray.wavelengths = math::CVac<double>/f_rx * 1e9;
+      Wavelength lambda_rx = math::CVac<double>/f_rx * 1e9;
+      ray.wavelengths = lambda_rx;
+      // ray.wavelengths = math::CVac<double>/f_rx * 1e9;
 
       // std::cout<<"λ: " << ray.wavelengths << "f: " << f<<std::endl;
 
+      // For the paper I've proposed, I need to address interference, and
+      // appropriate sampling. Not range. That is later.
+
+      // Example for pulse. Because of the way we sample the block, we already
+      // know the output frequency and time.
+      // From the resulting frequency we calculate the wavelength, and this is
+      // what we pass to sample. Time is similarly updated due to line delays.
+      // The ray bounces around and eventually hits the tx. The wavelength is
+      // converted to a frequency, and the arrival time is also updated from
+      // delay line. The tx power is then queried at time t, frequency f and the
+      // ray gain updated. If we're at a time when no pulse, sucked in.
+
+
+      // For an fmcw radar. We sample a beat frequency and time. We get the
+      // frequency from the transmitter via time and sampling. Receive freq =
+      // tx_freq - beat. We can now find the wavelength and toa at the receiver.
+      // Ray leaves rx at time and with λ, and propagates, eventually landing
+      // on the transmitter at t, λ. Tx power is queried at t, λ. If no value,
+      // sucked in.
+
+      // As part of this problem, we enter the sampling routine with a ray
+      // wavelength and time. For now assume no doppler shifts. We can find the
+      // round trip time t by querying the tx signal with wavelength of rx.
+      // This will give us a time in the signal domain. Naively lets start with
+      // a non-repeating signal. The delay is now the difference between signal
+      // time and ray initial time (plus line delays). This gives us a path
+      // length. We must now find a path that satisfies these constraints.
+      // Sounds like an optimisation problem, find a path/set of nodes such
+      // that return is maximised. Beware: there are many zeros.
+
+      // In both cases, our challenge is to find a set of paths which maximise
+      // the return and exploration of search space. Our challenge is that it is
+      // kinda constrained, kinda not.
+
+      // We currently have an unconstrained version. In this version (for fmcw)
+      // the sampling routine gets the transmitter wavelength at t. We can give
+      // it any wavelength, and still grab from tx, only t/lambda matters.
+
+      // ATM we randomly sample t, and directly sample λ. The next level of
+      // smart sampling will be to have a minimum path length.
+
+      // Either way, the receiver time t, and wavelength λ should be true; or at
+      // least one of them.
+
+      // Next challenge: Create a signal plugin for transmitter. After that, use
+      // it in integrator. Update receiver sample ray differential. Let receiver
+      // get signal from tx as needed. Then, spin my radar around and make a
+      // pretty picture.
+
+      // How should I represent this data? There is a convenient 2d projection,
+      // slow-time/range.
+      // One simulation is a quasistatic collection. In the simplest form, it is
+      // a series of fft blocks (these are coherently summed for a chirp anyway)
+      // Lets say we have the high res, high noise block, and our quasistatic
+      // simulation includes n such blocks...why bother?
+
+      // Aovs have multiple layers. 1st: the multiple bins of fft from a chirp.
+      // 2nd: Up and down chirps. A cycle.
+      // 3rd: Multi-chirps.
+
+      // Finally we have the data structure:
+      // x->slow time
+      // y->beat (fast time->range)(range: average of all aovs)
+      // u->slow doppler
+      // v->fast doppler (difference/correlation of up downs)
+
+
+
+      // 5d function representations: x, y position. r, g direction. b intensity
+      // Naturally these have to be normalised.
+      // This way a flat wdf can be easily represented. Actually no: remember
+      // the big challenge: A single position can have many directions.
+
+      // Like our 4d wdf (4 axes + 1 value = 5) and projections:
+
+      // topleft: slow time vs total power
+      // middleleft: slow time vs range
+      // bottomleft: slow time vs macro doppler
+      // topmiddle: micro doppler vs total power
+      // middlemiddle: micro doppler vs range
+      // bottommiddle: micro doppler vs macro doppler
+      // rightmiddle: total power vs range
+      // rightbottom: total power vs macro doppler
+
       // std::cout << ray.wavelengths << std::endl;
+      // It knows where to start propagation via ray location.
+
+      // Mixed:
+      // Output decides beat freq and time.
+      // Call receiver->sample_ray_differential. Inside this we will have some
+      // cool tx and mixing shit. It will return a ray with time t, and rx
+      // wavelength. At the moment the rx λ means shit all-> because the
+      // integrator will overwrite the wavelength.
+
+      // Pulsed:
+      // Call receiver->sample_ray_differential. Doesn't know about tx signal.
+      // Happily gives a ray wavelength and time in band bounds.
+
       std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium,
           aovs + 3, active);
 
@@ -1171,7 +1274,40 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       //   (10-0.1), 0);
       // Vector2f rd = {ray.time, ray.wavelengths[0]};
 
-      Vector2f rd = {time - receiver->shutter_open(), ray.wavelengths[0]};
+      Wavelength f_tx(0.f);
+      Float tn2 = math::fmodulo(ray.time, t4);
+      // Float tn = math::modulo(time, t4);
+      // std::cout << "int out" << std::endl;
+      // Float tn = time;
+
+      // These are definitely the culprit
+      if (all(tn2 < t1)) {
+          // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
+          // f = 2*((6e9)/(240e-6))*tn + f0;
+          f_tx = ((6e9)/(240e-6))*tn2 + f0;
+          // std::cout << "t1: tn: " << tn << " t: " << time << " f: " << f_rx[0] << std::endl;
+      } else if (all(tn2 < t2)) {
+          f_tx = f1;
+          // std::cout << "t2: tn: " << tn << " t: " << time << " f: " << f_rx[0] << std::endl;
+      } else if (all(tn2 < t3)){
+          // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
+          // f = 2*((-6e9)/(240e-6))*tn + f1;
+          f_tx = ((-6e9)/(240e-6))*(tn2 - t2) + f1;
+          // std::cout << "t3: tn: " << tn << " t: " << time << " f: " << f_rx[0] << std::endl;
+      } else {
+          f_tx = f0;
+          // std::cout << "t4: tn: " << tn << " t: " << time << " f: " << f_rx[0] << std::endl;
+      }
+
+      // f_tx += (ray.wavelengths - lambda_rx);
+      // std::cout << ray.wavelengths/lambda_rx << std::endl;
+      f_tx *= (1/(ray.wavelengths/lambda_rx));
+
+      Vector2f rd = {time - receiver->shutter_open(), abs(f_tx[0]-f_rx[0])};
+
+
+      // Vector2f rd = {time - receiver->shutter_open(), math::CVac<float>/ray.wavelengths[0]*1e-9};
+      // Vector2f rd = {time, math::CVac<float>/ray.wavelengths[0] *1e-9};
       // Vector2f rd = {time, ray.wavelengths[0]};
 
       // rd = (rd - (receiver->adc()->centres() - receiver->adc()->bandwidth()/2))/receiver->adc()->bandwidth() * receiver->adc()->size();

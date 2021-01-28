@@ -162,6 +162,8 @@ public:
         return m_world_transform.get();
     }
 
+    virtual Wavelength doppler(SurfaceInteraction3f si, Mask active) const;
+
     /**
      * \brief Does the method \ref sample_ray() require a uniformly distributed
      * 2D sample for the \c sample2 parameter?
@@ -232,6 +234,9 @@ protected:
 
 protected:
     ref<const AnimatedTransform> m_world_transform;
+    ref<const AnimatedTransform> m_velocity;
+    // ref<const ScalarTransform4f> m_velocity;
+    // ScalarTransform4f m_velocity;
     ref<Medium> m_medium;
     Shape *m_shape = nullptr;
     bool m_needs_sample_2 = true;

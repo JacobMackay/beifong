@@ -1,5 +1,6 @@
 #include <mitsuba/render/bsdf.h>
 #include <mitsuba/render/emitter.h>
+#include <mitsuba/render/transmitter.h>
 #include <mitsuba/render/interaction.h>
 #include <mitsuba/render/medium.h>
 #include <mitsuba/render/records.h>
@@ -124,7 +125,10 @@ MTS_PY_EXPORT(SurfaceInteraction) {
             "wi_world"_a, "wo_world"_a, D(SurfaceInteraction, to_local_mueller))
         .def("emitter", &SurfaceInteraction3f::emitter, D(SurfaceInteraction, emitter),
             "scene"_a, "active"_a = true)
+        .def("transmitter", &SurfaceInteraction3f::transmitter, D(SurfaceInteraction, transmitter),
+            "scene"_a, "active"_a = true)
         .def("is_sensor", &SurfaceInteraction3f::is_sensor, D(SurfaceInteraction, is_sensor))
+        .def("is_receiver", &SurfaceInteraction3f::is_receiver, D(SurfaceInteraction, is_receiver))
         .def("is_medium_transition", &SurfaceInteraction3f::is_medium_transition,
             D(SurfaceInteraction, is_medium_transition))
         .def("target_medium",
@@ -146,6 +150,8 @@ MTS_PY_EXPORT(SurfaceInteraction) {
             D(SurfaceInteraction, has_uv_partials))
         .def("has_n_partials", &SurfaceInteraction3f::has_n_partials,
             D(SurfaceInteraction, has_n_partials))
+        // .def("doppler", &SurfaceInteraction3f::doppler,
+        //     D(SurfaceInteraction, has_n_partials))
         .def_repr(SurfaceInteraction3f);
 
     // Manually bind the slicing operators to handle ShapePtr properly

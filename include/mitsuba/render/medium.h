@@ -76,6 +76,9 @@ public:
     /// Returns whether this specific medium instance uses emitter sampling
     MTS_INLINE bool use_emitter_sampling() const { return m_sample_emitters; }
 
+    /// Returns whether this specific medium instance uses transmitter sampling
+    MTS_INLINE bool use_transmitter_sampling() const { return m_sample_transmitters; }
+
     /// Returns whether this medium is homogeneous
     MTS_INLINE bool is_homogeneous() const { return m_is_homogeneous; }
 
@@ -99,7 +102,7 @@ protected:
 
 protected:
     ref<PhaseFunction> m_phase_function;
-    bool m_sample_emitters, m_is_homogeneous, m_has_spectral_extinction;
+    bool m_sample_emitters, m_sample_transmitters, m_is_homogeneous, m_has_spectral_extinction;
 
     /// Identifier (if available)
     std::string m_id;
@@ -116,6 +119,7 @@ NAMESPACE_END(mitsuba)
 ENOKI_CALL_SUPPORT_TEMPLATE_BEGIN(mitsuba::Medium)
     ENOKI_CALL_SUPPORT_METHOD(phase_function)
     ENOKI_CALL_SUPPORT_METHOD(use_emitter_sampling)
+    ENOKI_CALL_SUPPORT_METHOD(use_transmitter_sampling)
     ENOKI_CALL_SUPPORT_METHOD(is_homogeneous)
     ENOKI_CALL_SUPPORT_METHOD(has_spectral_extinction)
     ENOKI_CALL_SUPPORT_METHOD(get_combined_extinction)

@@ -27,6 +27,8 @@ MTS_VARIANT Medium<Float, Spectrum>::Medium(const Properties &props) : m_id(prop
     }
 
     m_sample_emitters = props.bool_("sample_emitters", true);
+
+    m_sample_transmitters = props.bool_("sample_transmitters", false);
 }
 
 MTS_VARIANT Medium<Float, Spectrum>::~Medium() {}

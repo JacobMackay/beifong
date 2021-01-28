@@ -239,6 +239,9 @@ protected:
 
     /// Flag for disabling direct visibility of emitters
     bool m_hide_emitters;
+
+    /// Flag for disabling direct visibility of transmitters
+    bool m_hide_transmitters;
 };
 
 /*

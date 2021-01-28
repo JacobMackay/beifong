@@ -1,6 +1,7 @@
 #include <mitsuba/render/kdtree.h>
 #include <mitsuba/core/properties.h>
 #include <mitsuba/render/emitter.h>
+#include <mitsuba/render/transmitter.h>
 #include <mitsuba/render/bsdf.h>
 #include <mitsuba/render/sensor.h>
 #include <mitsuba/render/receiver.h>
@@ -38,8 +39,11 @@ MTS_VARIANT Shape<Float, Spectrum>::Shape(const Properties &props) : m_id(props.
     m_to_world = props.transform("to_world", ScalarTransform4f());
     m_to_object = m_to_world.inverse();
 
+    m_velocity = props.transform("velocity", ScalarTransform4f());
+
     for (auto &[name, obj] : props.objects(false)) {
         Emitter *emitter = dynamic_cast<Emitter *>(obj.get());
+        Transmitter *transmitter = dynamic_cast<Transmitter *>(obj.get());
         Sensor *sensor = dynamic_cast<Sensor *>(obj.get());
         Receiver *receiver = dynamic_cast<Receiver *>(obj.get());
         BSDF *bsdf = dynamic_cast<BSDF *>(obj.get());
@@ -49,6 +53,10 @@ MTS_VARIANT Shape<Float, Spectrum>::Shape(const Properties &props) : m_id(props.
             if (m_emitter)
                 Throw("Only a single Emitter child object can be specified per shape.");
             m_emitter = emitter;
+        } else if (transmitter) {
+            if (m_transmitter)
+                Throw("Only a single Transmitter child object can be specified per shape.");
+            m_transmitter = transmitter;
         } else if (sensor) {
             if (m_sensor)
                 Throw("Only a single Sensor child object can be specified per shape.");
@@ -82,6 +90,8 @@ MTS_VARIANT Shape<Float, Spectrum>::Shape(const Properties &props) : m_id(props.
     if (!m_bsdf) {
         Properties props2("diffuse");
         if (m_emitter)
+            props2.set_float("reflectance", 0.f);
+        if (m_transmitter)
             // Interesting, perhaps this can be changed for transmitter...
             props2.set_float("reflectance", 0.f);
         m_bsdf = PluginManager::instance()->create_object<BSDF>(props2);
@@ -98,6 +108,20 @@ MTS_VARIANT Shape<Float, Spectrum>::~Shape() {
 MTS_VARIANT std::string Shape<Float, Spectrum>::id() const {
     return m_id;
 }
+
+// MTS_VARIANT typename Shape<Float, Spectrum>::ScalarTransform4f const Shape<Float, Spectrum>::velocity() const {
+// MTS_VARIANT typename Shape<Float, Spectrum>::ScalarTransform4f
+// Shape<Float, Spectrum>::velocity() const {
+//     return m_velocity;
+// }
+
+// MTS_VARIANT typename Shape<Float, Spectrum>::DirectionSample3f
+// Shape<Float, Spectrum>::sample_wigner(const DirectionSample3f & /*ds*/, Wavelength /*wavelength*/,
+//                                          Mask /*active*/) const {
+//     NotImplementedError("sample_wigner");
+//     // At a given input/output direction and wavelength, what is the weight?
+//     // The datatype is inherently a surface interaction I think.
+// }
 
 MTS_VARIANT typename Shape<Float, Spectrum>::PositionSample3f
 Shape<Float, Spectrum>::sample_position(Float /*time*/, const Point2f & /*sample*/,
@@ -348,6 +372,37 @@ Shape<Float, Spectrum>::compute_surface_interaction(const Ray3f & /*ray*/,
     NotImplementedError("compute_surface_interaction");
 }
 
+MTS_VARIANT typename Shape<Float, Spectrum>::Wavelength
+Shape<Float, Spectrum>::doppler(SurfaceInteraction3f si, Mask active) const {
+    // return dot(si.wi, m_velocity*Point3f(si.to_local(si.p))) / math::CVac<float>
+    //  * si.wavelengths;
+    // std::cout << "Point: " << si.p << " To local: " << Point3f(si.to_local(si.p)) << " m_vel: " << m_velocity << " Product: " << m_velocity*Point3f(si.to_local(si.p)) << " Final: " << dot(Vector3f(1,1,1), m_velocity*Point3f(si.to_local(si.p))) / math::CVac<float>
+    //  * si.wavelengths << std::endl;
+
+    // Wavelength result;
+
+    // return select(active && neq(si.shape, nullptr), dot(Vector3f(1,1,1), m_velocity*Point3f(si.to_local(si.p))) / math::CVac<float>
+    //  * si.wavelengths, 0.f);
+    // return select(active, dot(Vector3f(1,1,1), m_velocity*Point3f(si.to_local(si.p))) / math::CVac<float>
+    //  * si.wavelengths, 0.f);
+    return select(active, 2*dot(si.wi, m_velocity*Point3f(si.to_local(si.p))) / math::CVac<float>
+     * si.wavelengths, 0.f);
+    // return select(active, dot(si.to_local(si.wi), m_velocity*Point3f(si.to_local(si.p))) / math::CVac<float>
+    //  * si.wavelengths, 0.f);
+
+    // if (all(si.is_valid())) {
+    //     result = dot(Vector3f(1,1,1), m_velocity*Point3f(si.to_local(si.p))) / math::CVac<float>
+    //      * si.wavelengths;
+    // } else {
+    //     result = 0.f;
+    // }
+
+    // return result;
+
+    // return dot(Vector3f(1,1,1), m_velocity*Point3f(si.to_local(si.p))) / math::CVac<float>
+    //  * si.wavelengths;
+};
+
 MTS_VARIANT typename Shape<Float, Spectrum>::SurfaceInteraction3f
 Shape<Float, Spectrum>::ray_intersect(const Ray3f &ray, HitComputeFlags flags, Mask active) const {
     MTS_MASK_ARGUMENT(active);
@@ -402,6 +457,7 @@ Shape<Float, Spectrum>::sample_wigner(const DirectionSample3f & /*ds*/, Waveleng
     // The datatype is inherently a surface interaction I think.
 }
 
+
 MTS_VARIANT typename Shape<Float, Spectrum>::ScalarBoundingBox3f
 Shape<Float, Spectrum>::bbox(ScalarIndex) const {
     return bbox();
@@ -426,10 +482,13 @@ Shape<Float, Spectrum>::effective_primitive_count() const {
 
 MTS_VARIANT void Shape<Float, Spectrum>::traverse(TraversalCallback *callback) {
     callback->put_parameter("to_world", m_to_world);
+    callback->put_parameter("velocity", m_velocity);
 
     callback->put_object("bsdf", m_bsdf.get());
     if (m_emitter)
         callback->put_object("emitter", m_emitter.get());
+    if (m_transmitter)
+        callback->put_object("transmitter", m_transmitter.get());
     if (m_sensor)
         callback->put_object("sensor", m_sensor.get());
     if (m_receiver)
@@ -444,6 +503,8 @@ MTS_VARIANT
 void Shape<Float, Spectrum>::parameters_changed(const std::vector<std::string> &/*keys*/) {
     if (m_emitter)
         m_emitter->parameters_changed({"parent"});
+    if (m_transmitter)
+        m_transmitter->parameters_changed({"parent"});
     if (m_sensor)
         m_sensor->parameters_changed({"parent"});
     if (m_receiver)
@@ -457,6 +518,8 @@ MTS_VARIANT bool Shape<Float, Spectrum>::parameters_grad_enabled() const {
 MTS_VARIANT void Shape<Float, Spectrum>::set_children() {
     if (m_emitter)
         m_emitter->set_shape(this);
+    if (m_transmitter)
+        m_transmitter->set_shape(this);
     if (m_sensor)
         m_sensor->set_shape(this);
     if (m_receiver)
@@ -469,10 +532,57 @@ Shape<Float, Spectrum>::eval_parameterization(const Point2f &, Mask) const {
     NotImplementedError("eval_parameterization");
 }
 
+
+
+// MTS_VARIANT typename Shape<Float, Spectrum>::Wavelength
+// Shape<Float, Spectrum>::eval_doppler(const SurfaceInteraction3f &si) const {
+//     // MTS_MASK_ARGUMENT(active);
+//     // MTS_IMPORT_BASE(Shape)
+//     // MTS_IMPORT_TYPES()
+//
+//     // DirectionSample3f ds(sample_position(it.time, sample, active));
+//     // ds.d = ds.p - it.p;
+//     //
+//     // Float dist_squared = squared_norm(ds.d);
+//     // ds.dist = sqrt(dist_squared);
+//     // ds.d /= ds.dist;
+//     //
+//     // Float dp = abs_dot(ds.d, ds.n);
+//     // ds.pdf *= select(neq(dp, 0.f), dist_squared / dp, 0.f);
+//     // ds.object = (const Object *) this;
+//     //
+//     // return ds;
+//
+//     // We have the rays incoming direction, take the dot prod
+//     // get position on object in object space-> gives us vector
+//     // vector x rot vel gives lin vel
+//     // + lin vel
+//     // gives total vel at point
+//     // dot total vel with interaction point gives dv
+//
+//     // si.p.to_local
+//
+//     // Transform4f thing = m_velocity;
+//
+//     // Vector3f temp = thing.transform_affine(si.to_local(si.p));
+//     // Vector3f temp = thing*(Point3f(si.to_local(si.p)));
+//     // Vector3f temp = thing*({0,0,1});
+//     // Vector3f temp = thing.transform_point(si.to_local(si.p));
+//
+//     // Vector3f temp = dot(si.wi, m_velocity.ScalarTransform4f::transform_point(si.p.to_local));
+//     // Vector3f temp = dot(si.wi, m_velocity.transform_point(si.p.to_local));
+//
+//     return dot(si.wi, m_velocity*Point3f(si.to_local(si.p)))/math::CVac<float>*si.wavelengths;
+//
+//     // return dot(si.wi, m_velocity.transform_point(si.p.to_local))/math::CVac<float>*si.wavelengths;
+//     // return si.wavelengths;
+// }
+
 MTS_VARIANT std::string Shape<Float, Spectrum>::get_children_string() const {
     std::vector<std::pair<std::string, const Object*>> children;
     children.push_back({ "bsdf", m_bsdf });
     if (m_emitter) children.push_back({ "emitter", m_emitter });
+    if (m_transmitter) children.push_back({ "transmitter", m_transmitter });
     if (m_sensor) children.push_back({ "sensor", m_sensor });
     if (m_receiver) children.push_back({ "receiver", m_receiver });
     if (m_interior_medium) children.push_back({ "interior_medium", m_interior_medium });

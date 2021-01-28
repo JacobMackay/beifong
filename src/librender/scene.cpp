@@ -25,6 +25,7 @@ MTS_VARIANT Scene<Float, Spectrum>::Scene(const Properties &props) {
 
         Shape *shape           = dynamic_cast<Shape *>(kv.second.get());
         Emitter *emitter       = dynamic_cast<Emitter *>(kv.second.get());
+        Transmitter *transmitter       = dynamic_cast<Transmitter *>(kv.second.get());
         Sensor *sensor         = dynamic_cast<Sensor *>(kv.second.get());
         Receiver *receiver     = dynamic_cast<Receiver *>(kv.second.get());
         Integrator *integrator = dynamic_cast<Integrator *>(kv.second.get());
@@ -32,6 +33,8 @@ MTS_VARIANT Scene<Float, Spectrum>::Scene(const Properties &props) {
         if (shape) {
             if (shape->is_emitter())
                 m_emitters.push_back(shape->emitter());
+            if (shape->is_transmitter())
+                m_transmitters.push_back(shape->transmitter());
             if (shape->is_sensor())
                 m_sensors.push_back(shape->sensor());
             if (shape->is_receiver())
@@ -52,6 +55,10 @@ MTS_VARIANT Scene<Float, Spectrum>::Scene(const Properties &props) {
                     Throw("Only one environment emitter can be specified per scene.");
                 m_environment = emitter;
             }
+        } else if (transmitter) {
+            // Surface transmitters will be added to the list when attached to a shape
+            if (!has_flag(transmitter->flags(), TransmitterFlags::Surface))
+                m_transmitters.push_back(transmitter);
         } else if (sensor) {
             m_sensors.push_back(sensor);
         } else if (receiver) {
@@ -104,6 +111,10 @@ MTS_VARIANT Scene<Float, Spectrum>::Scene(const Properties &props) {
     // Create emitters' shapes (environment luminaires)
     for (Emitter *emitter: m_emitters)
         emitter->set_scene(this);
+
+    // Create transmitters' shapes (environment luminaires)
+    for (Transmitter *transmitter: m_transmitters)
+        transmitter->set_scene(this);
 
     m_shapes_grad_enabled = false;
 }
@@ -232,6 +243,75 @@ Scene<Float, Spectrum>::pdf_emitter_direction(const Interaction3f &ref,
     } else {
         return reinterpret_array<EmitterPtr>(ds.object)->pdf_direction(ref, ds, active) *
             (1.f / m_emitters.size());
+    }
+}
+
+MTS_VARIANT std::pair<typename Scene<Float, Spectrum>::DirectionSample3f, Spectrum>
+Scene<Float, Spectrum>::sample_transmitter_direction(const Interaction3f &ref, const Point2f &sample_,
+                                                 bool test_visibility, Mask active) const {
+    MTS_MASKED_FUNCTION(ProfilerPhase::SampleTransmitterDirection, active);
+
+    using TransmitterPtr = replace_scalar_t<Float, Transmitter*>;
+
+    Point2f sample(sample_);
+    DirectionSample3f ds;
+    Spectrum spec;
+
+    if (likely(!m_transmitters.empty())) {
+        if (m_transmitters.size() == 1) {
+            // Fast path if there is only one transmitter
+            std::tie(ds, spec) = m_transmitters[0]->sample_direction(ref, sample, active);
+        } else {
+            ScalarFloat transmitter_pdf = 1.f / m_transmitters.size();
+
+            // Randomly pick a transmitter
+            UInt32 index =
+                min(UInt32(sample.x() * (ScalarFloat) m_transmitters.size()),
+                    (uint32_t) m_transmitters.size() - 1);
+
+            // Rescale sample.x() to lie in [0,1) again
+            sample.x() = (sample.x() - index*transmitter_pdf) * m_transmitters.size();
+
+            TransmitterPtr transmitter = gather<TransmitterPtr>(m_transmitters.data(), index, active);
+
+            // Sample a direction towards the transmitter
+            std::tie(ds, spec) = transmitter->sample_direction(ref, sample, active);
+
+            // Account for the discrete probability of sampling this transmitter
+            ds.pdf *= transmitter_pdf;
+            spec *= rcp(transmitter_pdf);
+        }
+
+        active &= neq(ds.pdf, 0.f);
+
+        // Perform a visibility test if requested
+        if (test_visibility && any_or<true>(active)) {
+            Ray3f ray(ref.p, ds.d, math::RayEpsilon<Float> * (1.f + hmax(abs(ref.p))),
+                      ds.dist * (1.f - math::ShadowEpsilon<Float>), ref.time, ref.wavelengths);
+            spec[ray_test(ray, active)] = 0.f;
+        }
+    } else {
+        ds = zero<DirectionSample3f>();
+        spec = 0.f;
+    }
+
+    return { ds, spec };
+}
+
+MTS_VARIANT Float
+Scene<Float, Spectrum>::pdf_transmitter_direction(const Interaction3f &ref,
+                                              const DirectionSample3f &ds,
+                                              Mask active) const {
+    MTS_MASK_ARGUMENT(active);
+    using TransmitterPtr = replace_scalar_t<Float, const Transmitter *>;
+
+
+    if (m_transmitters.size() == 1) {
+        // Fast path if there is only one transmitter
+        return m_transmitters[0]->pdf_direction(ref, ds, active);
+    } else {
+        return reinterpret_array<TransmitterPtr>(ds.object)->pdf_direction(ref, ds, active) *
+            (1.f / m_transmitters.size());
     }
 }
 

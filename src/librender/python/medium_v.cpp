@@ -44,6 +44,7 @@ MTS_PY_EXPORT(Medium) {
             .def("eval_tr_and_pdf", vectorize(&Medium::eval_tr_and_pdf), "mi"_a, "si"_a, "active"_a=true)
             .def_method(Medium, phase_function)
             .def_method(Medium, use_emitter_sampling)
+            .def_method(Medium, use_transmitter_sampling)
             // .def_method(Medium, is_homogeneous)
             // .def_method(Medium, has_spectral_extinction)
             .def_method(Medium, id)

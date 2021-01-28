@@ -61,11 +61,18 @@ MTS_PY_EXPORT(Scene) {
         .def("pdf_emitter_direction",
             vectorize(&Scene::pdf_emitter_direction),
             "ref"_a, "ds"_a, "active"_a = true)
+        .def("sample_transmitter_direction",
+            vectorize(&Scene::sample_transmitter_direction),
+            "ref"_a, "sample"_a, "test_visibility"_a = true, "mask"_a = true)
+        .def("pdf_transmitter_direction",
+            vectorize(&Scene::pdf_transmitter_direction),
+            "ref"_a, "ds"_a, "active"_a = true)
         // Accessors
         .def_method(Scene, bbox)
         .def("sensors", py::overload_cast<>(&Scene::sensors), D(Scene, sensors))
         .def("receivers", py::overload_cast<>(&Scene::receivers), D(Scene, receivers))
         .def("emitters", py::overload_cast<>(&Scene::emitters), D(Scene, emitters))
+        .def("transmitters", py::overload_cast<>(&Scene::transmitters), D(Scene, transmitters))
         .def_method(Scene, environment)
         .def("shapes", [](const Scene &scene) {
             py::list result;

@@ -3,11 +3,11 @@
 #include <mitsuba/core/ray.h>
 #include <mitsuba/core/properties.h>
 #include <mitsuba/render/bsdf.h>
-#include <mitsuba/render/transmitter.h>
+#include <mitsuba/render/emitter.h>
 #include <mitsuba/render/integrator.h>
 #include <mitsuba/render/records.h>
 
-// I Guess different integrators have different needs, ie do not NEED transmitters,
+// I Guess different integrators have different needs, ie do not NEED emitters,
 // can just do transmitters if required. This may help.
 
 NAMESPACE_BEGIN(mitsuba)
@@ -30,9 +30,9 @@ Path tracer (:monosp:`path`)
    - |int|
    - Specifies the minimum path depth, after which the implementation will start to use the
      *russian roulette* path termination criterion. (Default: 5)
- * - hide_transmitters
+ * - hide_emitters
    - |bool|
-   - Hide directly visible transmitters. (Default: no, i.e. |false|)
+   - Hide directly visible emitters. (Default: no, i.e. |false|)
 
 This integrator implements a basic path tracer and is a **good default choice**
 when there is no strong reason to prefer another method.
@@ -51,18 +51,18 @@ stopping criteria applies).
 
 At every intersection, the path tracer tries to create a connection to
 the light source in an attempt to find a *complete* path along which
-light can flow from the transmitter to the sensor. This of course only works
-when there is no occluding object between the intersection and the transmitter.
+light can flow from the emitter to the sensor. This of course only works
+when there is no occluding object between the intersection and the emitter.
 
 This directly translates into a category of scenes where
 a path tracer can be expected to produce reasonable results: this is the case
-when the transmitters are easily "accessible" by the contents of the scene. For instance,
+when the emitters are easily "accessible" by the contents of the scene. For instance,
 an interior scene that is lit by an area light will be considerably harder
 to render when this area light is inside a glass enclosure (which
 effectively counts as an occluder).
 
 Like the :ref:`direct <integrator-direct>` plugin, the path tracer internally relies on multiple importance
-sampling to combine BSDF and transmitter samples. The main difference in comparison
+sampling to combine BSDF and emitter samples. The main difference in comparison
 to the former plugin is that it considers light paths of arbitrary length to compute
 both direct and indirect illumination.
 
@@ -96,7 +96,7 @@ template <typename Float, typename Spectrum>
 class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum> {
  public:
     MTS_IMPORT_BASE(MonteCarloIntegrator, m_max_depth, m_rr_depth)
-    MTS_IMPORT_TYPES(Scene, Sampler, Medium, Transmitter, TransmitterPtr, BSDF, BSDFPtr)
+    MTS_IMPORT_TYPES(Scene, Sampler, Medium, Emitter, EmitterPtr, BSDF, BSDFPtr)
 
     explicit PathTimeFrequencyIntegrator(const Properties &props) : Base(props) { }
 
@@ -135,62 +135,53 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
         // RayDifferential3f ray = *ray_;
         RayDifferential3f ray = ray_;
 
+        // std::cout << ray.time << std:: endl;
+
         // Tracks radiance scaling due to index of refraction changes
         Float eta(1.f);
 
-        // MIS weight for intersected transmitters (set by prev. iteration)
+        // MIS weight for intersected emitters (set by prev. iteration)
         Float emission_weight(1.f);
 
         Spectrum throughput(1.f), result(0.f);
+        // Float pathlength(0.f);
 
         // ---------------------- First intersection ----------------------
 
         SurfaceInteraction3f si = scene->ray_intersect(ray, active);
         Mask valid_ray = si.is_valid();
-        TransmitterPtr transmitter = si.transmitter(scene);
+        EmitterPtr emitter = si.emitter(scene);
 
+        // pathlength = select(si.is_valid(), si.t, 0.f);
+        // pathlength = select(si.is_valid(), si.t, math::Infinity<Float>);
+        // pathlength = select(valid_ray, si.t, math::Infinity<Float>);
+
+        // pathlength += select(valid_ray, si.t, 0.f);
+        // const_cast<RayDifferential3f&>(ray_).time -= select(valid_ray, si.t / math::CVac<float>, 0.f);
         ray.time -= select(valid_ray, si.t / math::CVac<float>, 0.f);
-        if(any_or<true>(neq(si.shape, nullptr))){
-            const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, valid_ray), 0.f);
-        }
+        // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
+
+        // pathlength += select(si.is_valid(), si.t, 0.f);
+
+        // pathlength += si.t;
+        // pathlength[active] += si.t;
 
         for (int depth = 1;; ++depth) {
-            // ---------------- Intersection with transmitters ----------------
+            // ---------------- Intersection with emitters ----------------
 
-            if (any_or<true>(neq(transmitter, nullptr))) {
-                // I can sample from the transmitter here: sample_ray with random numbers.
-                // If it has a delta distribution, we can clamp it to what it should be.
-                // usually takes 0-1 argument, what should i do when i have a real number for time?
+            if (any_or<true>(neq(emitter, nullptr))) {
                 result[active] +=
-                    emission_weight * throughput * transmitter->eval(si, active);
-
-                // We have the time t, and beat frequency f.
-                // We can find the tx freq when we have a time.
-                // We can now find the frequency which gives us the required beat frequency.
-                // With the tx freq we can find a corresponding time
-                // With the difference in time we can have a range/delay.
-                // Also, beat freq corresponds to range
-
-                // transmitter eval should call the signal.si will have time and wavelength.
-                // the receiver
-                // to this function came in a ray with time t and wavelengths λ
-                //
-                // Also, the antenna would have a 'filter' which smears the signal,
-                // creates delay and amplitude change
-                // So call this function, I need a si.t, si.λ
-                // Alternatively: time is real arrival t, λ is tx λ-> this implies a travel time
-                // the antennas should have a function which converts wavelength to frequency...but later
+                    emission_weight * throughput * emitter->eval(si, active);
 
                 // pathlength += select(si.is_valid(), si.t, 0.f);
                 // const_cast<RayDifferential3f&>(ray_).time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
-
-                std::cout << "tx" << std::endl;
-
                 ray.time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
-                if(any_or<true>(neq(si.shape, nullptr))){
-                    const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
-                }
-
+                // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
+                // Lets say the transmitter is moving at 10 m/s
+                // ray.wavelengths += (100.f/math::CVac<float>)*ray.wavelengths;
+                // delf = delv/c * f0
+                // c/dell = delv /c * c/l0
+                // del l = c / delv * l0
             }
 
             active &= si.is_valid();
@@ -213,7 +204,7 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 ((!is_cuda_array_v<Float> || m_max_depth < 0) && none(active)))
                 break;
 
-            // --------------------- Transmitter sampling ---------------------
+            // --------------------- Emitter sampling ---------------------
 
             BSDFContext ctx;
             BSDFPtr bsdf = si.bsdf(ray);
@@ -221,11 +212,11 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 active && has_flag(bsdf->flags(), BSDFFlags::Smooth);
 
             if (likely(any_or<true>(active_e))) {
-                auto [ds, transmitter_val] = scene->sample_transmitter_direction(
+                auto [ds, emitter_val] = scene->sample_emitter_direction(
                     si, sampler->next_2d(active_e), true, active_e);
                 active_e &= neq(ds.pdf, 0.f);
 
-                // Query the BSDF for that transmitter-sampled direction
+                // Query the BSDF for that emitter-sampled direction
                 Vector3f wo = si.to_local(ds.d);
                 Spectrum bsdf_val = bsdf->eval(ctx, si, wo, active_e);
                 bsdf_val = si.to_world_mueller(bsdf_val, -wo, si.wi);
@@ -235,31 +226,11 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 Float bsdf_pdf = bsdf->pdf(ctx, si, wo, active_e);
 
                 Float mis = select(ds.delta, 1.f, mis_weight(ds.pdf, bsdf_pdf));
-                result[active_e] += mis * throughput * bsdf_val * transmitter_val;
+                result[active_e] += mis * throughput * bsdf_val * emitter_val;
 
+                // pathlength += select(si.is_valid(), si.t, 0.f);
+                // const_cast<RayDifferential3f&>(ray_).time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
                 ray.time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
-                if(any_or<true>(neq(si.shape, nullptr))){
-                    // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
-                    const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
-
-                    // If the transmitter val != 0, we have a tx hit
-                    // Intersect the BSDF ray against the scene geometry
-                    SurfaceInteraction3f si_tx = scene->ray_intersect(si.spawn_ray(si.to_world(wo)), active);
-
-                    if(any_or<true>(neq(si_tx.transmitter(scene, active), nullptr))){
-                        // const_cast<RayDifferential3f&>(ray_).wavelengths
-                        //     += select(neq(si_tx.transmitter(scene, active), nullptr),
-                        //         si_tx.transmitter(scene, active)->doppler(si, active), 0.f);
-                        const_cast<RayDifferential3f&>(ray_).wavelengths
-                            += select(neq(si_tx.transmitter(scene, active), nullptr),
-                                si_tx.transmitter(scene, active)->doppler(si_tx, active), 0.f);
-                    }
-
-                }
-
-
-                // std::cout << si.shape->doppler(si) << std::endl;
-
                 // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
                 // output_wavelength = ray_wavelength - tx.get_wavelength
                 // put into mixed equation. get result.
@@ -282,100 +253,54 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 // Hardcode for now.
                 // Given a t and f, return the power; alternatively, given an t
 
-                // Wavelength f_tx(0.f);
-                // // f0 = fc - bandwidth/2;
-                // // f1 = fc + bandwidth/2;
-                // //
-                // // t1 = rise;
-                // // t2 = t1 + hold;
-                // // t3 = t2 + fall;
-                // // t4 = t3 + wait;
-                // // tn = t % t4;
+                Wavelength f_tx(0.f);
+                // f0 = fc - bandwidth/2;
+                // f1 = fc + bandwidth/2;
                 //
-                // // Given a time, return the transmit frequency.
-                // // This means that the transmitter needs to have a signal.
-                //
-                // Wavelength f0 = 94e9 - 6e9/2;
-                // Wavelength f1 = 94e9 + 6e9/2;
-                //
-                // Float t1 = 240e-6;
-                // Float t2 = t1 + 10e-6;
-                // Float t3 = t2 + 240e-6;
-                // Float t4 = t3 + 10e-6;
-                //
-                // // std::cout << "pt in" << std::endl;
-                // Float tn = math::fmodulo(ray.time, t4);
-                // // Float tn = math::modulo(ray.time, t4);
-                // // std::cout << "pt out" << std::endl;
-                // // Float tn = ray.time;
-                //
-                // // std::cout << tn << ", " << ray.time << std::endl;
-                //
-                // if (all(tn < t1)) {
-                //     // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
-                //     // f = 2*((6e9)/(240e-6))*tn + f0;
-                //     f_tx = ((6e9)/(240e-6))*tn + f0;
-                // } else if (all(tn < t2)) {
-                //     f_tx = f1;
-                // } else if (all(tn < t3)){
-                //     // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
-                //     // f = 2*((-6e9)/(240e-6))*tn + f1;
-                //     f_tx = ((-6e9)/(240e-6))*(tn-t2) + f1;
-                // } else {
-                //     f_tx = f0;
-                // }
+                // t1 = rise;
+                // t2 = t1 + hold;
+                // t3 = t2 + fall;
+                // t4 = t3 + wait;
+                // tn = t % t4;
 
-                // Wavelength doppler() const {
-                //
-                //     // if (shape) {
-                //
-                //         // Transform4f vel = shape->velocity;
-                //         // ScalarTransform4f vel = shape->velocity();
-                //         ScalarTransform4f vel = ScalarTransform4f(shape->velocity());
-                //         // DirectionSample3f ws = m_shape->sample_wigner(ds, wavelength, active);
-                //
-                //         // return dot(wi, shape.velocity*Point3f(to_local(p)))/math::CVac<float>*wavelengths;
-                //         return dot(wi, vel*Point3f(to_local(p)))/math::CVac<float>*wavelengths;
-                //         // return dot(wi, shape.velocity*Point3f(to_local(p)))/math::CVac<float>*wavelengths;
-                //
-                //
-                //         // return dot(si.wi, m_velocity*Point3f(si.to_local(si.p)))/math::CVac<float>*si.wavelengths;
-                //
-                //     // } else {
-                //     //     return 0;
-                //     // }
-                //
-                //
-                //
-                // }
+                // Given a time, return the transmit frequency.
+                // This means that the transmitter needs to have a signal.
 
-                // ScalarTransform4f vel = si.instance(scene)->to_world();
+                Wavelength f0 = 94e9 - 6e9/2;
+                Wavelength f1 = 94e9 + 6e9/2;
 
-                // Wavelength dop = si.instance->doppler(si);
-                // Should I do active checks or non-nullptr checks?
-                // Wavelength dop = si.shape->doppler(si);
-                // const_cast<RayDifferential3f&>(ray_).wavelengths += si.shape->doppler(si);
+                Float t1 = 240e-6;
+                Float t2 = t1 + 10e-6;
+                Float t3 = t2 + 240e-6;
+                Float t4 = t3 + 10e-6;
 
-                // std::cout << dop << std::endl;
-                //
-                // f_tx += math::CVac<float>/dop;
+                // std::cout << "pt in" << std::endl;
+                Float tn = math::fmodulo(ray.time, t4);
+                // Float tn = math::modulo(ray.time, t4);
+                // std::cout << "pt out" << std::endl;
+                // Float tn = ray.time;
 
+                // std::cout << tn << ", " << ray.time << std::endl;
 
-                // ScalarTransform4f vel = ScalarTransform4f(si.shape->velocity());
-                // ScalarTransform4f vel = si.instance->to_world();
-                // ScalarTransform4f vel = si.instance.m_to_world;
-
-                // ShapePtr *SP = si.instance;
-                // ScalarFloat SA = si.instance->surface_area();
-                // ScalarTransform4f vel = si.instance->velocity();
+                if (all(tn < t1)) {
+                    // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
+                    // f = 2*((6e9)/(240e-6))*tn + f0;
+                    f_tx = ((6e9)/(240e-6))*tn + f0;
+                } else if (all(tn < t2)) {
+                    f_tx = f1;
+                } else if (all(tn < t3)){
+                    // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
+                    // f = 2*((-6e9)/(240e-6))*tn + f1;
+                    f_tx = ((-6e9)/(240e-6))*(tn-t2) + f1;
+                } else {
+                    f_tx = f0;
+                }
 
                 // const_cast<RayDifferential3f&>(ray_).wavelengths = math::CVac<double>/f_tx *1e9;
 
                 // ray.wavelengths += (100.f/math::CVac<float>)*ray.wavelengths;
                 // Imagine the tx is moving at 20 m/s
-                // f_tx += -100.f/math::CVac<float> * f_tx;
-                // f_tx += math::CVac<float>/si.shape->eval_doppler(si);
-                // f_tx += math::CVac<float>/si.doppler();
+                f_tx += -100.f/math::CVac<float> * f_tx;
 
                 // std::cout << ray.time << " " << tn << std::endl;
 
@@ -390,14 +315,9 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 // const_cast<RayDifferential3f&>(ray_).wavelengths -= ray.wavelengths;
 
                 // const_cast<RayDifferential3f&>(ray_).wavelengths = (math::CVac<double>/ray.wavelengths - math::CVac<double>/ray_.wavelengths)*1e9;
-                // const_cast<RayDifferential3f&>(ray_).wavelengths = abs(f_tx[0] - math::CVac<double>/(ray.wavelengths[0]*1e-9));
+                const_cast<RayDifferential3f&>(ray_).wavelengths = abs(f_tx[0] - math::CVac<double>/(ray.wavelengths[0]*1e-9));
 
-                // const_cast<RayDifferential3f&>(ray_).wavelengths = abs(f_tx[0] - math::CVac<double>/(ray.wavelengths[0]*1e-9));
-
-                // const_cast<RayDifferential3f&>(ray_).wavelengths = abs(math::CVac<double>/f_tx*1e9 - ray.wavelengths);
-                // const_cast<RayDifferential3f&>(ray_).wavelengths = ray.wavelengths;
-                const_cast<RayDifferential3f&>(ray_).time = ray.time;
-
+                // std::cout << ray_.wavelengths[0] << std::endl;
 
             }
 
@@ -420,31 +340,95 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
             SurfaceInteraction3f si_bsdf = scene->ray_intersect(ray, active);
 
             /* Determine probability of having sampled that same
-               direction using transmitter sampling. */
-            transmitter = si_bsdf.transmitter(scene, active);
+               direction using emitter sampling. */
+            emitter = si_bsdf.emitter(scene, active);
             DirectionSample3f ds(si_bsdf, si);
-            ds.object = transmitter;
+            ds.object = emitter;
 
-            if (any_or<true>(neq(transmitter, nullptr))) {
-                Float transmitter_pdf =
-                    select(neq(transmitter, nullptr) &&
+            if (any_or<true>(neq(emitter, nullptr))) {
+                Float emitter_pdf =
+                    select(neq(emitter, nullptr) &&
                         !has_flag(bs.sampled_type, BSDFFlags::Delta),
-                           scene->pdf_transmitter_direction(si, ds),
+                           scene->pdf_emitter_direction(si, ds),
                            0.f);
 
-                emission_weight = mis_weight(bs.pdf, transmitter_pdf);
+                emission_weight = mis_weight(bs.pdf, emitter_pdf);
             }
 
             si = std::move(si_bsdf);
-
-            // Really not sure about this section, but it definitely does something
+            // pathlength += select(si.is_valid(), si.t, 0.f);
+            // const_cast<ray&>(ray_).time -= select(si.is_valid(), si.t/ math::CVac<float>, 0.f);
+            // const_cast<RayDifferential3f&>(ray_).time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
             ray.time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
-            // if(any_or<true>(neq(si.shape, nullptr))){
-            if(any_or<true>(neq(transmitter, nullptr))){
-                // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(transmitter, nullptr), transmitter->shape()->doppler(si, active), 0.f);
-                const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(transmitter, nullptr), transmitter->doppler(si, active), 0.f);
-            }
+            // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
+
+            // pathlength += select(si.is_valid(), si.t, math::Infinity<Float>);
+            // pathlength += select(active, si.t, math::Infinity<Float>);
+
+            // pathlength += select(active, si.t, 0.f);
+            // pathlength += select(si.is_valid(), si.t, 0.f);
+
+            // pathlength += select(active_e, si.t, math::Infinity<Float>);
+            // pathlength += select(active_e, si.t, 0.f);
+            // pathlength += si.t;
+            // pathlength[active] += si.t;
         }
+
+        // std::cout << pathlength << std::endl;
+
+        // return { result, valid_ray, pathlength};
+
+        // ray_.time = pathlength / math::CVac<float>;
+
+        // Float f_tx(0.f);
+        // // f0 = fc - bandwidth/2;
+        // // f1 = fc + bandwidth/2;
+        // //
+        // // t1 = rise;
+        // // t2 = t1 + hold;
+        // // t3 = t2 + fall;
+        // // t4 = t3 + wait;
+        // // tn = t % t4;
+        //
+        // // Given a time, return the transmit frequency.
+        // // This means that the transmitter needs to have a signal.
+        //
+        // Float f0 = 94e9 - 6e9/2;
+        // Float f1 = 94e9 + 6e9/2;
+        //
+        // Float t1 = 240e-6;
+        // Float t2 = t1 + 10e-6;
+        // Float t3 = t2 + 240e-6;
+        // Float t4 = t3 + 10e-6;
+        // // Float tn = math::modulo(ray_.time, t4);
+        //
+        // // Float tn = math::modulo(t4, ray.time);
+        // // Float tn = math::modulo(ray.time, t4);
+        // Float tn = ray.time;
+        //
+        // // Float tn = ray.time % t4;
+        //
+        // // std::cout << tn << ", " << ray.time << std::endl;
+        //
+        // if (all(tn < t1)) {
+        //     // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
+        //     // f = 2*((6e9)/(240e-6))*tn + f0;
+        //     f_tx = ((6e9)/(240e-6))*tn + f0;
+        // } else if (all(tn < t2)) {
+        //     f_tx = f1;
+        // } else if (all(tn < t3)){
+        //     // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
+        //     // f = 2*((-6e9)/(240e-6))*tn + f1;
+        //     f_tx = ((-6e9)/(240e-6))*tn + f1;
+        // } else {
+        //     f_tx = f0;
+        // }
+        //
+        // std::cout << tn * 1e6 << " " << f_tx*1e-9 << " " << math::CVac<double>/(ray.wavelengths[0]*1e-9)*1e-9  << " " << ray.wavelengths[0]*1e-9 << std::endl;
+        //
+        // // const_cast<RayDifferential3f&>(ray_).wavelengths = 0.5*(abs(f - math::CVac<double>/(ray.wavelengths*1e-9)))*math::InvTwoPi<double>;
+        // // const_cast<RayDifferential3f&>(ray_).wavelengths = (abs(f - math::CVac<double>/(ray.wavelengths*1e-9)))*math::InvTwoPi<double>;
+        // const_cast<RayDifferential3f&>(ray_).wavelengths = (abs(f_tx - math::CVac<double>/(ray.wavelengths*1e-9)));
 
         return {result, valid_ray};
     }

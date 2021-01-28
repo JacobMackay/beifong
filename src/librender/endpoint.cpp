@@ -8,6 +8,9 @@ NAMESPACE_BEGIN(mitsuba)
 MTS_VARIANT Endpoint<Float, Spectrum>::Endpoint(const Properties &props) : m_id(props.id()) {
     m_world_transform = props.animated_transform("to_world", ScalarTransform4f()).get();
 
+    m_velocity = props.animated_transform("velocity", ScalarTransform4f()).get();
+    // m_velocity = props.transform("velocity", ScalarTransform4f());
+
     for (auto &[name, obj] : props.objects(false)) {
         Medium *medium = dynamic_cast<Medium *>(obj.get());
         if (medium) {
@@ -20,6 +23,22 @@ MTS_VARIANT Endpoint<Float, Spectrum>::Endpoint(const Properties &props) : m_id(
 }
 
 MTS_VARIANT Endpoint<Float, Spectrum>::~Endpoint() { }
+
+MTS_VARIANT typename Endpoint<Float, Spectrum>::Wavelength
+Endpoint<Float, Spectrum>::doppler(SurfaceInteraction3f si, Mask active) const {
+    // std::cout << m_velocity.get() << std::endl;
+    // std::cout << m_world_transform.get() << std::endl;
+    // return select(active, 2*dot(si.wi, m_velocity.get()*Point3f(si.to_local(si.p))) / math::CVac<float>
+    //  * si.wavelengths, 0.f);
+    Wavelength result = 0.f;
+    if(any_or<true>(neq(m_shape, nullptr))){
+        result = select(active, 2*m_shape->doppler(si, active), 0.f);
+    } else {
+        result = select(active, 2*dot(si.wi, m_velocity.get()->eval(0.f)*Point3f(si.to_local(si.p))) / math::CVac<float>
+         * si.wavelengths, 0.f);
+    }
+    return result;
+ }
 
 MTS_VARIANT void Endpoint<Float, Spectrum>::set_scene(const Scene *) {
 }
