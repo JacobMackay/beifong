@@ -1132,8 +1132,20 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       // Float wavelength_sample = math::CVac<float>/f;
       // Float wavelength_sample = (f-f0)/(f1-f0);
       // Wavelength sample is reversed from frequency.
+      //
       Wavelength lambda_rx = math::CVac<double>/f_rx * 1e9;
       ray.wavelengths = lambda_rx;
+
+      // // Now evaluate doppler, this sometimes crashes
+      // if(any_or<true>(neq(receiver, nullptr))) {
+      //     SurfaceInteraction3f si_rx;
+      //     si_rx.p = ray.o;
+      //     si_rx.wavelengths = ray.wavelengths;
+      //     si_rx.wi = ray.d;
+      //     si_rx.shape = receiver->shape();
+      //     ray.wavelengths += select(neq(receiver, nullptr), receiver->doppler(si_rx, active), 0.f);
+      // }
+
       // ray.wavelengths = math::CVac<double>/f_rx * 1e9;
 
       // std::cout<<"λ: " << ray.wavelengths << "f: " << f<<std::endl;

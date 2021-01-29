@@ -184,7 +184,7 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 // pathlength += select(si.is_valid(), si.t, 0.f);
                 // const_cast<RayDifferential3f&>(ray_).time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
 
-                std::cout << "tx" << std::endl;
+                // std::cout << "tx" << std::endl;
 
                 ray.time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
                 if(any_or<true>(neq(si.shape, nullptr))){

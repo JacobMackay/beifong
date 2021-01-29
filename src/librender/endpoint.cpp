@@ -31,7 +31,9 @@ Endpoint<Float, Spectrum>::doppler(SurfaceInteraction3f si, Mask active) const {
     // return select(active, 2*dot(si.wi, m_velocity.get()*Point3f(si.to_local(si.p))) / math::CVac<float>
     //  * si.wavelengths, 0.f);
     Wavelength result = 0.f;
+    // std::cout << any_or<true>(neq(m_shape, nullptr)) << std::endl;
     if(any_or<true>(neq(m_shape, nullptr))){
+        // std::cout << m_shape << std::endl;
         result = select(active, 2*m_shape->doppler(si, active), 0.f);
     } else {
         result = select(active, 2*dot(si.wi, m_velocity.get()->eval(0.f)*Point3f(si.to_local(si.p))) / math::CVac<float>

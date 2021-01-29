@@ -1,4 +1,5 @@
 #include <mitsuba/render/receiver.h>
+#include <mitsuba/render/endpoint.h>
 
 #include <mitsuba/core/plugin.h>
 #include <mitsuba/core/properties.h>
@@ -59,6 +60,24 @@ MTS_VARIANT Receiver<Float, Spectrum>::Receiver(const Properties &props)
 }
 
 MTS_VARIANT Receiver<Float, Spectrum>::~Receiver() {}
+
+// MTS_VARIANT typename Receiver<Float, Spectrum>::Wavelength
+// Receiver<Float, Spectrum>::doppler(SurfaceInteraction3f si, Mask active) const {
+//     // std::cout << m_velocity.get() << std::endl;
+//     // std::cout << m_world_transform.get() << std::endl;
+//     // return select(active, 2*dot(si.wi, m_velocity.get()*Point3f(si.to_local(si.p))) / math::CVac<float>
+//     //  * si.wavelengths, 0.f);
+//     Wavelength result = 0.f;
+//     // std::cout << any_or<true>(neq(m_shape, nullptr)) << std::endl;
+//     if(any_or<true>(neq(m_shape, nullptr))){
+//         // std::cout << m_shape << std::endl;
+//         result = select(active, 2*m_shape->doppler(si, active), 0.f);
+//     } else {
+//         result = select(active, 2*dot(si.wi, m_velocity.get()->eval(0.f)*Point3f(si.to_local(si.p))) / math::CVac<float>
+//          * si.wavelengths, 0.f);
+//     }
+//     return result;
+// }
 
 MTS_VARIANT std::pair<
     typename Receiver<Float, Spectrum>::RayDifferential3f, Spectrum>

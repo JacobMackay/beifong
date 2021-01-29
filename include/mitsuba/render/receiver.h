@@ -2,6 +2,7 @@
 
 #include <mitsuba/core/spectrum.h>
 #include <mitsuba/core/transform.h>
+#include <mitsuba/core/fwd.h>
 #include <mitsuba/render/endpoint.h>
 #include <mitsuba/core/vector.h>
 #include <mitsuba/render/adc.h>
@@ -84,6 +85,8 @@ public:
     /// Return the \ref ADC instance associated with this sensor (const)
     const ADC *adc() const { return m_adc.get(); }
 
+    // virtual Wavelength doppler(SurfaceInteraction3f si, Mask active) const;
+
     /**
      * \brief Return the sensor's sample generator
      *
@@ -121,6 +124,7 @@ public:
         m_resolution = ScalarVector2f(m_adc->window_size());
     }
 
+    ENOKI_CALL_SUPPORT_FRIEND()
     MTS_DECLARE_CLASS()
 protected:
     Receiver(const Properties &props);
