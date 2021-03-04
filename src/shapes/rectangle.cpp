@@ -200,43 +200,49 @@ public:
                                     Mask active) const override {
         MTS_MASK_ARGUMENT(active);
 
-        Float k_0 = math::TwoPi<Float>*rcp(wavelength[0]*1e-9);
+        // ---------------------------------
+        // Get the size of the target
         Float wid_x = norm(m_frame.s);
         Float wid_y = norm(m_frame.t);
+        // =================================
 
-        // Convert direction to local frame
+        // ---------------------------------
+        // Get the local position vector, normalised by width in x and y
+        Point3f r_hat = m_to_object * ds.p/2;
+        // =================================
+
+        // ---------------------------------
+        // Get the local wavevector
         Transform4f trafto1;
         trafto1 = trafto1.from_frame(
             Frame3f(normalize(m_frame.s),
                     normalize(m_frame.t),
                     normalize(m_frame.n)));
-        // Normal3f k_hat_local = trafto1 * ws.d;
-        Normal3f k_hat_local = trafto1.transform_affine(ds.d);
-        Float k_x = k_0*k_hat_local.x();
-        Float k_y = k_0*k_hat_local.y();
+        // Normal3f nu_hat = trafto1 * ws.d;
+        Normal3f nu_hat = trafto1.transform_affine(ds.d)*rcp(wavelength[0]*1e-9);
+        // =================================
 
-        // Convert position to local frame. As this is a rectangle, we can also
-        // include relative width for the triangular function.
-        Point3f p_local = m_to_object * ds.p/2;
-        Float p_x = p_local.x();
-        Float p_y = p_local.y();
+        // ---------------------------------
+        // Find the wigner function value
+        Float gain = (math::TwoPi<Float>*rcp(wavelength[0]*1e-9))*(math::TwoPi<Float>*rcp(wavelength[0]*1e-9))*
+                4*wid_x*wid_y * math::tri(r_hat.x())*math::tri(r_hat.y()) *
+                math::sinc(math::TwoPi<Float>*nu_hat.x()*wid_x*math::tri(r_hat.x())) *
+                math::sinc(math::TwoPi<Float>*nu_hat.y()*wid_y*math::tri(r_hat.y()));
+        // =================================
 
-        // Find static gain of antenna
-        // pdf is doing 2 things...the distance part and the inv surf area
-        Float g_static = math::InvPi<Float>*(k_0)*(k_0)*rcp(ds.pdf)
-            *rcp(m_inv_surface_area);
-        // Float g_static = math::InvPi<Float>*(k_0)*(k_0)*rcp(ds.pdf);
-
-        // Find directional gain of antenna
-        Float g_angle =
-            wid_x * math::tri(p_x) * math::sinc(k_x * wid_x * math::tri(p_x)) *
-            wid_y * math::tri(p_y) * math::sinc(k_y * wid_y * math::tri(p_y));
+        // ---------------------------------
+        // Add the wavelength normalisation that should be with radiance
+        gain *= (wavelength[0]*1e-9)*(wavelength[0]*1e-9);
+        // It seems that they already divide by area, so let's undo our area normalisation
+        // gain *= wid_x*wid_y;
+        // =================================
 
         // This probably doesn't need to be a ds. A spectrum is probably more
         // approipriate
 
         DirectionSample3f ws = ds;
-        ws.pdf = rcp(g_static * g_angle);
+        ws.pdf *= rcp(gain);
+        // ws.pdf = rcp(gain);
 
         return ws;
     }

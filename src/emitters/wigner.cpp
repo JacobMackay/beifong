@@ -134,9 +134,11 @@ public:
         ds.dist = sqrt(dist_squared);
         ds.d /= ds.dist;
 
+        // pdf here is the inverse surface area.
         ds.pdf = pdf;
         // Assuming wigner doesn't take look angle into account
         Float dp = abs_dot(ds.d, ds.n);
+        // pdf is now 1/A * r^2/cos(θ)cos(φ)
         ds.pdf *= select(neq(dp, 0.f), dist_squared / dp, 0.f);
 
         ds.object = this;
@@ -265,6 +267,9 @@ public:
         // value = 1;
         // value = abs(ws.pdf);
         value = ws.pdf;
+        // value = ws.pdf*ws.pdf;
+        // value = ws.pdf*(math::TwoPi<Float>*math::TwoPi<Float>)*m_shape->surface_area()*it.wavelengths[0]*1e-9*it.wavelengths[0]*1e-9;
+        value *= value;
 
         active &= abs(ws.pdf) > math::Epsilon<Float>;
 
