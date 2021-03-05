@@ -143,6 +143,10 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
 
         Spectrum throughput(1.f), result(0.f);
 
+        // ==============================================================
+        // Took doppler out to test, don't forget to put back
+        // ==============================================================
+
         // ---------------------- First intersection ----------------------
 
         SurfaceInteraction3f si = scene->ray_intersect(ray, active);
@@ -151,7 +155,7 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
 
         ray.time -= select(valid_ray, si.t / math::CVac<float>, 0.f);
         if(any_or<true>(neq(si.shape, nullptr))){
-            const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, valid_ray), 0.f);
+            // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, valid_ray), 0.f);
         }
 
         for (int depth = 1;; ++depth) {
@@ -188,7 +192,7 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
 
                 ray.time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
                 if(any_or<true>(neq(si.shape, nullptr))){
-                    const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
+                    // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
                 }
 
             }
@@ -239,21 +243,21 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
 
                 ray.time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
                 if(any_or<true>(neq(si.shape, nullptr))){
+                    // // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
                     // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
-                    const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
-
-                    // If the transmitter val != 0, we have a tx hit
-                    // Intersect the BSDF ray against the scene geometry
-                    SurfaceInteraction3f si_tx = scene->ray_intersect(si.spawn_ray(si.to_world(wo)), active);
-
-                    if(any_or<true>(neq(si_tx.transmitter(scene, active), nullptr))){
-                        // const_cast<RayDifferential3f&>(ray_).wavelengths
-                        //     += select(neq(si_tx.transmitter(scene, active), nullptr),
-                        //         si_tx.transmitter(scene, active)->doppler(si, active), 0.f);
-                        const_cast<RayDifferential3f&>(ray_).wavelengths
-                            += select(neq(si_tx.transmitter(scene, active), nullptr),
-                                si_tx.transmitter(scene, active)->doppler(si_tx, active), 0.f);
-                    }
+                    //
+                    // // If the transmitter val != 0, we have a tx hit
+                    // // Intersect the BSDF ray against the scene geometry
+                    // SurfaceInteraction3f si_tx = scene->ray_intersect(si.spawn_ray(si.to_world(wo)), active);
+                    //
+                    // if(any_or<true>(neq(si_tx.transmitter(scene, active), nullptr))){
+                    //     // const_cast<RayDifferential3f&>(ray_).wavelengths
+                    //     //     += select(neq(si_tx.transmitter(scene, active), nullptr),
+                    //     //         si_tx.transmitter(scene, active)->doppler(si, active), 0.f);
+                    //     const_cast<RayDifferential3f&>(ray_).wavelengths
+                    //         += select(neq(si_tx.transmitter(scene, active), nullptr),
+                    //             si_tx.transmitter(scene, active)->doppler(si_tx, active), 0.f);
+                    // }
 
                 }
 
@@ -441,8 +445,11 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
             ray.time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
             // if(any_or<true>(neq(si.shape, nullptr))){
             if(any_or<true>(neq(transmitter, nullptr))){
-                // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(transmitter, nullptr), transmitter->shape()->doppler(si, active), 0.f);
-                const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(transmitter, nullptr), transmitter->doppler(si, active), 0.f);
+                // // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(transmitter, nullptr), transmitter->shape()->doppler(si, active), 0.f);
+                // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(transmitter, nullptr), transmitter->doppler(si, active), 0.f);
+
+
+
             }
         }
 

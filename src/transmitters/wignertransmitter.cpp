@@ -265,6 +265,9 @@ public:
         // value = 1;
         // value = abs(ws.pdf);
         value = ws.pdf;
+        // value = ws.pdf*ws.pdf;
+        // value = ws.pdf*(math::TwoPi<Float>*math::TwoPi<Float>)*m_shape->surface_area()*it.wavelengths[0]*1e-9*it.wavelengths[0]*1e-9;
+        value *= value;
 
         active &= abs(ws.pdf) > math::Epsilon<Float>;
 
