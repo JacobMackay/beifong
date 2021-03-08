@@ -70,6 +70,18 @@ public:
     /// Flags for all components combined.
     uint32_t flags(mask_t<Float> /*active*/ = true) const { return m_flags; }
 
+    // Spectrum eval_signal(Float time, Spectrum frequency) const;
+    Float eval_signal(Float time, Float frequency) const;
+
+    // Function to convert to frequency via the antenna. Expand in the future.
+    wavelength_t<Spectrum> to_frequency(wavelength_t<Spectrum> wavelength) const {
+        return MTS_C/(wavelength*1e-9);
+    }
+
+    wavelength_t<Spectrum> to_wavelength(wavelength_t<Spectrum> frequency) const {
+        return MTS_C/(frequency*1e9);
+    }
+
 
     ENOKI_CALL_SUPPORT_FRIEND()
     MTS_DECLARE_CLASS()
@@ -81,6 +93,8 @@ protected:
 protected:
     /// Combined flags for all properties of this transmitter.
     uint32_t m_flags;
+    // Signal &m_signal;
+
 };
 
 MTS_EXTERN_CLASS_RENDER(Transmitter)
@@ -95,6 +109,7 @@ ENOKI_CALL_SUPPORT_TEMPLATE_BEGIN(mitsuba::Transmitter)
     ENOKI_CALL_SUPPORT_METHOD(sample_ray)
     ENOKI_CALL_SUPPORT_METHOD(doppler)
     ENOKI_CALL_SUPPORT_METHOD(eval)
+    ENOKI_CALL_SUPPORT_METHOD(eval_signal)
     ENOKI_CALL_SUPPORT_METHOD(sample_direction)
     ENOKI_CALL_SUPPORT_METHOD(pdf_direction)
     ENOKI_CALL_SUPPORT_METHOD(is_environment)

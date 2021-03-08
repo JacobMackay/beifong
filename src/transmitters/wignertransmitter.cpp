@@ -46,7 +46,8 @@ transmitter shape and specify an :monosp:`area` instance as its child:
 template <typename Float, typename Spectrum>
 class WignerTransmitter final : public Transmitter<Float, Spectrum> {
 public:
-    MTS_IMPORT_BASE(Transmitter, m_flags, m_shape, m_medium)
+    MTS_IMPORT_BASE(Transmitter, m_flags, m_shape, m_medium)//,
+        // m_sig_amplitude, m_sig_repfreq, m_sig_t_ext, m_sig_f0, m_sig_is_delta)
     MTS_IMPORT_TYPES(Scene, Shape, Texture)
 
     WignerTransmitter(const Properties &props) : Base(props) {
@@ -55,39 +56,186 @@ public:
                   "The area light inherits this transformation from its parent "
                   "shape.");
 
-        m_radiance = props.texture<Texture>("radiance", Texture::D65(1.f));
+        m_antenna_texture = props.texture<Texture>("antenna_texture", Texture::D65(1.f));
 
         m_flags = +TransmitterFlags::Surface;
-        if (m_radiance->is_spatially_varying())
+        if (m_antenna_texture->is_spatially_varying())
             m_flags |= +TransmitterFlags::SpatiallyVarying;
+
+        m_signal = props.string("signaltype", "cw");
+        m_change_freq = props.bool_("change_freq", false);
+
+        if (m_signal == "linfmcw"){
+            m_sig_amplitude = props.float_("amplitude", 1.f);
+            m_sig_repfreq = props.float_("crf", 1.f);
+            m_sig_t_ext = props.float_("chirp_len", 1.f);
+            m_sig_f_centre = props.float_("freq_centre", MTS_C/((MTS_WAVELENGTH_MAX + MTS_WAVELENGTH_MIN)/2));
+            m_sig_f_ext = props.float_("freq_sweep", MTS_C/(MTS_WAVELENGTH_MAX - MTS_WAVELENGTH_MIN));
+            m_sig_phi0 = props.float_("phase", 0.f);
+            m_sig_is_delta = props.bool_("sig_is_delta", true);
+        } else if (m_signal == "pulse") {
+            m_sig_amplitude = props.float_("amplitude", 1.f);
+            m_sig_repfreq = props.float_("prf", 1.f);
+            m_sig_t_ext = props.float_("pulse_len", 1.f);
+            m_sig_f_centre = props.float_("freq_centre", MTS_C/((MTS_WAVELENGTH_MAX + MTS_WAVELENGTH_MIN)/2));
+            m_sig_f_ext = rcp(m_sig_t_ext);
+            m_sig_phi0 = props.float_("phase", 0.f);
+            m_sig_is_delta = props.bool_("sig_is_delta", false);
+        } else {
+            m_sig_amplitude = props.float_("amplitude", 1.f);
+            m_sig_repfreq = props.float_("prf", 1.f);
+            m_sig_t_ext = props.float_("pulse_len", 1.f);
+            m_sig_f_centre = props.float_("freq_centre", MTS_C/((MTS_WAVELENGTH_MAX + MTS_WAVELENGTH_MIN)/2));
+            m_sig_f_ext = rcp(m_sig_t_ext);
+            m_sig_phi0 = props.float_("phase", 0.f);
+            m_sig_is_delta = props.bool_("sig_is_delta", true);
+        }
+
+
     }
 
+    Float eval_signal(Float time, Float frequency) const {
+
+        Float result(0.f);
+        Float t_norm = math::fmodulo(time, rcp(m_sig_repfreq));
+        Float t_hat;
+        Float f_hat;
+
+        if (m_signal == "linfmcw") {
+            t_hat = t_norm/m_sig_t_ext;
+            f_hat = frequency - (m_sig_f_centre - m_sig_f_ext/2  + 0.5*m_sig_f_ext/m_sig_t_ext*t_norm);
+
+            result = select(math::rect(t_hat) > 0.f,
+                2*m_sig_amplitude*m_sig_amplitude * m_sig_t_ext*math::tri(t_hat) *
+                math::sinc(math::TwoPi<Float>*f_hat*m_sig_t_ext*math::tri(t_hat)),
+                0.f);
+        } else if (m_signal == "pulse") {
+            t_hat = t_norm/m_sig_t_ext;
+            f_hat = frequency - m_sig_f_centre;
+
+            result = select(math::rect(t_hat) > 0.f,
+                2*m_sig_amplitude*m_sig_amplitude * m_sig_t_ext*math::tri(t_hat) *
+                math::sinc(math::TwoPi<Float>*f_hat*m_sig_t_ext*math::tri(t_hat)),
+                0.f);
+        } else {
+            result = m_sig_amplitude*m_sig_amplitude;
+        }
+
+        return result;
+    }
+
+    std::pair<wavelength_t<Spectrum>, Spectrum> sample_delta_frequency(Float time) const {
+        // Sample a frequency from 1st order chirp -------
+        Float t_norm = math::fmodulo(time, rcp(m_sig_repfreq));
+        Float frequencies = (m_sig_f_centre - m_sig_f_ext/2) + 0.5*m_sig_f_ext/m_sig_t_ext*t_norm;
+        return {frequencies, eval_signal(time, frequencies)};
+        // ===============================================
+    }
+
+    std::pair<wavelength_t<Spectrum>, Spectrum> sample_frequency(Float time, Float sample) const {
+        auto freq_sample = math::sample_shifted<wavelength_t<Spectrum>>(sample);
+
+        if (m_sig_is_delta == true) {
+            auto [frequencies, freq_weight] = sample_delta_frequency(time);
+        } else {
+            wavelength_t<Spectrum> frequencies = freq_sample * m_sig_f_ext + (m_sig_f_centre - m_sig_f_ext/2);
+            // Spectrum freq_weight = m_sig_f_ext;
+            Spectrum freq_weight = eval_signal(time, frequencies);
+        }
+
+        if (m_receive_type == "raw") {
+            // Randomly select a freqency in bounds
+            return {freq_sample * m_sig_f_ext + (m_sig_f_centre - m_sig_f_ext/2),
+                m_sig_f_ext};
+        } else if (m_receive_type == "mixer_dodgy") {
+            Float t_norm = math::fmodulo(time, rcp(m_sig_repfreq));
+            Float frequencies = (m_sig_f_centre - m_sig_f_ext/2) + 0.5*m_sig_f_ext/m_sig_t_ext*t_norm;
+            return {frequencies, eval_signal(time, frequencies)};
+        } else {
+            return {freq_sample * m_sig_f_ext + (m_sig_f_centre - m_sig_f_ext/2),
+                m_sig_f_ext};
+        }
+    }
+
+    // Return the radiance of an impacting ray --------------------------------
     Spectrum eval(const SurfaceInteraction3f &si, Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointEvaluate, active);
 
-        // Ensures only forward transmission
+        // 1. Evaluate the signal power in V^2 -----------------
+        Spectrum signal_power;
+        if (m_resample_freq == true) {
+            // Resample frequency ------------------
+            // This is used for forcing results, usually for cw transmission
+            auto [frequencies, freq_weight] = sample_delta_frequency(si.time);
+            signal_power = freq_weight;
+            const_cast<SurfaceInteraction3f&>(si).wavelengths = to_wavelength(frequencies);
+            // =====================================
+        } else {
+            signal_power = eval_signal(time, to_frequency(si.wavelengths[0]));
+        }
+        // =====================================================
+
+        // 2. Evaluate the line loss, amplifier gain
+        // and radiation resistance in siemens------------------
+        Spectrum transmission_gain = m_gain;
+        // =====================================================
+
+        // 3. Evaluate the geometric gain ----------------------
+        // 3a. Directional part from WDF ----
+        DirectionSample3f ds(si);
+        ds.d *= -1.f;
+        DirectionSample3f ws = m_shape->sample_wigner(ds, si.wavelengths, active);
+        Float geom_gain = rcp(ws.pdf);
+        // =============================
+        // 3b. Areal part from surface -----
+        geom_gain *= m_antenna_texture->eval(si, active) *
+            rcp(m_shape->surface_area());
+        // =============================
+
+        // Return the radiance in W/(m^2*sr) -------------------
         return select(
             Frame3f::cos_theta(si.wi) > 0.f,
-            unpolarized<Spectrum>(m_radiance->eval(si, active)),
+            signal_power * transmission_gain * geom_gain,
             0.f
         );
-
-        // return unpolarized<Spectrum>(m_radiance->eval(si, active));
-        // return 0.f;
+        // ======================================================
     }
+    // ========================================================================
 
+    // Sample a ray and its radiance
+    // given a time plus spectral, positional and directional samples.
+    // ------------------------------------------------------------------------
     std::pair<Ray3f, Spectrum> sample_ray(Float time, Float wavelength_sample,
-                                          const Point2f &sample2, const Point2f &sample3,
+                                          const Point2f &position_sample,
+                                          const Point2f &direction_sample,
                                           Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointSampleRay, active);
+
+        // 1. Evaluate the signal power in V^2 -----------------
+        Spectrum signal_power;
+
+        auto [frequencies, freq_weight] = sample_frequency(time, wavelength_sample);
+
+
+        if (m_resample_freq == true) {
+            // Resample frequency ------------------
+            // This is used for forcing results, usually for cw transmission
+            auto [frequencies, freq_weight] = sample_delta_frequency(si.time);
+            signal_power = freq_weight;
+            const_cast<SurfaceInteraction3f&>(si).wavelengths = to_wavelength(frequencies);
+            // =====================================
+        } else {
+            signal_power = eval_signal(time, to_frequency(si.wavelengths[0]));
+        }
+        // =====================================================
 
         SurfaceInteraction3f si = zero<SurfaceInteraction3f>();
         si.t = math::Infinity<Float>;
 
         Float pdf = 1.f;
 
-        // 1. Two strategies to sample spatial component based on 'm_radiance'
-        if (!m_radiance->is_spatially_varying()) {
+        // 1. Two strategies to sample spatial component based on 'm_antenna_texture'
+        if (!m_antenna_texture->is_spatially_varying()) {
             PositionSample3f ps = m_shape->sample_position(time, sample2, active);
 
             // Radiance not spatially varying, use area-based sampling of shape
@@ -161,6 +309,10 @@ public:
         //     Ray3f(ws.p, ws.d, ws.time, wavelength),
         //     unpolarized<Spectrum>(spec_weight) / ws.pdf
         // );
+
+        // spec_weight *= 1/(4*math::Pi<Float>);
+        // spec_weight *= m_shape->surface_area();
+
         return std::make_pair(
             Ray3f(ws.p, ws.d, ws.time, wavelength),
             select(abs(ws.pdf)>math::Epsilon<Float>, unpolarized<Spectrum>(spec_weight) / ws.pdf, 0.f)
@@ -220,6 +372,7 @@ public:
             ds.d *= -1.f;
             ws = m_shape->sample_wigner(ds, it.wavelengths, active);
             ws.d *= -1.f;
+
             // After/before taking the wigner sample, use the it.time to find a
             // phase component. Then it's a simple multiplication. If we were
             // going from transmitter to receiver, how would this be different?
@@ -231,6 +384,15 @@ public:
         }
 
         ds.object = this;
+
+        spec /= (4*math::Pi<Float>)*(math::Pi<Float>);
+
+        spec *= eval_signal(it.time, MTS_C/(it.wavelengths[0]*1e-9));
+
+        // std::cout << ds.pdf << spec << std::endl;
+
+        // spec *= 1/(4*math::Pi<Float>);
+        // spec *= m_shape->surface_area();
 
         // return { ds, unpolarized<Spectrum>(spec) & active };
         // return { ws, unpolarized<Spectrum>(spec) & active };
@@ -269,6 +431,10 @@ public:
         // value = ws.pdf*(math::TwoPi<Float>*math::TwoPi<Float>)*m_shape->surface_area()*it.wavelengths[0]*1e-9*it.wavelengths[0]*1e-9;
         value *= value;
 
+        // value = 1.f;
+
+        // value *= 1/(4*math::Pi<Float>);
+
         active &= abs(ws.pdf) > math::Epsilon<Float>;
 
         return select(active, value, 0.f);
@@ -296,7 +462,17 @@ public:
 
     MTS_DECLARE_CLASS()
 private:
-    ref<Texture> m_radiance;
+    Spectrum m_gain;
+    ref<Texture> m_antenna_texture;
+    bool m_resample_freq;
+    std::string m_signal;
+    Float m_sig_amplitude;
+    Float m_sig_repfreq;
+    Float m_sig_t_ext;
+    Float m_sig_f_centre;
+    Float m_sig_f_ext;
+    Float m_sig_phi0;
+    bool m_sig_is_delta;
 };
 
 MTS_IMPLEMENT_CLASS_VARIANT(WignerTransmitter, Transmitter)

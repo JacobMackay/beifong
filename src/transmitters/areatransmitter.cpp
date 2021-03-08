@@ -1,7 +1,7 @@
 #include <mitsuba/core/properties.h>
 #include <mitsuba/core/warp.h>
 #include <mitsuba/core/spectrum.h>
-#include <mitsuba/render/emitter.h>
+#include <mitsuba/render/transmitter.h>
 #include <mitsuba/render/medium.h>
 #include <mitsuba/render/shape.h>
 #include <mitsuba/render/texture.h>
@@ -44,12 +44,12 @@ emitter shape and specify an :monosp:`area` instance as its child:
  */
 
 template <typename Float, typename Spectrum>
-class Wigner final : public Emitter<Float, Spectrum> {
+class AreaTransmitter final : public Transmitter<Float, Spectrum> {
 public:
-    MTS_IMPORT_BASE(Emitter, m_flags, m_shape, m_medium)
+    MTS_IMPORT_BASE(Transmitter, m_flags, m_shape, m_medium)
     MTS_IMPORT_TYPES(Scene, Shape, Texture)
 
-    Wigner(const Properties &props) : Base(props) {
+    AreaTransmitter(const Properties &props) : Base(props) {
         if (props.has_property("to_world"))
             Throw("Found a 'to_world' transformation -- this is not allowed. "
                   "The area light inherits this transformation from its parent "
@@ -57,23 +57,20 @@ public:
 
         m_radiance = props.texture<Texture>("radiance", Texture::D65(1.f));
 
-        m_flags = +EmitterFlags::Surface;
+        m_flags = +TransmitterFlags::Surface;
         if (m_radiance->is_spatially_varying())
-            m_flags |= +EmitterFlags::SpatiallyVarying;
+            m_flags |= +TransmitterFlags::SpatiallyVarying;
     }
 
     Spectrum eval(const SurfaceInteraction3f &si, Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointEvaluate, active);
 
-        // Ensures only forward emission
         return select(
             Frame3f::cos_theta(si.wi) > 0.f,
-            unpolarized<Spectrum>(m_radiance->eval(si, active)),
+            // unpolarized<Spectrum>(m_radiance->eval(si, active)) * m_shape->surface_area()*(1/(4*math::Pi<Float>)),
+            unpolarized<Spectrum>(m_radiance->eval(si, active)) * m_shape->surface_area(),
             0.f
         );
-
-        // return unpolarized<Spectrum>(m_radiance->eval(si, active));
-        // return 0.f;
     }
 
     std::pair<Ray3f, Spectrum> sample_ray(Float time, Float wavelength_sample,
@@ -92,7 +89,6 @@ public:
 
             // Radiance not spatially varying, use area-based sampling of shape
             si = SurfaceInteraction3f(ps, zero<Wavelength>());
-            // pdf = 1/Area
             pdf = ps.pdf;
         } else {
             // Ipmortance sample texture
@@ -119,54 +115,16 @@ public:
             spec_weight = m_radiance->eval(si, active);
         }
 
-        DirectionSample3f ds;
-
-        // Somehow in whats happening now, perhaps the integrator? We're never
-        // entering this function
-
-        ds.p = si.p;
-        ds.n = si.n;
-        ds.uv = si.uv;
-        ds.time = time;
-        ds.delta = false;
-        ds.d = si.to_world(warp::square_to_cosine_hemisphere(sample3));
-        // ds.d = si.to_world(warp::square_to_uniform_hemisphere(sample3));
-        Float dist_squared = squared_norm(ds.d);
-        ds.dist = sqrt(dist_squared);
-        ds.d /= ds.dist;
-
-        // pdf here is the inverse surface area.
-        ds.pdf = pdf;
-        // Assuming wigner doesn't take look angle into account
-        Float dp = abs_dot(ds.d, ds.n);
-        // pdf is now 1/A * r^2/cos(θ)cos(φ)
-        ds.pdf *= select(neq(dp, 0.f), dist_squared / dp, 0.f);
-
-        ds.object = this;
-
-        // ds.d *= -1.f;
-
-        DirectionSample3f ws = m_shape->sample_wigner(ds, wavelength, active);
-
-        // ws.d *= -1.f;
-
-        // ray weight = spec_weight / m_inv_surface_area
+        // spec_weight *= m_shape->surface_area()/(4*math::Pi<Float>);
+        // spec_weight *= 1/(4*math::Pi<Float>);
 
         // return std::make_pair(
         //     Ray3f(si.p, si.to_world(local), time, wavelength),
         //     unpolarized<Spectrum>(spec_weight) * (math::Pi<Float> / pdf)
         // );
-        // return std::make_pair(
-        //     Ray3f(ws.p, ws.d, ws.time, wavelength),
-        //     unpolarized<Spectrum>(spec_weight) * (math::Pi<Float> / ws.pdf)
-        // );
-        // return std::make_pair(
-        //     Ray3f(ws.p, ws.d, ws.time, wavelength),
-        //     unpolarized<Spectrum>(spec_weight) / ws.pdf
-        // );
         return std::make_pair(
-            Ray3f(ws.p, ws.d, ws.time, wavelength),
-            select(abs(ws.pdf)>math::Epsilon<Float>, unpolarized<Spectrum>(spec_weight) / ws.pdf, 0.f)
+            Ray3f(si.p, si.to_world(local), time, wavelength),
+            unpolarized<Spectrum>(spec_weight) / pdf
         );
     }
 
@@ -177,8 +135,6 @@ public:
         DirectionSample3f ds;
         Spectrum spec;
 
-        DirectionSample3f ws;
-
         // One of two very different strategies is used depending on 'm_radiance'
         if (!m_radiance->is_spatially_varying()) {
             // Texture is uniform, try to importance sample the shape wrt. solid angle at 'it'
@@ -186,13 +142,8 @@ public:
             active &= dot(ds.d, ds.n) < 0.f && neq(ds.pdf, 0.f);
 
             SurfaceInteraction3f si(ds, it.wavelengths);
-            // spec = m_radiance->eval(si, active) / ds.pdf;
-            // Convert to wigner space. We want to take in the 'outgoing' ray.
-            ds.d *= -1.f;
-            ws = m_shape->sample_wigner(ds, it.wavelengths, active);
-            ws.d *= -1.f;
-            // There is a possibility to actually return the correct weight per wlen sample.
-            spec = m_radiance->eval(si, active) / ws.pdf;
+            // ds.pdf is 1/A. Again they're giving irradiance not radiance
+            spec = m_radiance->eval(si, active) / ds.pdf;
         } else {
             // Importance sample the texture, then map onto the shape
             auto [uv, pdf] = m_radiance->sample_position(sample, active);
@@ -218,26 +169,16 @@ public:
             ds.pdf = select(active, pdf / norm(cross(si.dp_du, si.dp_dv)) *
                                         dist_squared / -dp, 0.f);
 
-            // spec = m_radiance->eval(si, active) / ds.pdf;
-
-            ds.d *= -1.f;
-            ws = m_shape->sample_wigner(ds, it.wavelengths, active);
-            ws.d *= -1.f;
-            // After/before taking the wigner sample, use the it.time to find a
-            // phase component. Then it's a simple multiplication. If we were
-            // going from transmitter to receiver, how would this be different?
-            // It would be nice to have a symmetric calculation, but rays have
-            // diff start times, yes they would leave with correct phase, but
-            // that's not useful as some could be 0.
-            // There is a possibility to actually return the correct weight per wlen sample.
-            spec = m_radiance->eval(si, active) / ws.pdf;
+            spec = m_radiance->eval(si, active) / ds.pdf;
         }
 
-        ds.object = this;
+        // spec *=  m_shape->surface_area()*1/(4*math::Pi<Float>);
+        // spec *=  1/(4*math::Pi<Float>);
 
-        // return { ds, unpolarized<Spectrum>(spec) & active };
-        // return { ws, unpolarized<Spectrum>(spec) & active };
-        return { ws, select(abs(ws.pdf)>math::Epsilon<Float>, unpolarized<Spectrum>(spec) & active, 0.f) };
+        // std::cout << ds.pdf << spec << std::endl;
+
+        ds.object = this;
+        return { ds, unpolarized<Spectrum>(spec) & active };
     }
 
     Float pdf_direction(const Interaction3f &it, const DirectionSample3f &ds,
@@ -258,23 +199,8 @@ public:
                     (norm(cross(si.dp_du, si.dp_dv)) * -dp);
         }
 
-        DirectionSample3f ds2 = ds;
-        ds2.pdf = value;
-        ds2.d *= -1.f;
-        // This looks after the sampling
-        DirectionSample3f ws = m_shape->sample_wigner(ds2, it.wavelengths, active);
-
-        // value *= ws.pdf;
-        // value = 1;
-        // value = abs(ws.pdf);
-
-        // value = ws.pdf*ws.pdf;
-        // value = ws.pdf*(math::TwoPi<Float>*math::TwoPi<Float>)*m_shape->surface_area()*it.wavelengths[0]*1e-9*it.wavelengths[0]*1e-9;
-
-        value = ws.pdf;
-        value *= value;
-
-        active &= abs(ws.pdf) > math::Epsilon<Float>;
+        // value *= m_shape->surface_area() * 1/(4*math::Pi<Float>);
+        // value *= 1/(4*math::Pi<Float>);
 
         return select(active, value, 0.f);
     }
@@ -287,7 +213,7 @@ public:
 
     std::string to_string() const override {
         std::ostringstream oss;
-        oss << "Wigner[" << std::endl
+        oss << "AreaTransmitter[" << std::endl
             << "  radiance = " << string::indent(m_radiance) << "," << std::endl
             << "  surface_area = ";
         if (m_shape) oss << m_shape->surface_area();
@@ -304,6 +230,6 @@ private:
     ref<Texture> m_radiance;
 };
 
-MTS_IMPLEMENT_CLASS_VARIANT(Wigner, Emitter)
-MTS_EXPORT_PLUGIN(Wigner, "Wigner")
+MTS_IMPLEMENT_CLASS_VARIANT(AreaTransmitter, Transmitter)
+MTS_EXPORT_PLUGIN(AreaTransmitter, "Area transmitter")
 NAMESPACE_END(mitsuba)

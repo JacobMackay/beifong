@@ -830,10 +830,10 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 // then must find a path that achieves this.
 
 
-// ============================================================================
-// This is the code for fmcw. I will leave commented and safe for now.
-// Doing this so that I can work on pulsed.
-// ============================================================================
+// // ============================================================================
+// // This is the code for fmcw. I will leave commented and safe for now.
+// // Doing this so that I can work on pulsed.
+// // ============================================================================
 // MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 //   receive_sample(const Scene *scene, const Receiver *receiver, Sampler *sampler,
 //                     SignalBlock *block, Float *aovs, const Vector2f &pos,
@@ -1534,50 +1534,89 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 // ============================================================================
 // Code for pulsed radar
 // ============================================================================
-
+// remember in proper framework, pos encodes t, f.
 MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
   receive_sample(const Scene *scene, const Receiver *receiver, Sampler *sampler,
                     SignalBlock *block, Float *aovs, const Vector2f &pos,
                     ScalarFloat diff_scale_factor, Mask active) const {
 
+      // Spatial sampling -------------------------
       Vector2f position_sample = pos + sampler->next_2d(active);
+      Vector2f adjusted_position = position_sample;
+      // ==========================================
 
+      // Direction sampling -----------------------
       Point2f aperture_sample(.5f);
       if (receiver->needs_aperture_sample()) {
           aperture_sample = sampler->next_2d(active);
       }
+      // ==========================================
 
-      // Choose a random time for the sample to be received at between receive
-      // start and end
-      Float time = receiver->shutter_open();
-      if (receiver->shutter_open_time() > 0.f) {
-          time += sampler->next_1d(active) * receiver->shutter_open_time();
-      }
-      else {
+      // Time sampling ----------------------------
+      Float time = receiver->adc_sampling_start();
+      if (receiver->adc_sampling_time() > 0.f) {
+          time += sampler->next_1d(active) * receiver->adc_sampling_time();
+      } else {
           time = 0.f;
       }
+      // ==========================================
 
-      // In the pulse sampling way, we get told the receive time and frequency.
-      // Propagate through the scene, and evaluate the tf gain from the tx
-      // signal at the propagated t,f.
-
+      // Wavelength sampling ----------------------
       Float wavelength_sample = sampler->next_1d(active);
+      // ==========================================
 
-      Vector2f adjusted_position = position_sample;
-
-      // Samples within the narrowband extent
+      // Generate ray -----------------------------
       auto [ray, ray_weight] = receiver->sample_ray_differential(
           time, wavelength_sample, adjusted_position, aperture_sample);
       ray.scale_differential(diff_scale_factor);
-      Wavelength f_rx = math::CAir<float>/(ray.wavelengths*1e-9);
+      // ==========================================
 
+      // Assign medium ----------------------------
       const Medium *medium = receiver->medium();
+      // ==========================================
 
-      std::pair<Spectrum, Mask> result = sample(scene, sampler, ray, medium,
-          aovs + 3, active);
+      // Prepare result and location --------------
+      std::pair<Spectrum, Mask> result;
+      Vector2f tf;
+      // ==========================================
 
-      Vector2f tf = {time - receiver->shutter_open(), f_rx[0]};
+      if (receiver->receive_type() == "mixer_dodgy") {
+          // Save the receive frequency -----------
+          Wavelength f_rx = MTS_C/(ray.wavelengths*1e-9);
+          // ======================================
+          // Propagate through the scene ----------
+          result = sample(scene, sampler, ray, medium,
+              aovs + 3, active);
+          // ======================================
+          // Find the tf/beat freq ----------------
+          tf[0] = time - receiver->adc_sampling_start();
+          tf[1] = abs(MTS_C/(ray.wavelengths[0]*1e-9)-f_rx[0]);
+          // ======================================
+
+      } else if (receiver->receive_type() == "raw") {
+          // Propagate through the scene ----------
+          result = sample(scene, sampler, ray, medium,
+              aovs + 3, active);
+          // ======================================
+          // Extract the doppler shifted freq -----
+          tf[0] = time - receiver->adc_sampling_start();
+          tf[1] = MTS_C/(ray.wavelengths[0]*1e-9);
+          // ======================================
+      } else if (receiver->receive_type() == "mixer") {
+          // if receiver->type == mixer
+          // unconstrained:
+          // choose random time
+          // choose random beat frequency
+          // find the corresponding tx frequency at time trx (can select from delta)
+          // get the rx frequency = abs(txf - beat)
+          // propagate randomly, arrives at tx at t_tx, f_tx~f_rx
+          // evaluate tx gain at time t_tx, f_tx
+          // will likely be 0 because we did not control pathlength
+      }
+
+      // Adjust t/f to pixels ---------------------
       tf *= receiver->adc()->size() / receiver->adc()->bandwidth();
+      // ==========================================
 
       result.first = ray_weight * result.first;
       UnpolarizedSpectrum spec_u = depolarize(result.first);
@@ -1588,10 +1627,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
           xyz = srgb_to_xyz(spec_u, active);
       } else {
           static_assert(is_spectral_v<Spectrum>);
-          // This is in receive sample, so should be only used with adc film
-          // xyz = spectrum_to_xyz(spec_u, ray.wavelengths, active);
           xyz = spec_u.x();
-          // std::cout<<xyz<<std::endl;
       }
 
       aovs[0] = xyz.x();

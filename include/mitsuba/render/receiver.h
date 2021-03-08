@@ -71,10 +71,10 @@ public:
     // =============================================================
 
     /// Return the time value of the shutter opening event
-    ScalarFloat shutter_open() const { return m_shutter_open; }
+    ScalarFloat adc_sampling_start() const { return m_adc_sampling_start; }
 
     /// Return the length, for which the shutter remains open
-    ScalarFloat shutter_open_time() const { return m_shutter_open_time; }
+    ScalarFloat adc_sampling_time() const { return m_adc_sampling_time; }
 
     /// Does the sampling technique require a sample for the aperture position?
     bool needs_aperture_sample() const { return m_needs_sample_3; }
@@ -109,12 +109,14 @@ public:
      */
     const Sampler *sampler() const { return m_sampler.get(); }
 
+    std::string receive_type() const { return m_receive_type; }
+
     //! @}
     // =============================================================
 
     void traverse(TraversalCallback *callback) override {
-        callback->put_parameter("shutter_open", m_shutter_open);
-        callback->put_parameter("shutter_open_time", m_shutter_open_time);
+        callback->put_parameter("adc_sampling_start", m_adc_sampling_start);
+        callback->put_parameter("adc_sampling_time", m_adc_sampling_time);
         callback->put_object("adc", m_adc.get());
         callback->put_object("sampler", m_sampler.get());
     }
@@ -123,6 +125,9 @@ public:
         override {
         m_resolution = ScalarVector2f(m_adc->window_size());
     }
+
+    std::pair<wavelength_t<Spectrum>, Spectrum> sample_frequency(Float time, Float sample) const;
+    Spectrum eval_signal(Float time, wavelength_t<Spectrum> frequency) const;
 
     ENOKI_CALL_SUPPORT_FRIEND()
     MTS_DECLARE_CLASS()
@@ -135,12 +140,13 @@ protected:
     ref<ADC> m_adc;
     ref<Sampler> m_sampler;
     ScalarVector2f m_resolution;
-    ScalarFloat m_shutter_open;
+    ScalarFloat m_adc_sampling_start;
     // Ignoring the tx, when does the receiver start measuring and for how long
     // This should correspond to the adc collection window. So if we're doing
     // high res, long range it will be the whole thing. If we're doing high res
     // , particular region we have this as well.
-    ScalarFloat m_shutter_open_time;
+    ScalarFloat m_adc_sampling_time;
+    std::string m_receive_type;
 };
 
 MTS_EXTERN_CLASS_RENDER(Receiver)

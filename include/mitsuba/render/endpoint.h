@@ -235,8 +235,6 @@ protected:
 protected:
     ref<const AnimatedTransform> m_world_transform;
     ref<const AnimatedTransform> m_velocity;
-    // ref<const ScalarTransform4f> m_velocity;
-    // ScalarTransform4f m_velocity;
     ref<Medium> m_medium;
     Shape *m_shape = nullptr;
     bool m_needs_sample_2 = true;

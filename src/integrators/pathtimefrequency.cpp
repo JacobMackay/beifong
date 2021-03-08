@@ -107,41 +107,20 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                                      Float *aovs ,
                                      Mask active) const override {
 
-    // std::pair<Spectrum, Mask> sample(const Scene *scene,
-    //                                  Sampler *sampler,
-    //                                  RayDifferential3f &ray_,
-    //                                  const Medium * /* medium */,
-    //                                  Float *aovs ,
-    //                                  Mask active) const override {
-
-    // std::pair<Spectrum, Mask> sample(const Scene *scene,
-    //                                  Sampler *sampler,
-    //                                  RayDifferential3f *ray_,
-    //                                  const Medium * /* medium */,
-    //                                  Float *aovs ,
-    //                                  Mask active) const override {
-
-    // std::tuple<Spectrum, Mask, Float> sample(const Scene *scene,
-    //                                  Sampler *sampler,
-    //                                  const RayDifferential3f &ray_,
-    //                                  const Medium * /* medium */,
-    //                                  Float * /* aovs*/ ,
-    //                                  Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::SamplingIntegratorSample, active);
 
-        // Possibility to change ray from const so that when function returns
-        // we keep ray.
 
         // RayDifferential3f ray = *ray_;
         RayDifferential3f ray = ray_;
+        // ray_ is true, ray is copy
 
         // Tracks radiance scaling due to index of refraction changes
         Float eta(1.f);
 
         // MIS weight for intersected transmitters (set by prev. iteration)
         Float emission_weight(1.f);
-
         Spectrum throughput(1.f), result(0.f);
+
 
         // ==============================================================
         // Took doppler out to test, don't forget to put back
@@ -153,48 +132,57 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
         Mask valid_ray = si.is_valid();
         TransmitterPtr transmitter = si.transmitter(scene);
 
-        ray.time -= select(valid_ray, si.t / math::CVac<float>, 0.f);
+        ray.time -= select(valid_ray, si.t / MTS_C, 0.f);
         if(any_or<true>(neq(si.shape, nullptr))){
             // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, valid_ray), 0.f);
         }
 
         for (int depth = 1;; ++depth) {
             // ---------------- Intersection with transmitters ----------------
-
             if (any_or<true>(neq(transmitter, nullptr))) {
-                // I can sample from the transmitter here: sample_ray with random numbers.
-                // If it has a delta distribution, we can clamp it to what it should be.
-                // usually takes 0-1 argument, what should i do when i have a real number for time?
-                result[active] +=
-                    emission_weight * throughput * transmitter->eval(si, active);
 
-                // We have the time t, and beat frequency f.
-                // We can find the tx freq when we have a time.
-                // We can now find the frequency which gives us the required beat frequency.
-                // With the tx freq we can find a corresponding time
-                // With the difference in time we can have a range/delay.
-                // Also, beat freq corresponds to range
+                // Advance the ray travel time ---------------------
+                ray.time -= select(si.is_valid(), si.t / MTS_C, 0.f);
+                si.time = ray.time;
+                // =================================================
 
-                // transmitter eval should call the signal.si will have time and wavelength.
-                // the receiver
-                // to this function came in a ray with time t and wavelengths λ
-                //
-                // Also, the antenna would have a 'filter' which smears the signal,
-                // creates delay and amplitude change
-                // So call this function, I need a si.t, si.λ
-                // Alternatively: time is real arrival t, λ is tx λ-> this implies a travel time
-                // the antennas should have a function which converts wavelength to frequency...but later
-
-                // pathlength += select(si.is_valid(), si.t, 0.f);
-                // const_cast<RayDifferential3f&>(ray_).time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
-
-                // std::cout << "tx" << std::endl;
-
-                ray.time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
+                // Apply doppler from tx hit -----------------------
                 if(any_or<true>(neq(si.shape, nullptr))){
                     // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
                 }
+                // =================================================
 
+                // Update ray wavelength and power from transmit signal
+                // A normal sitch doesn't update wavelength
+                // A dodgy changes wavelength.
+                // possibly can change using the cast inside tx
+                // use the ray and ray copy to update doppler separately, then
+                // combine at the end.
+                // save initial wavelength
+                // f_tx *= 1/((shifted_λ + initial_λ)/initial_λ)
+                // problem: movement from rx
+                // f_tx *= (1/(ray.wavelengths/lambda_rx));
+                // =================================================
+
+                // Apply signal ------------------------------------
+                // std::cout << "First" << std::endl;
+                // signal_weight = transmitter->eval_signal(ray.time, MTS_C/((ray_).wavelengths[0]*1e-9));
+                // std::cout << "After First" << std::endl;
+                // f_tx = CMed/((ray_).wavelengths[0]*1e-9);
+                // // signal_weight =
+                // //     math::wchirp(ray.time - t_ext/2, f_tx - fi, t_ext, 1.f, prf);
+                // // signal_weight = 2 * amplitude*amplitude
+                // //     * t_ext * math::tri(math::fmodulo((ray.time - t_ext/2), rcp(prf))/t_ext)
+                // //     * math::sinc(math::TwoPi<Float>*(f_tx - fi)*t_ext*math::tri(math::fmodulo((ray.time - t_ext/2), rcp(prf))/t_ext));
+                //     signal_weight = 2 * amplitude*amplitude
+                //         * t_ext * math::tri(math::fmodulo((ray.time ), rcp(prf))/t_ext)
+                //         * math::sinc(math::TwoPi<Float>*(f_tx - fi)*t_ext*math::tri(math::fmodulo((ray.time ), rcp(prf))/t_ext));
+                // =================================================
+
+                // Evaluate the direct hit illumination -------------
+                result[active] +=
+                    emission_weight * throughput * transmitter->eval(si, active);
+                // ==================================================
             }
 
             active &= si.is_valid();
@@ -218,30 +206,22 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 break;
 
             // --------------------- Transmitter sampling ---------------------
+            // This must be the indirect part
 
             BSDFContext ctx;
             BSDFPtr bsdf = si.bsdf(ray);
             Mask active_e =
                 active && has_flag(bsdf->flags(), BSDFFlags::Smooth);
 
+            // signal_weight = 1.f;
+
             if (likely(any_or<true>(active_e))) {
-                auto [ds, transmitter_val] = scene->sample_transmitter_direction(
-                    si, sampler->next_2d(active_e), true, active_e);
-                active_e &= neq(ds.pdf, 0.f);
 
-                // Query the BSDF for that transmitter-sampled direction
-                Vector3f wo = si.to_local(ds.d);
-                Spectrum bsdf_val = bsdf->eval(ctx, si, wo, active_e);
-                bsdf_val = si.to_world_mueller(bsdf_val, -wo, si.wi);
+                // Advance the ray travel time ---------------------
+                ray.time -= select(si.is_valid(), si.t / MTS_C, 0.f);
+                // =================================================
 
-                // Determine density of sampling that same direction using BSDF
-                // sampling
-                Float bsdf_pdf = bsdf->pdf(ctx, si, wo, active_e);
-
-                Float mis = select(ds.delta, 1.f, mis_weight(ds.pdf, bsdf_pdf));
-                result[active_e] += mis * throughput * bsdf_val * transmitter_val;
-
-                ray.time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
+                // Apply doppler from bsdf->tx hit -----------------
                 if(any_or<true>(neq(si.shape, nullptr))){
                     // // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
                     // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
@@ -257,9 +237,53 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                     //     const_cast<RayDifferential3f&>(ray_).wavelengths
                     //         += select(neq(si_tx.transmitter(scene, active), nullptr),
                     //             si_tx.transmitter(scene, active)->doppler(si_tx, active), 0.f);
+                    //
+                    //     std::cout << "Second" << std::endl;
+                    //     signal_weight = si_tx.transmitter(scene, active)->eval_signal(ray.time, MTS_C/((ray_).wavelengths[0]*1e-9));
+                    //     std::cout << "After" << std::endl;
+                    //
                     // }
 
                 }
+                // =================================================
+
+                si.time = ray.time;
+
+
+                auto [ds, transmitter_val] = scene->sample_transmitter_direction(
+                    si, sampler->next_2d(active_e), true, active_e);
+                active_e &= neq(ds.pdf, 0.f);
+
+                // Query the BSDF for that transmitter-sampled direction
+                Vector3f wo = si.to_local(ds.d);
+                Spectrum bsdf_val = bsdf->eval(ctx, si, wo, active_e);
+                bsdf_val = si.to_world_mueller(bsdf_val, -wo, si.wi);
+
+                // Determine density of sampling that same direction using BSDF
+                // sampling
+                Float bsdf_pdf = bsdf->pdf(ctx, si, wo, active_e);
+
+                // Apply signal ------------------------------------
+                // std::cout << "Second" << std::endl;
+                // t_temp = ray.time;
+                // std::cout << transmitter->eval_signal(t_temp, MTS_C/((ray_).wavelengths[0]*1e-9)) << std::endl;
+                // signal_weight = transmitter->eval_signal(ray.time, MTS_C/((ray_).wavelengths[0]*1e-9));
+                // // std::cout << "After" << std::endl;
+                // f_tx = CMed/((ray_).wavelengths[0]*1e-9);
+                // // signal_weight =
+                // //     math::wchirp(ray.time - t_ext/2, f_tx - fi, t_ext, 1.f, prf);
+                // // signal_weight = 2 * amplitude*amplitude
+                // //     * t_ext * math::tri(math::fmodulo((ray.time - t_ext/2), rcp(prf))/t_ext)
+                // //     * math::sinc(math::TwoPi<Float>*(f_tx - fi)*t_ext*math::tri(math::fmodulo((ray.time - t_ext/2), rcp(prf))/t_ext));
+                //     signal_weight = 2 * amplitude*amplitude
+                //         * t_ext * math::tri(math::fmodulo((ray.time ), rcp(prf))/t_ext)
+                //         * math::sinc(math::TwoPi<Float>*(f_tx - fi)*t_ext*math::tri(math::fmodulo((ray.time ), rcp(prf))/t_ext));
+                // =================================================
+
+                // Evaluate the bsdf->tx illumination -------------
+                Float mis = select(ds.delta, 1.f, mis_weight(ds.pdf, bsdf_pdf));
+                result[active_e] += mis * throughput * bsdf_val * transmitter_val;
+                // ================================================
 
 
                 // std::cout << si.shape->doppler(si) << std::endl;
@@ -442,7 +466,7 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
             si = std::move(si_bsdf);
 
             // Really not sure about this section, but it definitely does something
-            ray.time -= select(si.is_valid(), si.t / math::CVac<float>, 0.f);
+            ray.time -= select(si.is_valid(), si.t / MTS_C, 0.f);
             // if(any_or<true>(neq(si.shape, nullptr))){
             if(any_or<true>(neq(transmitter, nullptr))){
                 // // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(transmitter, nullptr), transmitter->shape()->doppler(si, active), 0.f);

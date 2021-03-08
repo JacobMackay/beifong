@@ -26,6 +26,11 @@ NAMESPACE_BEGIN(mitsuba)
 # define MTS_WAVELENGTH_MAX 9714286.f // 10 kHz narrowband ultrasound at 40kHz
 #endif
 
+#if !defined(MTS_C)
+// # define MTS_C math::CVac<Float>
+# define MTS_C math::CAir<Float>
+#endif
+
 // =======================================================================
 //! @{ \name Data types for RGB data
 // =======================================================================

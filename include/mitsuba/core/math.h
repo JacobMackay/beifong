@@ -70,10 +70,23 @@ Value sinc(const T &x) {
     // return select(abs(x) > Epsilon<T>, sin(Pi<T>*x)/(Pi<T>*x), 1.f);
 }
 
+/// Sinc function basic. Sin(x)/x
+template <typename T, typename Value = expr_t<T>>
+Value sinc(const T &x) {
+    return select(abs(x) > Epsilon<T>, sin(x)/x, 1.f);
+    // return select(abs(x) > Epsilon<T>, sin(Pi<T>*x)/(Pi<T>*x), 1.f);
+}
+
 /// Triangular function, base length 1.
 template <typename T, typename Value = expr_t<T>>
 Value tri(const T &x) {
     return select(abs(x) < 0.5, 1.0 - 2.0*abs(x), 0.f);
+}
+
+/// Triangular function, base length 1.
+template <typename T, typename Value = expr_t<T>>
+Value rect(const T &x) {
+    return select(any(abs(x) < 0.5f), 1.f, 0.f);
 }
 
 /// Modulo function for floats. Linear search, slow. The original is used
@@ -89,6 +102,14 @@ template <typename T> T fmodulo(T a, T b) {
     result = select(a < 0, abs(b) - result, result);
     result += select(b < 0, b, 0);
 
+    return result;
+}
+
+/// Wigner of 1D chirp
+// template <typename T, typename Value = expr_t<T>>
+template <typename T> T wchirp(T t, T f, T w, T a, T prf) {
+    T result = 2 * a*a * w * tri(fmodulo(t, rcp(prf))/w)
+        * sinc(TwoPi<T>*f*w*tri(fmodulo(t, rcp(prf))/w));
     return result;
 }
 

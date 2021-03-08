@@ -15,12 +15,12 @@ NAMESPACE_BEGIN(mitsuba)
 
 MTS_VARIANT Receiver<Float, Spectrum>::Receiver(const Properties &props)
     : Base(props) {
-    m_shutter_open      = props.float_("shutter_open", 0.f);
-    m_shutter_open_time = props.float_("shutter_close", 0.f) - m_shutter_open;
+    m_adc_sampling_start = props.float_("adc_sampling_start", 0.f);
+    m_adc_sampling_time  = props.float_("adc_sampling_end", 0.f) - m_adc_sampling_start;
 
-    if (m_shutter_open_time < 0)
-        Throw("Shutter opening time must be less than or equal to the shutter "
-              "closing time!");
+    if (m_adc_sampling_time < 0)
+        Throw("ADC sampling time must be less than or equal to the adc "
+              "sampling end time!");
 
     for (auto &[name, obj] : props.objects(false)) {
         auto *adc = dynamic_cast<ADC *>(obj.get());

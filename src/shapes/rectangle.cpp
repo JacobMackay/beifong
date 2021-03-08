@@ -222,17 +222,39 @@ public:
         Normal3f nu_hat = trafto1.transform_affine(ds.d)*rcp(wavelength[0]*1e-9);
         // =================================
 
+        // The wigner provides a function of 1/sr
+        // Intuitively: If the object gets bigger, the directional gain at 0
+        // gets higher, as does the wdf. If the object gets smaller, the gain
+        // at 0 is smaller, ie there is less power flowing through 1 sr at 0.
+        // The WDF provides the directional gain as a function of position.
         // ---------------------------------
         // Find the wigner function value
-        Float gain = (math::TwoPi<Float>*rcp(wavelength[0]*1e-9))*(math::TwoPi<Float>*rcp(wavelength[0]*1e-9))*
-                4*wid_x*wid_y * math::tri(r_hat.x())*math::tri(r_hat.y()) *
+        // Float gain = (math::TwoPi<Float>*rcp(wavelength[0]*1e-9))*(math::TwoPi<Float>*rcp(wavelength[0]*1e-9))*
+        //         4*wid_x*wid_y * math::tri(r_hat.x())*math::tri(r_hat.y()) *
+        //         math::sinc(math::TwoPi<Float>*nu_hat.x()*wid_x*math::tri(r_hat.x())) *
+        //         math::sinc(math::TwoPi<Float>*nu_hat.y()*wid_y*math::tri(r_hat.y()));
+        // Float gain = 4*wid_x*wid_y * math::tri(r_hat.x())*math::tri(r_hat.y()) *
+        //         math::sinc(math::TwoPi<Float>*nu_hat.x()*wid_x*math::tri(r_hat.x())) *
+        //         math::sinc(math::TwoPi<Float>*nu_hat.y()*wid_y*math::tri(r_hat.y()));
+
+        // Float gain = 4*math::TwoPi<Float>*math::TwoPi<Float>* math::tri(r_hat.x())*math::tri(r_hat.y()) *
+        //         math::sinc(math::TwoPi<Float>*nu_hat.x()*wid_x*math::tri(r_hat.x())) *
+        //         math::sinc(math::TwoPi<Float>*nu_hat.y()*wid_y*math::tri(r_hat.y()));
+
+        Float gain = 4*wid_x*wid_y * math::tri(r_hat.x())*math::tri(r_hat.y()) *
                 math::sinc(math::TwoPi<Float>*nu_hat.x()*wid_x*math::tri(r_hat.x())) *
                 math::sinc(math::TwoPi<Float>*nu_hat.y()*wid_y*math::tri(r_hat.y()));
+
+        // Float gain = math::TwoPi<Float>* 4*math::tri(r_hat.x())*math::tri(r_hat.y()) *
+        //         math::sinc(math::TwoPi<Float>*nu_hat.x()*wid_x*math::tri(r_hat.x())) *
+        //         math::sinc(math::TwoPi<Float>*nu_hat.y()*wid_y*math::tri(r_hat.y()));
         // =================================
+
+        // gain *= math::InvTwoPi<Float>*2;
 
         // ---------------------------------
         // Add the wavelength normalisation that should be with radiance
-        gain *= (wavelength[0]*1e-9)*(wavelength[0]*1e-9);
+        // gain *= (wavelength[0]*1e-9)*(wavelength[0]*1e-9);
         // It seems that they already divide by area, so let's undo our area normalisation
         // gain *= wid_x*wid_y;
         // =================================
@@ -240,7 +262,9 @@ public:
         // This probably doesn't need to be a ds. A spectrum is probably more
         // approipriate
 
+        // Maybe already multiplied by area
         DirectionSample3f ws = ds;
+        // Will eventually remove this, but leave for now.
         ws.pdf *= rcp(gain);
         // ws.pdf = rcp(gain);
 

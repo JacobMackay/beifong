@@ -60,8 +60,8 @@ MTS_PY_EXPORT(Receiver) {
         .def(py::init<const Properties&>())
         .def("sample_ray_differential", vectorize(&Receiver::sample_ray_differential),
             "time"_a, "sample1"_a, "sample2"_a, "sample3"_a, "active"_a = true)
-        .def_method(Receiver, shutter_open)
-        .def_method(Receiver, shutter_open_time)
+        .def_method(Receiver, adc_sampling_start)
+        .def_method(Receiver, adc_sampling_time)
         .def_method(Receiver, needs_aperture_sample)
         .def("adc", py::overload_cast<>(&Receiver::adc, py::const_), D(Receiver, adc))
         .def("sampler", py::overload_cast<>(&Receiver::sampler, py::const_), D(Receiver, sampler));

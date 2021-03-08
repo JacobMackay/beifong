@@ -40,6 +40,14 @@ simply instantiate the desired sensor shape and specify an
     </shape>
 */
 
+// ==============================
+// Note, this receiver reports back in W/m^2
+// Changed to give back W
+// Hypothesis: This says it measures the power coming in over area
+// I want the power in total, but what is coming in is in w/m^2/sr
+// I need to multiply by A
+// ==============================
+
 MTS_VARIANT class Omnidirectional final : public Receiver<Float, Spectrum> {
 public:
     MTS_IMPORT_BASE(Receiver, m_adc, m_world_transform, m_shape)
@@ -79,19 +87,39 @@ public:
         auto [wavelengths, wav_weight] =
             sample_wavelength<Float, Spectrum>(wavelength_sample);
 
+        // std::cout << "samp_rdiff: " << unpolarized<Spectrum>(wav_weight)
+        //     * m_shape->surface_area() << std::endl;
+
         return std::make_pair(
             RayDifferential3f(ps.p, Frame3f(ps.n).to_world(local), time,
                 wavelengths),
+            // unpolarized<Spectrum>(wav_weight)
+            //     * math::Pi<ScalarFloat> / m_shape->surface_area()
+            // unpolarized<Spectrum>(wav_weight)
+            //     * math::Pi<ScalarFloat>
+            // unpolarized<Spectrum>(wav_weight)
+            //     * m_shape->surface_area()/(math::Pi<ScalarFloat>/2)
+            // unpolarized<Spectrum>(wav_weight)
+            //     * m_shape->surface_area()/(4*math::Pi<ScalarFloat>)
             unpolarized<Spectrum>(wav_weight)
-                * math::Pi<ScalarFloat> / m_shape->surface_area()
+                * m_shape->surface_area()
         );
     }
 
     std::pair<DirectionSample3f, Spectrum>
     sample_direction(const Interaction3f &it, const Point2f &sample,
         Mask active) const override {
+        // return std::make_pair(m_shape->sample_direction(it, sample, active),
+        //     math::Pi<ScalarFloat>);
+        // return std::make_pair(m_shape->sample_direction(it, sample, active),
+        //     1.f/(math::Pi<ScalarFloat>/2));
+        // return std::make_pair(m_shape->sample_direction(it, sample, active),
+        //     1.f/(4*math::Pi<ScalarFloat>));
+
+        // std::cout << "samp_direc: " << std::endl;
+
         return std::make_pair(m_shape->sample_direction(it, sample, active),
-            math::Pi<ScalarFloat>);
+            1.f);
     }
 
     Float pdf_direction(const Interaction3f &it, const DirectionSample3f &ds,
@@ -101,7 +129,11 @@ public:
 
     Spectrum eval(const SurfaceInteraction3f &/*si*/,
         Mask /*active*/) const override {
-        return math::Pi<ScalarFloat> / m_shape->surface_area();
+        // return math::Pi<ScalarFloat> / m_shape->surface_area();
+        // return math::Pi<ScalarFloat>;
+        // return m_shape->surface_area()/(math::Pi<ScalarFloat>/2);
+        // return m_shape->surface_area()/(4*math::Pi<ScalarFloat>);
+        return m_shape->surface_area();
     }
 
     ScalarBoundingBox3f bbox() const override { return m_shape->bbox(); }

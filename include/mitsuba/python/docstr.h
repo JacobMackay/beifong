@@ -5770,9 +5770,9 @@ static const char *__doc_mitsuba_Receiver_m_resolution = R"doc()doc";
 
 static const char *__doc_mitsuba_Receiver_m_sampler = R"doc()doc";
 
-static const char *__doc_mitsuba_Receiver_m_shutter_open = R"doc()doc";
+static const char *__doc_mitsuba_Receiver_m_adc_sampling_start = R"doc()doc";
 
-static const char *__doc_mitsuba_Receiver_m_shutter_open_time = R"doc()doc";
+static const char *__doc_mitsuba_Receiver_m_adc_sampling_time = R"doc()doc";
 
 static const char *__doc_mitsuba_Receiver_needs_aperture_sample =
 R"doc(Does the sampling technique require a sample for the aperture
@@ -5833,9 +5833,9 @@ times to provide each participating worker thread with its own
 instance (see Scene::sampler()). Therefore, this sampler should never
 be used for anything except creating clones.)doc";
 
-static const char *__doc_mitsuba_Receiver_shutter_open = R"doc(Return the time value of the shutter opening event)doc";
+static const char *__doc_mitsuba_Receiver_adc_sampling_start = R"doc(Return the time value of the shutter opening event)doc";
 
-static const char *__doc_mitsuba_Receiver_shutter_open_time = R"doc(Return the length, for which the shutter remains open)doc";
+static const char *__doc_mitsuba_Receiver_adc_sampling_time = R"doc(Return the length, for which the shutter remains open)doc";
 
 static const char *__doc_mitsuba_Receiver_traverse = R"doc(//! @})doc";
 
