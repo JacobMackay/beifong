@@ -70,13 +70,6 @@ Value sinc(const T &x) {
     // return select(abs(x) > Epsilon<T>, sin(Pi<T>*x)/(Pi<T>*x), 1.f);
 }
 
-/// Sinc function basic. Sin(x)/x
-template <typename T, typename Value = expr_t<T>>
-Value sinc(const T &x) {
-    return select(abs(x) > Epsilon<T>, sin(x)/x, 1.f);
-    // return select(abs(x) > Epsilon<T>, sin(Pi<T>*x)/(Pi<T>*x), 1.f);
-}
-
 /// Triangular function, base length 1.
 template <typename T, typename Value = expr_t<T>>
 Value tri(const T &x) {

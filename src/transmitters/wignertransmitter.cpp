@@ -94,6 +94,9 @@ public:
 
     }
 
+    // Return the spectral flux/instantaneous signal power spectral density in
+    // units V^2/Hz
+    // ------------------------------------------------------------------------
     Float eval_signal(Float time, Float frequency) const {
 
         Float result(0.f);
@@ -123,45 +126,44 @@ public:
 
         return result;
     }
+    // ========================================================================
 
+    // Return a frequency sample drawn from a delta distribution in units V^2/Hz
+    // ------------------------------------------------------------------------
     std::pair<wavelength_t<Spectrum>, Spectrum> sample_delta_frequency(Float time) const {
         // Sample a frequency from 1st order chirp -------
         Float t_norm = math::fmodulo(time, rcp(m_sig_repfreq));
-        Float frequencies = (m_sig_f_centre - m_sig_f_ext/2) + 0.5*m_sig_f_ext/m_sig_t_ext*t_norm;
+        Float frequencies = (m_sig_f_centre - m_sig_f_ext/2)
+            + 0.5*m_sig_f_ext/m_sig_t_ext*t_norm;
         return {frequencies, eval_signal(time, frequencies)};
         // ===============================================
     }
+    // ========================================================================
 
-    std::pair<wavelength_t<Spectrum>, Spectrum> sample_frequency(Float time, Float sample) const {
-        auto freq_sample = math::sample_shifted<wavelength_t<Spectrum>>(sample);
-
+    // Return a frequency sample from signal at time t
+    // in addition to the spectral/signal weight/power in V^2/Hz
+    // ------------------------------------------------------------------------
+    std::pair<wavelength_t<Spectrum>, Spectrum>
+    sample_frequency(Float time, Float sample) const {
         if (m_sig_is_delta == true) {
             auto [frequencies, freq_weight] = sample_delta_frequency(time);
+            return {frequencies, freq_weight};
         } else {
-            wavelength_t<Spectrum> frequencies = freq_sample * m_sig_f_ext + (m_sig_f_centre - m_sig_f_ext/2);
-            // Spectrum freq_weight = m_sig_f_ext;
+            auto freq_sample = math::sample_shifted<wavelength_t<Spectrum>>(sample);
+            wavelength_t<Spectrum> frequencies =
+                freq_sample * m_sig_f_ext + (m_sig_f_centre - m_sig_f_ext/2);
             Spectrum freq_weight = eval_signal(time, frequencies);
-        }
-
-        if (m_receive_type == "raw") {
-            // Randomly select a freqency in bounds
-            return {freq_sample * m_sig_f_ext + (m_sig_f_centre - m_sig_f_ext/2),
-                m_sig_f_ext};
-        } else if (m_receive_type == "mixer_dodgy") {
-            Float t_norm = math::fmodulo(time, rcp(m_sig_repfreq));
-            Float frequencies = (m_sig_f_centre - m_sig_f_ext/2) + 0.5*m_sig_f_ext/m_sig_t_ext*t_norm;
-            return {frequencies, eval_signal(time, frequencies)};
-        } else {
-            return {freq_sample * m_sig_f_ext + (m_sig_f_centre - m_sig_f_ext/2),
-                m_sig_f_ext};
+            return {frequencies, freq_weight};
         }
     }
+    // ========================================================================
 
-    // Return the radiance of an impacting ray --------------------------------
+    // Return the spectral radiance of an impacting ray in W/(sr * m^2 * sm)
+    // ------------------------------------------------------------------------
     Spectrum eval(const SurfaceInteraction3f &si, Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointEvaluate, active);
 
-        // 1. Evaluate the signal power in V^2 -----------------
+        // 1. Evaluate the signal power in [V^2/Hz] -----------------
         Spectrum signal_power;
         if (m_resample_freq == true) {
             // Resample frequency ------------------
@@ -176,23 +178,24 @@ public:
         // =====================================================
 
         // 2. Evaluate the line loss, amplifier gain
-        // and radiation resistance in siemens------------------
+        // and radiation resistance in [1/Ω] -------------------
         Spectrum transmission_gain = m_gain;
         // =====================================================
 
-        // 3. Evaluate the geometric gain ----------------------
-        // 3a. Directional part from WDF ----
+        // 3. Evaluate the geometric gain in [1/(sr*m^2)] ------
+        // 3a. Directional part from WDF in [1/sr] --
         DirectionSample3f ds(si);
         ds.d *= -1.f;
         DirectionSample3f ws = m_shape->sample_wigner(ds, si.wavelengths, active);
-        Float geom_gain = rcp(ws.pdf);
+        Float geom_gain = ws.pdf;
         // =============================
-        // 3b. Areal part from surface -----
+        // 3b. Areal part from surface in [1/m^2] ---
         geom_gain *= m_antenna_texture->eval(si, active) *
             rcp(m_shape->surface_area());
         // =============================
 
-        // Return the radiance in W/(m^2*sr) -------------------
+        // Return the radiance in W/(sr*m^2*sm) --------------
+        // Return the radiance in W/(sr*m^2*Hz) --------------
         return select(
             Frame3f::cos_theta(si.wi) > 0.f,
             signal_power * transmission_gain * geom_gain,
@@ -202,32 +205,83 @@ public:
     }
     // ========================================================================
 
-    // Sample a ray and its radiance
-    // given a time plus spectral, positional and directional samples.
+    // Sample a ray and return the power
+    // emanating at a position, in a direction and with a wavelength
     // ------------------------------------------------------------------------
-    std::pair<Ray3f, Spectrum> sample_ray(Float time, Float wavelength_sample,
+    std::pair<Ray3f, Spectrum> sample_ray(Float time, Float frequency_sample,
                                           const Point2f &position_sample,
                                           const Point2f &direction_sample,
                                           Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointSampleRay, active);
 
-        // 1. Evaluate the signal power in V^2 -----------------
-        Spectrum signal_power;
-
-        auto [frequencies, freq_weight] = sample_frequency(time, wavelength_sample);
-
-
-        if (m_resample_freq == true) {
-            // Resample frequency ------------------
-            // This is used for forcing results, usually for cw transmission
-            auto [frequencies, freq_weight] = sample_delta_frequency(si.time);
-            signal_power = freq_weight;
-            const_cast<SurfaceInteraction3f&>(si).wavelengths = to_wavelength(frequencies);
-            // =====================================
-        } else {
-            signal_power = eval_signal(time, to_frequency(si.wavelengths[0]));
-        }
+        // 1. Evaluate the signal power in [V^2/Hz] ------------
+        auto [frequencies, signal_power] =
+            sample_frequency(time, frequency_sample);
         // =====================================================
+
+        // 2. Evaluate the line loss, amplifier gain
+        // and radiation resistance in [1/Ω] -------------------
+        Spectrum transmission_gain = m_gain;
+        // =====================================================
+
+        // 3. Convert to wavelength ----------------------------
+        Wavelength wavelength = to_wavelength(frequencies);
+        // =====================================================
+
+        // 4. Evaluate the geometric gain in [1/(sr*m^2)] ------
+        // 4a. Positional part from surface in [1/m^2] --
+        SurfaceInteraction3f si = zero<SurfaceInteraction3f>();
+        si.t = math::Infinity<Float>;
+        Float pdf = 1.f;
+        // Two strategies to sample spatial component based on
+        // 'm_antenna_texture'
+        if (!m_antenna_texture->is_spatially_varying()) {
+            PositionSample3f ps =
+                m_shape->sample_position(time, position_sample, active);
+
+            // Radiance not spatially varying, use area-based sampling of shape
+            si = SurfaceInteraction3f(ps, zero<Wavelength>());
+            pdf = ps.pdf;
+        } else {
+            // Ipmortance sample texture
+            std::tie(si.uv, pdf) =
+                m_antenna_texture->sample_position(position_sample, active);
+            active &= neq(pdf, 0.f);
+
+            si = m_shape->eval_parameterization(Point2f(si.uv), active);
+            active &= si.is_valid();
+
+            pdf /= norm(cross(si.dp_du, si.dp_dv));
+        }
+        // 4b. Directional part from WDF in [1/sr] --
+        DirectionSample3f ds(si);
+        ds.d = si.to_world(warp::square_to_cosine_hemisphere(direction_sample));
+        DirectionSample3f ws =
+            m_shape->sample_wigner(ds, si.wavelengths, active);
+        Float geom_gain = ws.pdf * pdf;
+        // ===========================================
+        // ====================================================
+
+        // 5. Evaluate various extents
+        // to find individual ray power -----------------------
+        Float extents = m_shape->surface_area() * math::Pi<Float>;
+        if (!m_sig_is_delta) {
+            extents *= to_wavelength(m_sig_f_ext);
+        }
+        // ====================================================
+
+        return (signal_power * transmission_gain * geom_gain) * extents
+        // return radiance * area * pi
+
+
+        return std::make_pair(
+            Ray3f(ws.p, ws.d, ws.time, wavelength),
+            select(abs(ws.pdf)>math::Epsilon<Float>, unpolarized<Spectrum>(spec_weight) / ws.pdf, 0.f)
+        );
+        return std::make_pair(
+            Ray3f(si.p, ds.d, time, wavelength),
+            unpolarized<Spectrum>(spec_weight) * (math::Pi<Float> / pdf)
+        );
 
         SurfaceInteraction3f si = zero<SurfaceInteraction3f>();
         si.t = math::Infinity<Float>;
@@ -293,6 +347,8 @@ public:
 
         DirectionSample3f ws = m_shape->sample_wigner(ds, wavelength, active);
 
+        // find spectral radiance at pos/dir/λ, then upgrade to power
+
         // ws.d *= -1.f;
 
         // ray weight = spec_weight / m_inv_surface_area
@@ -312,6 +368,16 @@ public:
 
         // spec_weight *= 1/(4*math::Pi<Float>);
         // spec_weight *= m_shape->surface_area();
+
+        // In the original area light, the weight was (spectral band)*(pi)*(Area)
+        // This implies possibly two things:
+        // Functions we sampled from are in units W/(sr m^2 Hz)
+        // Well actually W/(sr m^2 nu)
+        // This means the function returns the power not rdiance.
+        // Or that we multiply by extent because integral?
+
+        // original has radiance * spectral width * pi /(1/A)
+        // ie returns power
 
         return std::make_pair(
             Ray3f(ws.p, ws.d, ws.time, wavelength),
@@ -391,6 +457,13 @@ public:
 
         // std::cout << ds.pdf << spec << std::endl;
 
+
+        // The original gives radiance / dspdf
+        // radiance / (1/A * r^2/cos(θ))
+        // radiance * A * cos(θ) / r^2
+        // So, is this power in W, or is this radiance normalised for sampling?
+
+
         // spec *= 1/(4*math::Pi<Float>);
         // spec *= m_shape->surface_area();
 
@@ -436,6 +509,9 @@ public:
         // value *= 1/(4*math::Pi<Float>);
 
         active &= abs(ws.pdf) > math::Epsilon<Float>;
+
+        // original pdf is r^2 / (A*cos(θ))
+        // value is A*cos(θ)/r^2
 
         return select(active, value, 0.f);
     }

@@ -222,7 +222,7 @@ public:
         Normal3f nu_hat = trafto1.transform_affine(ds.d)*rcp(wavelength[0]*1e-9);
         // =================================
 
-        // The wigner provides a function of 1/sr
+        // The wigner provides a function of 1/(sr*sm)
         // Intuitively: If the object gets bigger, the directional gain at 0
         // gets higher, as does the wdf. If the object gets smaller, the gain
         // at 0 is smaller, ie there is less power flowing through 1 sr at 0.
@@ -265,7 +265,8 @@ public:
         // Maybe already multiplied by area
         DirectionSample3f ws = ds;
         // Will eventually remove this, but leave for now.
-        ws.pdf *= rcp(gain);
+        // ws.pdf *= rcp(gain);
+        ws.pdf = gain; // This follows the shape->sample position where pdf is 1/Area. wdf.pdf is 1/sr
         // ws.pdf = rcp(gain);
 
         return ws;
