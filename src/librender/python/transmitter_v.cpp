@@ -35,10 +35,6 @@ public:
         PYBIND11_OVERLOAD_PURE(Spectrum, Transmitter, eval, si, active);
     }
 
-    Float eval_signal(Float time, Float frequency) const {
-        PYBIND11_OVERLOAD_PURE(Float, Transmitter, eval_signal, time, frequency);
-    }
-
     ScalarBoundingBox3f bbox() const override {
         PYBIND11_OVERLOAD_PURE(ScalarBoundingBox3f, Transmitter, bbox,);
     }
@@ -89,10 +85,6 @@ MTS_PY_EXPORT(Transmitter) {
                            vectorize([](const TransmitterPtr &ptr, const SurfaceInteraction3f &si,
                                         Mask active) { return ptr->eval(si, active); }),
                            "ptr"_a, "si"_a, "active"_a = true, D(Endpoint, eval));
-       transmitter.def_static("eval_signal_vec",
-                          vectorize([](const TransmitterPtr &ptr, Float time,
-                                       Float frequency) { return ptr->eval_signal(time, frequency); }),
-                          "ptr"_a, "time"_a, "frequency"_a, D(Endpoint, eval));
     }
 
     MTS_PY_REGISTER_OBJECT("register_transmitter", Transmitter)

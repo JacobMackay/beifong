@@ -1582,7 +1582,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
 
       if (receiver->receive_type() == "mixer_dodgy") {
           // Save the receive frequency -----------
-          Wavelength f_rx = MTS_C/(ray.wavelengths*1e-9);
+          Wavelength f_rx = MTS_C*rcp(ray.wavelengths*1e-9);
           // ======================================
           // Propagate through the scene ----------
           result = sample(scene, sampler, ray, medium,
@@ -1590,7 +1590,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
           // ======================================
           // Find the tf/beat freq ----------------
           tf[0] = time - receiver->adc_sampling_start();
-          tf[1] = abs(MTS_C/(ray.wavelengths[0]*1e-9)-f_rx[0]);
+          tf[1] = abs(MTS_C*rcp(ray.wavelengths[0]*1e-9)-f_rx[0]);
           // ======================================
 
       } else if (receiver->receive_type() == "raw") {
@@ -1600,7 +1600,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
           // ======================================
           // Extract the doppler shifted freq -----
           tf[0] = time - receiver->adc_sampling_start();
-          tf[1] = MTS_C/(ray.wavelengths[0]*1e-9);
+          tf[1] = MTS_C*rcp(ray.wavelengths[0]*1e-9);
           // ======================================
       } else if (receiver->receive_type() == "mixer") {
           // if receiver->type == mixer

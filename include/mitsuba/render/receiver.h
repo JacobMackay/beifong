@@ -126,8 +126,8 @@ public:
         m_resolution = ScalarVector2f(m_adc->window_size());
     }
 
-    std::pair<wavelength_t<Spectrum>, Spectrum> sample_frequency(Float time, Float sample) const;
-    Spectrum eval_signal(Float time, wavelength_t<Spectrum> frequency) const;
+    // std::pair<wavelength_t<Spectrum>, Spectrum> sample_frequency(Float time, Float sample) const;
+    // Spectrum eval_signal(Float time, wavelength_t<Spectrum> frequency) const;
 
     ENOKI_CALL_SUPPORT_FRIEND()
     MTS_DECLARE_CLASS()

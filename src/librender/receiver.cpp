@@ -18,6 +18,8 @@ MTS_VARIANT Receiver<Float, Spectrum>::Receiver(const Properties &props)
     m_adc_sampling_start = props.float_("adc_sampling_start", 0.f);
     m_adc_sampling_time  = props.float_("adc_sampling_end", 0.f) - m_adc_sampling_start;
 
+    m_receive_type = props.string("receive_type", "raw");
+
     if (m_adc_sampling_time < 0)
         Throw("ADC sampling time must be less than or equal to the adc "
               "sampling end time!");

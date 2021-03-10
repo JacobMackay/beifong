@@ -246,6 +246,23 @@ Color<Float, 3> spectrum_to_xyz(const Spectrum<Float, Size> &value,
              hmean(XYZ.z() * value) };
 }
 
+// conversions -------------------------
+
+// template <typename Float, size_t Size>
+// Spectrum<Float, Size> to_frequency(const Spectrum<Float, Size> &x) {
+//     return MTS_C*rcp(x*1e-9);
+// }
+// template <typename T> T to_frequency(const T &x){
+//     return MTS_C*rcp(x*-1e9);
+// }
+//
+// template <typename T> T to_wavelength(const T &x){
+//     return MTS_C*rcp(x*1e9);
+// }
+
+// =====================================
+
+
 /// Convert ITU-R Rec. BT.709 linear RGB to XYZ tristimulus values
 template <typename Float>
 Color<Float, 3> srgb_to_xyz(const Color<Float, 3> &rgb, mask_t<Float> /*active*/ = true) {

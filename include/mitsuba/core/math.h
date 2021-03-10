@@ -64,35 +64,41 @@ Vector<Value, 3> sphdir(const T &theta, const T &phi) {
 // -----------------------------------------------------------------------
 
 /// Sinc function basic. Sin(x)/x
-template <typename T, typename Value = expr_t<T>>
-Value sinc(const T &x) {
-    return select(abs(x) > Epsilon<T>, sin(x)/x, 1.f);
+// template <typename T, typename Value = expr_t<T>>
+template <typename T> T jabs(const T &x) {
+    return select(x >= 0.f, x, -x);
+}
+
+/// Sinc function basic. Sin(x)/x
+// template <typename T, typename Value = expr_t<T>> Value sinc(const T &x) {
+template <typename T> T sinc(const T &x) {
+    return select(jabs(x) > Epsilon<T>, sin(x)/x, 1.f);
     // return select(abs(x) > Epsilon<T>, sin(Pi<T>*x)/(Pi<T>*x), 1.f);
 }
 
 /// Triangular function, base length 1.
-template <typename T, typename Value = expr_t<T>>
-Value tri(const T &x) {
-    return select(abs(x) < 0.5, 1.0 - 2.0*abs(x), 0.f);
+// template <typename T, typename Value = expr_t<T>> Value tri(const T &x) {
+template <typename T> T tri(const T &x) {
+    return select(jabs(x) < 0.5f, 1.f - 2.f*jabs(x), 0.f);
 }
 
 /// Triangular function, base length 1.
-template <typename T, typename Value = expr_t<T>>
-Value rect(const T &x) {
-    return select(any(abs(x) < 0.5f), 1.f, 0.f);
+// template <typename T, typename Value = expr_t<T>> Value rect(const T &x) {
+template <typename T> T rect(const T &x) {
+    return select(any(jabs(x) < 0.5f), 1.f, 0.f);
 }
 
 /// Modulo function for floats. Linear search, slow. The original is used
 // elsewhere. A binary search would be better but can't implement correctly atm
 template <typename T> T fmodulo(T a, T b) {
-    T result = abs(a);
+    T result = jabs(a);
 
     // while (any(result >= abs(b))) {
-    while (any(result - abs(b) >=  Epsilon<T> )) {
-        result -= select(result - abs(b) >=  Epsilon<T>, abs(b), 0);
+    while (any(result - jabs(b) >=  Epsilon<T> )) {
+        result -= select(result - jabs(b) >=  Epsilon<T>, jabs(b), 0);
     }
 
-    result = select(a < 0, abs(b) - result, result);
+    result = select(a < 0, jabs(b) - result, result);
     result += select(b < 0, b, 0);
 
     return result;

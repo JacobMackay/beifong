@@ -206,7 +206,8 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 break;
 
             // --------------------- Transmitter sampling ---------------------
-            // This must be the indirect part
+            // Ray has hit a scene object. Find the transmitter illumination
+            // at this point/time
 
             BSDFContext ctx;
             BSDFPtr bsdf = si.bsdf(ray);
