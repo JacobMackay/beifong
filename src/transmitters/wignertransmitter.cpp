@@ -79,7 +79,7 @@ public:
             m_sig_repfreq = props.float_("prf", 1.f);
             m_sig_t_ext = props.float_("pulse_len", 1.f);
             m_sig_f_centre = props.float_("freq_centre", 1.f);
-            m_sig_f_ext = static_cast<Float>(rcp(m_sig_t_ext));
+            m_sig_f_ext = props.float_("freq_ext", 1.f);
             m_sig_phi0 = props.float_("phase", 0.f);
             m_sig_is_delta = props.bool_("sig_is_delta", false);
             m_gain = props.float_("gain", 1.f);
@@ -130,9 +130,13 @@ public:
             f_hat = frequency - m_sig_f_centre;
 
             result = select(math::rect(t_hat) > 0.f,
-                2*m_sig_amplitude*m_sig_amplitude * m_sig_t_ext*math::tri(t_hat) *
-                math::sinc(math::TwoPi<Float>*f_hat[0]*m_sig_t_ext*math::tri(t_hat)),
+                math::wchirp(time, f_hat[0], m_sig_t_ext, m_sig_amplitude, m_sig_repfreq),
                 0.f);
+
+            // result = select(math::rect(t_hat) > 0.f,
+            //     2*m_sig_amplitude*m_sig_amplitude * m_sig_t_ext*math::tri(t_hat) *
+            //     math::sinc(math::TwoPi<Float>*f_hat[0]*m_sig_t_ext*math::tri(t_hat)),
+            //     0.f);
         } else if (m_signal == "cw"){
             result = m_sig_amplitude*m_sig_amplitude;
         } else {
@@ -195,6 +199,7 @@ public:
             // =====================================
         } else {
             signal_power = eval_signal(si.time, MTS_C*rcp(si.wavelengths*1e-9));
+            std::cout << MTS_C*rcp(si.wavelengths*1e-9) << signal_power << std::endl;
         }
         // =====================================================
 

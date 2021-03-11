@@ -81,7 +81,7 @@ public:
                        m_sig_repfreq = props.float_("prf", 1.f);
                        m_sig_t_ext = props.float_("pulse_len", 1.f);
                        m_sig_f_centre = props.float_("freq_centre", 1.f);
-                       m_sig_f_ext = static_cast<Float>(rcp(m_sig_t_ext));
+                       m_sig_f_ext = props.float_("freq_ext", 1.f);
                        m_sig_phi0 = props.float_("phase", 0.f);
                        m_sig_is_delta = props.bool_("sig_is_delta", false);
                        m_gain = props.float_("gain", 1.f);
