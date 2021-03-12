@@ -110,33 +110,26 @@ public:
     Spectrum eval_signal(Float time, Wavelength frequency) const {
 
         Spectrum result(0.f);
-        Float t_norm;
-        Float t_hat;
-        Wavelength f_hat;
+        Float t;
+        // Float t_hat;
+        Float ti;
+        // Wavelength f_hat;
+        Wavelength f_i;
 
         if (m_signal == "linfmcw") {
-            t_norm = math::fmodulo(time, rcp(m_sig_repfreq));
-            t_hat = t_norm/m_sig_t_ext;
-            f_hat = frequency - (m_sig_f_centre - m_sig_f_ext/2  + 0.5*m_sig_f_ext/m_sig_t_ext*t_norm);
-
-            result = select(math::rect(t_hat) > 0.f,
-                2*m_sig_amplitude*m_sig_amplitude * m_sig_t_ext*math::tri(t_hat) *
-                math::sinc(math::TwoPi<Float>*f_hat[0]*m_sig_t_ext*math::tri(t_hat)),
+            t = math::fmodulo(time, rcp(m_sig_repfreq));
+            ti = 0 + m_sig_t_ext/2;
+            f_i = (m_sig_f_centre) + (m_sig_f_ext/(m_sig_t_ext))*(t - ti);
+            result = select(math::rect((t - ti)/m_sig_t_ext) > 0.f,
+                math::wchirp(t - ti, frequency[0] - f_i[0], m_sig_t_ext, m_sig_amplitude),
                 0.f);
-
         } else if (m_signal == "pulse") {
-            t_norm = math::fmodulo(time, rcp(m_sig_repfreq));
-            t_hat = t_norm/m_sig_t_ext;
-            f_hat = frequency - m_sig_f_centre;
-
-            result = select(math::rect(t_hat) > 0.f,
-                math::wchirp(time, f_hat[0], m_sig_t_ext, m_sig_amplitude, m_sig_repfreq),
+            t = math::fmodulo(time, rcp(m_sig_repfreq));
+            ti = 0 + m_sig_t_ext/2;
+            f_i = m_sig_f_centre;
+            result = select(math::rect((t - ti)/m_sig_t_ext) > 0.f,
+                math::wchirp(t - ti, frequency[0] - f_i[0], m_sig_t_ext, m_sig_amplitude),
                 0.f);
-
-            // result = select(math::rect(t_hat) > 0.f,
-            //     2*m_sig_amplitude*m_sig_amplitude * m_sig_t_ext*math::tri(t_hat) *
-            //     math::sinc(math::TwoPi<Float>*f_hat[0]*m_sig_t_ext*math::tri(t_hat)),
-            //     0.f);
         } else if (m_signal == "cw"){
             result = m_sig_amplitude*m_sig_amplitude;
         } else {
@@ -153,9 +146,12 @@ public:
         Wavelength frequencies;
         if (m_signal == "linfmcw") {
             // Sample a frequency from 1st order chirp -------
-            Float t_norm = math::fmodulo(time, rcp(m_sig_repfreq));
-            frequencies = (m_sig_f_centre - m_sig_f_ext/2)
-                + 0.5*m_sig_f_ext/m_sig_t_ext*t_norm;
+            // Float t_norm = math::fmodulo(time, rcp(m_sig_repfreq));
+            // Float f_i = (m_sig_f_centre - m_sig_t_ext/2) + (m_sig_f_ext/m_sig_t_ext*t_norm);
+            Float t_i = 0 + m_sig_t_ext/2;
+            Float t_norm = math::fmodulo(time - t_i, rcp(m_sig_repfreq));
+            Wavelength f_i = (m_sig_f_centre - m_sig_f_ext/2) + (m_sig_f_ext/m_sig_t_ext*t_norm);
+            frequencies = f_i;
         } else if (m_signal == "cw") {
             frequencies = m_sig_f_centre;
         }
@@ -196,10 +192,10 @@ public:
             auto [frequencies, freq_weight] = sample_delta_frequency(si.time);
             signal_power = freq_weight;
             const_cast<SurfaceInteraction3f&>(si).wavelengths = MTS_C*rcp(frequencies)*1e9;
+            std::cout << "resample eval" << signal_power << std::endl;
             // =====================================
         } else {
             signal_power = eval_signal(si.time, MTS_C*rcp(si.wavelengths*1e-9));
-            std::cout << MTS_C*rcp(si.wavelengths*1e-9) << signal_power << std::endl;
         }
         // =====================================================
 
@@ -245,6 +241,7 @@ public:
         //     sample_frequency(time, frequency_sample);
         // Wavelength frequencies = res.first;
         // Spectrum signal_power= res.second;
+        std::cout << "sample ray" << std::endl;
         auto [frequencies, signal_power] =
             sample_frequency(time, frequency_sample);
         // =====================================================
@@ -332,7 +329,7 @@ public:
             auto [frequencies, freq_weight] = sample_delta_frequency(it.time);
             signal_power = freq_weight;
             const_cast<Interaction3f&>(it).wavelengths = MTS_C*rcp(frequencies)*1e9;
-            std::cout << "resample" << signal_power << std::endl;
+            std::cout << "resample sample direction" << signal_power << std::endl;
             // =====================================
         } else {
             signal_power = eval_signal(it.time, MTS_C*rcp(it.wavelengths*1e-9));

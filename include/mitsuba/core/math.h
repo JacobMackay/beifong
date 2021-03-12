@@ -106,9 +106,9 @@ template <typename T> T fmodulo(T a, T b) {
 
 /// Wigner of 1D chirp
 // template <typename T, typename Value = expr_t<T>>
-template <typename T> T wchirp(T t, T f, T w, T a, T prf) {
-    T result = 2 * a*a * w * tri(fmodulo(t, rcp(prf))/w)
-        * sinc(TwoPi<T>*f*w*tri(fmodulo(t, rcp(prf))/w));
+template <typename T> T wchirp(T t, T f, T w, T a) {
+    T result = 2 * a*a * w * tri(t/w)
+        * sinc(TwoPi<T>*f*w*tri(t/w));
     return result;
 }
 
