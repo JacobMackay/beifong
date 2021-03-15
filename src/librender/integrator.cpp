@@ -1569,6 +1569,8 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       auto [ray, ray_weight] = receiver->sample_ray_differential(
           time, wavelength_sample, adjusted_position, aperture_sample);
       ray.scale_differential(diff_scale_factor);
+      // Ray should have phase = 0, unless it comes from mixer,
+      // then it is whatever the tx is
       // ==========================================
 
       // Assign medium ----------------------------
@@ -1580,13 +1582,16 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       Vector2f tf;
       // ==========================================
 
-      if (receiver->receive_type() == "mixer_dodgy") {
+      if (receiver->receive_type() == "mix_resample") {
           // Save the receive frequency -----------
           Wavelength f_rx = MTS_C*rcp(ray.wavelengths*1e-9);
           // ======================================
           // Propagate through the scene ----------
           result = sample(scene, sampler, ray, medium,
               aovs + 3, active);
+          // if (ray.phase != 0){
+          //     std::cout << ray.phase << std::endl;
+          // }
           // ======================================
           // Find the tf/beat freq ----------------
           tf[0] = time - receiver->adc_sampling_start();
@@ -1594,6 +1599,18 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
           // ======================================
 
       } else if (receiver->receive_type() == "raw") {
+          // Propagate through the scene ----------
+          result = sample(scene, sampler, ray, medium,
+              aovs + 3, active);
+          // ray goes through scene, phase decrementing
+          // ray eventually hits transmitter, transmitter has some phase at time t.
+          // phase -= phasetx
+          // ======================================
+          // Extract the doppler shifted freq -----
+          tf[0] = time - receiver->adc_sampling_start();
+          tf[1] = MTS_C*rcp(ray.wavelengths[0]*1e-9);
+          // ======================================
+      } else if (receiver->receive_type() == "raw_resample") {
           // Propagate through the scene ----------
           result = sample(scene, sampler, ray, medium,
               aovs + 3, active);

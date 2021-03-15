@@ -33,6 +33,7 @@ template <typename Point_, typename Spectrum_> struct Ray {
     Float mint = math::RayEpsilon<Float>; ///< Minimum position on the ray segment
     Float maxt = math::Infinity<Float>;   ///< Maximum position on the ray segment
     Float time = 0.f;                     ///< Time value associated with this ray
+    Float phase = 0.f;                      ///< Phase associated with this ray
     // Float traveltime = 0.f;               ///< Travel Time value associated with this ray
     Wavelength wavelengths;               ///< Wavelength packet associated with the ray
 
@@ -45,6 +46,12 @@ template <typename Point_, typename Spectrum_> struct Ray {
     //     const Wavelength &wavelengths)
     //     : o(o), d(d), d_rcp(rcp(d)), time(time), traveltime(time),
     //       wavelengths(wavelengths) { }
+
+    /// Construct a new ray (o, d) at time 'time', with phase 'phase'
+    Ray(const Point &o, const Vector &d, Float time, Float phase,
+        const Wavelength &wavelengths)
+        : o(o), d(d), d_rcp(rcp(d)), time(time), phase(phase),
+          wavelengths(wavelengths) { }
 
     /// Construct a new ray (o, d) with time
     Ray(const Point &o, const Vector &d, const Float &t)
@@ -75,12 +82,20 @@ template <typename Point_, typename Spectrum_> struct Ray {
     //       time(r.time), traveltime(r.time), wavelengths(r.wavelengths) { }
 
     /// Update the reciprocal ray directions after changing 'd'
-    void update() { d_rcp = rcp(d); }
+    void update() {
+        d_rcp = rcp(d);
+    }
+
+    void update_state(const Float &t){
+        time += t / MTS_C;
+        phase += math::TwoPi<Float>*t/(wavelengths[0]*1e-9);
+    }
 
     /// Return the position of a point along the ray
     Point operator() (Float t) const { return fmadd(d, t, o); }
 
     /// Return a ray that points into the opposite direction
+    // Can we remove wavelength and replace it with phase vel and group vel?
     Ray reverse() const {
         Ray result;
         result.o           = o;
@@ -89,12 +104,14 @@ template <typename Point_, typename Spectrum_> struct Ray {
         result.mint        = mint;
         result.maxt        = maxt;
         result.time        = time;
+        result.phase       = phase;
         // result.traveltime  = time;
         result.wavelengths = wavelengths;
         return result;
     }
 
-    ENOKI_STRUCT(Ray, o, d, d_rcp, mint, maxt, time, wavelengths)
+    // ENOKI_STRUCT(Ray, o, d, d_rcp, mint, maxt, time, wavelengths)
+    ENOKI_STRUCT(Ray, o, d, d_rcp, mint, maxt, time, phase, wavelengths)
     // ENOKI_STRUCT(Ray, o, d, d_rcp, mint, maxt, time, traveltime, wavelengths)
 };
 
@@ -129,7 +146,8 @@ struct RayDifferential : Ray<Point_, Spectrum_> {
     }
 
     ENOKI_DERIVED_STRUCT(RayDifferential, Base,
-        ENOKI_BASE_FIELDS(o, d, d_rcp, mint, maxt, time, wavelengths),
+        // ENOKI_BASE_FIELDS(o, d, d_rcp, mint, maxt, time, wavelengths),
+        ENOKI_BASE_FIELDS(o, d, d_rcp, mint, maxt, time, phase, wavelengths),
         ENOKI_DERIVED_FIELDS(o_x, o_y, d_x, d_y)
     )
 };
@@ -142,7 +160,8 @@ std::ostream &operator<<(std::ostream &os, const Ray<Point, Spectrum> &r) {
        << "  d = " << string::indent(r.d, 6) << "," << std::endl
        << "  mint = " << r.mint << "," << std::endl
        << "  maxt = " << r.maxt << "," << std::endl
-       << "  time = " << r.time << "," << std::endl;
+       << "  time = " << r.time << "," << std::endl
+       << "  phase = "<< r.phase<< "," << std::endl;
     if (r.wavelengths.size() > 0)
         os << "  wavelengths = " << string::indent(r.wavelengths, 16) << std::endl;
     os << "]";
@@ -156,10 +175,13 @@ NAMESPACE_END(mitsuba)
 // -----------------------------------------------------------------------
 
 // Support for static & dynamic vectorization
-ENOKI_STRUCT_SUPPORT(mitsuba::Ray, o, d, d_rcp, mint, maxt, time, wavelengths)
+// ENOKI_STRUCT_SUPPORT(mitsuba::Ray, o, d, d_rcp, mint, maxt, time, wavelengths)
+ENOKI_STRUCT_SUPPORT(mitsuba::Ray, o, d, d_rcp, mint, maxt, time, phase, wavelengths)
 
+// ENOKI_STRUCT_SUPPORT(mitsuba::RayDifferential, o, d, d_rcp, mint, maxt,
+//                      time, wavelengths, o_x, o_y, d_x, d_y)
 ENOKI_STRUCT_SUPPORT(mitsuba::RayDifferential, o, d, d_rcp, mint, maxt,
-                     time, wavelengths, o_x, o_y, d_x, d_y)
+                     time, phase, wavelengths, o_x, o_y, d_x, d_y)
 
 //! @}
 // -----------------------------------------------------------------------

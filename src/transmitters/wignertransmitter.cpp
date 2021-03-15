@@ -107,33 +107,37 @@ public:
     // Return the spectral flux/instantaneous signal power spectral density in
     // units V^2/Hz
     // ------------------------------------------------------------------------
-    Spectrum eval_signal(Float time, Wavelength frequency) const {
+    // Spectrum eval_signal(Float time, Wavelength frequency) const {
+    std::pair<Spectrum, Float> eval_signal(Float time, Wavelength frequency) const {
 
-        Spectrum result(0.f);
+        std::pair<Spectrum, Float> result;
         Float t;
-        // Float t_hat;
         Float ti;
-        // Wavelength f_hat;
-        Wavelength f_i;
+        Wavelength fi;
 
         if (m_signal == "linfmcw") {
             t = math::fmodulo(time, rcp(m_sig_repfreq));
             ti = 0 + m_sig_t_ext/2;
-            f_i = (m_sig_f_centre) + (m_sig_f_ext/(m_sig_t_ext))*(t - ti);
-            result = select(math::rect((t - ti)/m_sig_t_ext) > 0.f,
-                math::wchirp(t - ti, frequency[0] - f_i[0], m_sig_t_ext, m_sig_amplitude),
+            fi = m_sig_f_centre + (m_sig_f_ext/m_sig_t_ext)*(t - ti);
+            result.first = select(math::rect((t - ti)/m_sig_t_ext) > 0.f,
+                math::wchirp(t - ti, frequency[0] - fi[0], m_sig_t_ext, m_sig_amplitude),
                 0.f);
+            result.second = m_sig_phi0 + math::TwoPi<Float>*(time - ti)*(m_sig_f_centre +
+                0.5*(m_sig_f_ext/m_sig_t_ext)*(time - ti));
         } else if (m_signal == "pulse") {
             t = math::fmodulo(time, rcp(m_sig_repfreq));
             ti = 0 + m_sig_t_ext/2;
-            f_i = m_sig_f_centre;
-            result = select(math::rect((t - ti)/m_sig_t_ext) > 0.f,
-                math::wchirp(t - ti, frequency[0] - f_i[0], m_sig_t_ext, m_sig_amplitude),
+            fi = m_sig_f_centre;
+            result.first = select(math::rect((t - ti)/m_sig_t_ext) > 0.f,
+                math::wchirp(t - ti, frequency[0] - fi[0], m_sig_t_ext, m_sig_amplitude),
                 0.f);
+            result.second = m_sig_phi0 + math::TwoPi<Float>*(t - ti)*m_sig_f_centre;
         } else if (m_signal == "cw"){
-            result = m_sig_amplitude*m_sig_amplitude;
+            result.first = m_sig_amplitude*m_sig_amplitude;
+            result.second = m_sig_phi0 + math::TwoPi<Float>*(t - ti)*m_sig_f_centre;
         } else {
-            result = m_sig_amplitude*m_sig_amplitude;
+            result.first = m_sig_amplitude*m_sig_amplitude;
+            result.second = m_sig_phi0 + math::TwoPi<Float>*(t - ti)*m_sig_f_centre;
         }
 
         return result;
@@ -142,21 +146,21 @@ public:
 
     // Return a frequency sample drawn from a delta distribution in units V^2/Hz
     // ------------------------------------------------------------------------
-    std::pair<Wavelength, Spectrum> sample_delta_frequency(Float time) const {
+    // std::pair<Wavelength, Spectrum> sample_delta_frequency(Float time) const {
+    std::tuple<Wavelength, Spectrum, Float> sample_delta_frequency(Float time) const {
+        // return tuple with phase
         Wavelength frequencies;
         if (m_signal == "linfmcw") {
             // Sample a frequency from 1st order chirp -------
-            // Float t_norm = math::fmodulo(time, rcp(m_sig_repfreq));
-            // Float f_i = (m_sig_f_centre - m_sig_t_ext/2) + (m_sig_f_ext/m_sig_t_ext*t_norm);
-            Float t_i = 0 + m_sig_t_ext/2;
-            Float t_norm = math::fmodulo(time - t_i, rcp(m_sig_repfreq));
-            Wavelength f_i = (m_sig_f_centre - m_sig_f_ext/2) + (m_sig_f_ext/m_sig_t_ext*t_norm);
-            frequencies = f_i;
+            Float t = math::fmodulo(time, rcp(m_sig_repfreq));
+            Float ti = 0 + m_sig_t_ext/2;
+            Wavelength fi = m_sig_f_centre + (m_sig_f_ext/m_sig_t_ext)*(t - ti);
+            frequencies = fi;
         } else if (m_signal == "cw") {
             frequencies = m_sig_f_centre;
         }
-
-        return {frequencies, eval_signal(time, frequencies)};
+        auto [weight, phase] = eval_signal(time, frequencies);
+        return {frequencies, weight, phase};
         // ===============================================
     }
     // ========================================================================
@@ -164,17 +168,19 @@ public:
     // Return a frequency sample from signal at time t
     // in addition to the spectral/signal weight/power in V^2/Hz
     // ------------------------------------------------------------------------
-    std::pair<Wavelength, Spectrum>
-    sample_frequency(Float time, Float sample) const {
+    // std::pair<Wavelength, Spectrum>
+    std::tuple<Wavelength, Spectrum, Float>
+    sample_frequency(Float time, Float frequency_sample) const {
+        // return tuple with phase
+        Wavelength frequency;
         if (m_sig_is_delta == true) {
-            auto [frequencies, freq_weight] = sample_delta_frequency(time);
-            return {frequencies, freq_weight};
+            return sample_delta_frequency(time);
         } else {
-            auto freq_sample = math::sample_shifted<Wavelength>(sample);
-            Wavelength frequencies =
+            auto freq_sample = math::sample_shifted<Wavelength>(frequency_sample);
+            frequency =
                 freq_sample * m_sig_f_ext + (m_sig_f_centre - m_sig_f_ext/2);
-            Spectrum freq_weight = eval_signal(time, frequencies);
-            return {frequencies, freq_weight};
+            auto [weight, phase] = eval_signal(time, frequency);
+            return {frequency, weight, phase};
         }
     }
     // ========================================================================
@@ -184,18 +190,36 @@ public:
     Spectrum eval(const SurfaceInteraction3f &si, Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointEvaluate, active);
 
+        // If I was going to go crazy, eval would return phase.
+        // Maybe it should, that's more in spirit of returning a phasor
+        // BUT I don't think mitsuba does complex numbers atm.
+        // Also, endpoint and python prototypes will hate it.
+        // So no. Just do  hacks
+
         // 1. Evaluate the signal power in [V^2/Hz] -----------------
+        Wavelength frequency;
         Spectrum signal_power;
+        Float phase;
         if (m_resample_freq == true) {
             // Resample frequency ------------------
             // This is used for forcing results, usually for cw transmission
-            auto [frequencies, freq_weight] = sample_delta_frequency(si.time);
-            signal_power = freq_weight;
-            const_cast<SurfaceInteraction3f&>(si).wavelengths = MTS_C*rcp(frequencies)*1e9;
-            std::cout << "resample eval" << signal_power << std::endl;
+            // auto [frequencies, freq_weight] = sample_delta_frequency(si.time);
+            // auto [frequency, signal_power, phase] = sample_delta_frequency(si.time);
+            auto [f, s, p] = sample_delta_frequency(si.time);
+            frequency = f;
+            signal_power = s;
+            phase = p;
+            const_cast<SurfaceInteraction3f&>(si).wavelengths = MTS_C*rcp(frequency)*1e9;
+            const_cast<SurfaceInteraction3f&>(si).phase = phase;
+            // std::cout << "resample eval" << signal_power << std::endl;
             // =====================================
         } else {
-            signal_power = eval_signal(si.time, MTS_C*rcp(si.wavelengths*1e-9));
+            // signal_power = eval_signal(si.time, MTS_C*rcp(si.wavelengths*1e-9));
+            // auto [signal_power, phase] = eval_signal(si.time, MTS_C*rcp(si.wavelengths*1e-9));
+            auto [s, p] = eval_signal(si.time, MTS_C*rcp(si.wavelengths*1e-9));
+            signal_power = s;
+            phase = p;
+            const_cast<SurfaceInteraction3f&>(si).phase = phase;
         }
         // =====================================================
 
@@ -241,9 +265,16 @@ public:
         //     sample_frequency(time, frequency_sample);
         // Wavelength frequencies = res.first;
         // Spectrum signal_power= res.second;
-        std::cout << "sample ray" << std::endl;
-        auto [frequencies, signal_power] =
+        // std::cout << "sample ray" << std::endl;
+        Wavelength frequency;
+        Spectrum signal_power;
+        Float phase;
+        // auto [frequencies, signal_power] =
+        auto [f, s, p] =
             sample_frequency(time, frequency_sample);
+        frequency = f;
+        signal_power = s;
+        phase = p;
         // =====================================================
 
         // 2. Evaluate the line loss, amplifier gain
@@ -252,7 +283,7 @@ public:
         // =====================================================
 
         // 3. Convert to wavelength ----------------------------
-        Wavelength wavelength = MTS_C*rcp(frequencies)*1e9;
+        Wavelength wavelength = MTS_C*rcp(frequency)*1e9;
         // =====================================================
 
         // 4. Evaluate the geometric gain in [1/(sr*m^2)] ------
@@ -304,7 +335,7 @@ public:
         //     unpolarized<Spectrum>(signal_power * transmission_gain * geom_gain * extents)
         // );
         return std::make_pair(
-            Ray3f(si.p, si.to_world(ds.d), time, wavelength),
+            Ray3f(si.p, si.to_world(ds.d), time, phase, wavelength),
             unpolarized<Spectrum>(signal_power * transmission_gain * geom_gain * extents)
         );
         // ====================================================
@@ -322,17 +353,26 @@ public:
         Assert(m_shape, "Can't sample from an area transmitter without an associated Shape.");
 
         // 1. Evaluate the signal power in [V^2/Hz] -----------------
+        Wavelength frequency;
         Spectrum signal_power;
+        Float phase;
         if (m_resample_freq == true) {
             // Resample frequency ------------------
             // This is used for forcing results, usually for cw transmission
-            auto [frequencies, freq_weight] = sample_delta_frequency(it.time);
-            signal_power = freq_weight;
-            const_cast<Interaction3f&>(it).wavelengths = MTS_C*rcp(frequencies)*1e9;
-            std::cout << "resample sample direction" << signal_power << std::endl;
+            auto [f, s, p] = sample_delta_frequency(it.time);
+            frequency = f;
+            signal_power = s;
+            phase = p;
+            const_cast<Interaction3f&>(it).wavelengths = MTS_C*rcp(frequency)*1e9;
+            const_cast<Interaction3f&>(it).phase = phase;
+            // std::cout << "resample sample direction" << signal_power << std::endl;
             // =====================================
         } else {
-            signal_power = eval_signal(it.time, MTS_C*rcp(it.wavelengths*1e-9));
+            auto [s, p] = eval_signal(it.time, MTS_C*rcp(it.wavelengths*1e-9));
+            signal_power = s;
+            phase = p;
+            const_cast<Interaction3f&>(it).phase = phase;
+            // it.phase = phase
         }
         // =====================================================
 
@@ -414,6 +454,8 @@ public:
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointEvaluate, active);
         Float dp = dot(ds.d, ds.n);
         active &= dp < 0.f;
+
+        // std::cout << "tx pdf" << std::endl;
 
         Float value;
         // 1. Evaluate the geometric probability in [1/(sr)] ------

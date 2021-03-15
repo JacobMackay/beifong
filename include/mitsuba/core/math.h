@@ -90,16 +90,33 @@ template <typename T> T rect(const T &x) {
 
 /// Modulo function for floats. Linear search, slow. The original is used
 // elsewhere. A binary search would be better but can't implement correctly atm
-template <typename T> T fmodulo(T a, T b) {
-    T result = jabs(a);
+// template <typename T> T fmodulo(T a, T b) {
+//     T result = jabs(a);
+//
+//     // while (any(result >= abs(b))) {
+//     while (any(result - jabs(b) >=  Epsilon<T> )) {
+//         result -= select(result - jabs(b) >=  Epsilon<T>, jabs(b), 0);
+//     }
+//
+//     result = select(a < 0, jabs(b) - result, result);
+//     result += select(b < 0, b, 0);
+//
+//     return result;
+// }
+
+template <typename T1, typename T2> T1 fmodulo(T1 a, T2 b) {
+    T1 result = jabs(a);
 
     // while (any(result >= abs(b))) {
-    while (any(result - jabs(b) >=  Epsilon<T> )) {
-        result -= select(result - jabs(b) >=  Epsilon<T>, jabs(b), 0);
+    while (any(result - jabs(b) >=  Epsilon<T1> )) {
+        // result -= select(result - jabs(b) >=  Epsilon<T1>, jabs(b), 0);
+        result -= select(all(result - jabs(b)) >=  Epsilon<T1>, jabs(b), 0);
     }
 
-    result = select(a < 0, jabs(b) - result, result);
-    result += select(b < 0, b, 0);
+    // result = select(a < 0, jabs(b) - result, result);
+    // result += select(b < 0, b, 0);
+    result = select(all(a < 0), jabs(b) - result, result);
+    result += select(all(b < 0), b, 0);
 
     return result;
 }

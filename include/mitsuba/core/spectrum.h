@@ -31,6 +31,12 @@ NAMESPACE_BEGIN(mitsuba)
 # define MTS_C math::CAir<Float>
 #endif
 
+#if !defined(MTS_P)
+// # define MTS_P math::Pi<Float>   // For EM reflections
+// # define MTS_P math::TwoPi<Float> // For sound reflections
+# define MTS_P 0.f // For sound reflections
+#endif
+
 // =======================================================================
 //! @{ \name Data types for RGB data
 // =======================================================================

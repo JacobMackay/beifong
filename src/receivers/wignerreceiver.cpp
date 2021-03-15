@@ -40,6 +40,7 @@ simply instantiate the desired sensor shape and specify an
     </shape>
 */
 
+// template <typename Float, typename Spectrum>
 MTS_VARIANT class Wignerreceiver final : public Receiver<Float, Spectrum> {
 public:
     MTS_IMPORT_BASE(Receiver, m_adc, m_world_transform, m_shape, m_receive_type)
@@ -65,8 +66,13 @@ public:
                    m_sig_f_centre = props.float_("freq_centre", 1.f);
                    m_sig_f_ext = props.float_("freq_ext", 1.f);
                    m_gain = props.float_("gain", 1.f);
-               } else {
+               } else if (m_receive_type == "raw_resample") {
+                   m_sig_f_centre = props.float_("freq_centre", 1.f);
+                   m_sig_f_ext = props.float_("freq_ext", 1.f);
+                   m_gain = props.float_("gain", 1.f);
+               } else if (m_receive_type == "mix_resample") {
                    m_signal = props.string("signaltype", "cw");
+
                    if (m_signal == "linfmcw"){
                        m_sig_amplitude = props.float_("amplitude", 1.f);
                        m_sig_repfreq = props.float_("crf", 1.f);
@@ -84,6 +90,13 @@ public:
                        m_sig_f_ext = props.float_("freq_ext", 1.f);
                        m_sig_phi0 = props.float_("phase", 0.f);
                        m_sig_is_delta = props.bool_("sig_is_delta", false);
+                       m_gain = props.float_("gain", 1.f);
+                   } else if (m_signal == "cw"){
+                       m_sig_amplitude = props.float_("amplitude", 1.f);
+                       m_sig_f_centre = props.float_("freq_centre", 1.f);
+                       m_sig_f_ext = props.float_("freq_ext", 0.f);
+                       m_sig_phi0 = props.float_("phase", 0.f);
+                       m_sig_is_delta = props.bool_("sig_is_delta", true);
                        m_gain = props.float_("gain", 1.f);
                    } else {
                        m_sig_amplitude = props.float_("amplitude", 1.f);
@@ -104,28 +117,23 @@ public:
     Spectrum eval_signal(Float time, Wavelength frequency) const {
 
         Spectrum result(0.f);
-        Float t_norm;
-        Float t_hat;
-        Wavelength f_hat;
+        Float t;
+        Float ti;
+        Wavelength fi;
 
         if (m_signal == "linfmcw") {
-            t_norm = math::fmodulo(time, rcp(m_sig_repfreq));
-            t_hat = t_norm/m_sig_t_ext;
-            f_hat = frequency - (m_sig_f_centre - m_sig_f_ext/2  + 0.5*m_sig_f_ext/m_sig_t_ext*t_norm);
-
-            result = select(math::rect(t_hat) > 0.f,
-                2*m_sig_amplitude*m_sig_amplitude * m_sig_t_ext*math::tri(t_hat) *
-                math::sinc(math::TwoPi<Float>*f_hat[0]*m_sig_t_ext*math::tri(t_hat)),
+            t = math::fmodulo(time, rcp(m_sig_repfreq));
+            ti = 0 + m_sig_t_ext/2;
+            fi = m_sig_f_centre + (m_sig_f_ext/m_sig_t_ext)*(t - ti);
+            result = select(math::rect((t - ti)/m_sig_t_ext) > 0.f,
+                math::wchirp(t - ti, frequency[0] - fi[0], m_sig_t_ext, m_sig_amplitude),
                 0.f);
-
         } else if (m_signal == "pulse") {
-            t_norm = math::fmodulo(time, rcp(m_sig_repfreq));
-            t_hat = t_norm/m_sig_t_ext;
-            f_hat = frequency - m_sig_f_centre;
-
-            result = select(math::rect(t_hat) > 0.f,
-                2*m_sig_amplitude*m_sig_amplitude * m_sig_t_ext*math::tri(t_hat) *
-                math::sinc(math::TwoPi<Float>*f_hat[0]*m_sig_t_ext*math::tri(t_hat)),
+            t = math::fmodulo(time, rcp(m_sig_repfreq));
+            ti = 0 + m_sig_t_ext/2;
+            fi = m_sig_f_centre;
+            result = select(math::rect((t - ti)/m_sig_t_ext) > 0.f,
+                math::wchirp(t - ti, frequency[0] - fi[0], m_sig_t_ext, m_sig_amplitude),
                 0.f);
         } else if (m_signal == "cw"){
             result = m_sig_amplitude*m_sig_amplitude;
@@ -143,9 +151,10 @@ public:
         Wavelength frequencies;
         if (m_signal == "linfmcw") {
             // Sample a frequency from 1st order chirp -------
-            Float t_norm = math::fmodulo(time, rcp(m_sig_repfreq));
-            frequencies = (m_sig_f_centre - m_sig_f_ext/2)
-                + 0.5*m_sig_f_ext/m_sig_t_ext*t_norm;
+            Float t = math::fmodulo(time, rcp(m_sig_repfreq));
+            Float ti = 0 + m_sig_t_ext/2;
+            Wavelength fi = m_sig_f_centre + (m_sig_f_ext/m_sig_t_ext)*(t - ti);
+            frequencies = fi;
         } else if (m_signal == "cw") {
             frequencies = m_sig_f_centre;
         }
@@ -159,20 +168,29 @@ public:
     // in addition to the spectral/signal weight/power in V^2/Hz
     // ------------------------------------------------------------------------
     std::pair<Wavelength, Spectrum>
-    sample_frequency(Float time, Float sample) const {
-        // Make a pair, frequencies and frequency weight
+    sample_frequency(Float time, Float frequency_sample) const {
         std::pair<Wavelength, Spectrum> result;
 
-        if (m_receive_type == "raw"){
-            auto freq_sample = math::sample_shifted<Wavelength>(sample);
+        if (m_receive_type == "raw" | m_receive_type == "raw_resample"){
+            auto freq_sample = math::sample_shifted<Wavelength>(frequency_sample);
             result.first =
                 freq_sample * m_sig_f_ext + (m_sig_f_centre - m_sig_f_ext/2);
             result.second = 1.f;
+        } else if (m_receive_type == "mix_resample") {
+            // Probably include phase here, but ignore for now. Eg tellurometer
+            if (m_sig_is_delta == true) {
+                result = sample_delta_frequency(time);
+            } else {
+                auto freq_sample = math::sample_shifted<Wavelength>(frequency_sample);
+                result.first =
+                    freq_sample * m_sig_f_ext + (m_sig_f_centre - m_sig_f_ext/2);
+                result.second = eval_signal(time, result.first);
+            }
         } else {
             if (m_sig_is_delta == true) {
                 result = sample_delta_frequency(time);
             } else {
-                auto freq_sample = math::sample_shifted<Wavelength>(sample);
+                auto freq_sample = math::sample_shifted<Wavelength>(frequency_sample);
                 result.first =
                     freq_sample * m_sig_f_ext + (m_sig_f_centre - m_sig_f_ext/2);
                 result.second = eval_signal(time, result.first);
@@ -237,10 +255,13 @@ public:
         }
         // ====================================================
 
+        Float phase = 0;
+
         // 6. Return the ray, and ray power -------------------
         return std::make_pair(
-            Ray3f(si.p, si.to_world(ds.d), time, wavelength),
-            unpolarized<Spectrum>(signal_power * reception_gain * geom_gain * extents)
+            Ray3f(si.p, si.to_world(ds.d), time, phase, wavelength),
+            // unpolarized<Spectrum>(signal_power * reception_gain * geom_gain * extents)
+            unpolarized<Spectrum>(signal_power * reception_gain * geom_gain)
         );
         // ====================================================
     }
@@ -276,11 +297,10 @@ public:
     }
 
     MTS_DECLARE_CLASS()
-
 private:
-    // std::string m_receive_type;
-    std::string m_signal;
     Float m_gain;
+    bool m_resample_freq;
+    std::string m_signal;
     Float m_sig_amplitude;
     Float m_sig_repfreq;
     Float m_sig_t_ext;
@@ -288,6 +308,7 @@ private:
     Float m_sig_f_ext;
     Float m_sig_phi0;
     bool m_sig_is_delta;
+    // ref<Texture> m_antenna_texture;
 };
 
 MTS_IMPLEMENT_CLASS_VARIANT(Wignerreceiver, Receiver)

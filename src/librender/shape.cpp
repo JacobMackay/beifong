@@ -385,7 +385,7 @@ Shape<Float, Spectrum>::doppler(SurfaceInteraction3f si, Mask active) const {
     //  * si.wavelengths, 0.f);
     // return select(active, dot(Vector3f(1,1,1), m_velocity*Point3f(si.to_local(si.p))) / math::CVac<float>
     //  * si.wavelengths, 0.f);
-    return select(active, 2*dot(si.wi, m_velocity*Point3f(si.to_local(si.p))) / math::CVac<float>
+    return select(active, 2*dot(si.wi, m_velocity*Point3f(si.to_local(si.p))) / MTS_C
      * si.wavelengths, 0.f);
     // return select(active, dot(si.to_local(si.wi), m_velocity*Point3f(si.to_local(si.p))) / math::CVac<float>
     //  * si.wavelengths, 0.f);

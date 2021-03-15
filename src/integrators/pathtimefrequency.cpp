@@ -109,10 +109,7 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
 
         MTS_MASKED_FUNCTION(ProfilerPhase::SamplingIntegratorSample, active);
 
-
-        // RayDifferential3f ray = *ray_;
         RayDifferential3f ray = ray_;
-        // ray_ is true, ray is copy
 
         // Tracks radiance scaling due to index of refraction changes
         Float eta(1.f);
@@ -128,60 +125,43 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
 
         // ---------------------- First intersection ----------------------
 
+        // In the future this si should probably include doppler, phase and time
         SurfaceInteraction3f si = scene->ray_intersect(ray, active);
         Mask valid_ray = si.is_valid();
         TransmitterPtr transmitter = si.transmitter(scene);
 
-        ray.time -= select(valid_ray, si.t / MTS_C, 0.f);
-        if(any_or<true>(neq(si.shape, nullptr))){
-            // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, valid_ray), 0.f);
-        }
+        ray.update_state(-si.t);
+
+        // Doppler
+        // if(any_or<true>(neq(si.shape, nullptr))){
+        //     const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, valid_ray), 0.f);
+        // }
 
         for (int depth = 1;; ++depth) {
             // ---------------- Intersection with transmitters ----------------
             if (any_or<true>(neq(transmitter, nullptr))) {
 
                 // Advance the ray travel time ---------------------
-                ray.time -= select(si.is_valid(), si.t / MTS_C, 0.f);
+                // Have I updated the ray twice here? or no bc int depth 1?
+                ray.update_state(-si.t);
                 si.time = ray.time;
                 // =================================================
 
                 // Apply doppler from tx hit -----------------------
-                if(any_or<true>(neq(si.shape, nullptr))){
-                    // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
-                }
-                // =================================================
-
-                // Update ray wavelength and power from transmit signal
-                // A normal sitch doesn't update wavelength
-                // A dodgy changes wavelength.
-                // possibly can change using the cast inside tx
-                // use the ray and ray copy to update doppler separately, then
-                // combine at the end.
-                // save initial wavelength
-                // f_tx *= 1/((shifted_λ + initial_λ)/initial_λ)
-                // problem: movement from rx
-                // f_tx *= (1/(ray.wavelengths/lambda_rx));
-                // =================================================
-
-                // Apply signal ------------------------------------
-                // std::cout << "First" << std::endl;
-                // signal_weight = transmitter->eval_signal(ray.time, MTS_C/((ray_).wavelengths[0]*1e-9));
-                // std::cout << "After First" << std::endl;
-                // f_tx = CMed/((ray_).wavelengths[0]*1e-9);
-                // // signal_weight =
-                // //     math::wchirp(ray.time - t_ext/2, f_tx - fi, t_ext, 1.f, prf);
-                // // signal_weight = 2 * amplitude*amplitude
-                // //     * t_ext * math::tri(math::fmodulo((ray.time - t_ext/2), rcp(prf))/t_ext)
-                // //     * math::sinc(math::TwoPi<Float>*(f_tx - fi)*t_ext*math::tri(math::fmodulo((ray.time - t_ext/2), rcp(prf))/t_ext));
-                //     signal_weight = 2 * amplitude*amplitude
-                //         * t_ext * math::tri(math::fmodulo((ray.time ), rcp(prf))/t_ext)
-                //         * math::sinc(math::TwoPi<Float>*(f_tx - fi)*t_ext*math::tri(math::fmodulo((ray.time ), rcp(prf))/t_ext));
+                // if(any_or<true>(neq(si.shape, nullptr))){
+                //     const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
+                // }
                 // =================================================
 
                 // Evaluate the direct hit illumination -------------
                 result[active] +=
                     emission_weight * throughput * transmitter->eval(si, active);
+                // these are problems. Currently our only solution without a
+                // path tracer, but have to piggyback. si.phase will be some
+                // value from the transmitter.
+                const_cast<RayDifferential3f&>(ray_).wavelengths = si.wavelengths;
+                // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - si.phase;
+                const_cast<RayDifferential3f&>(ray_).phase += ray.phase;
                 // ==================================================
             }
 
@@ -219,7 +199,8 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
             if (likely(any_or<true>(active_e))) {
 
                 // Advance the ray travel time ---------------------
-                ray.time -= select(si.is_valid(), si.t / MTS_C, 0.f);
+                ray.update_state(-si.t);
+                si.time = ray.time;
                 // =================================================
 
                 // Apply doppler from bsdf->tx hit -----------------
@@ -248,12 +229,15 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 }
                 // =================================================
 
-                si.time = ray.time;
-
 
                 auto [ds, transmitter_val] = scene->sample_transmitter_direction(
                     si, sampler->next_2d(active_e), true, active_e);
                 active_e &= neq(ds.pdf, 0.f);
+                const_cast<RayDifferential3f&>(ray_).wavelengths = si.wavelengths;
+                // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - si.phase - MTS_P;
+                // std::cout << ray.phase / math::TwoPi<float> * si.wavelengths[0]*1e-9 << std::endl;
+                const_cast<RayDifferential3f&>(ray_).phase += ray.phase - MTS_P;
+                const_cast<RayDifferential3f&>(ray_).time = ray.time;
 
                 // Query the BSDF for that transmitter-sampled direction
                 Vector3f wo = si.to_local(ds.d);
@@ -264,169 +248,10 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 // sampling
                 Float bsdf_pdf = bsdf->pdf(ctx, si, wo, active_e);
 
-                // Apply signal ------------------------------------
-                // std::cout << "Second" << std::endl;
-                // t_temp = ray.time;
-                // std::cout << transmitter->eval_signal(t_temp, MTS_C/((ray_).wavelengths[0]*1e-9)) << std::endl;
-                // signal_weight = transmitter->eval_signal(ray.time, MTS_C/((ray_).wavelengths[0]*1e-9));
-                // // std::cout << "After" << std::endl;
-                // f_tx = CMed/((ray_).wavelengths[0]*1e-9);
-                // // signal_weight =
-                // //     math::wchirp(ray.time - t_ext/2, f_tx - fi, t_ext, 1.f, prf);
-                // // signal_weight = 2 * amplitude*amplitude
-                // //     * t_ext * math::tri(math::fmodulo((ray.time - t_ext/2), rcp(prf))/t_ext)
-                // //     * math::sinc(math::TwoPi<Float>*(f_tx - fi)*t_ext*math::tri(math::fmodulo((ray.time - t_ext/2), rcp(prf))/t_ext));
-                //     signal_weight = 2 * amplitude*amplitude
-                //         * t_ext * math::tri(math::fmodulo((ray.time ), rcp(prf))/t_ext)
-                //         * math::sinc(math::TwoPi<Float>*(f_tx - fi)*t_ext*math::tri(math::fmodulo((ray.time ), rcp(prf))/t_ext));
-                // =================================================
-
                 // Evaluate the bsdf->tx illumination -------------
                 Float mis = select(ds.delta, 1.f, mis_weight(ds.pdf, bsdf_pdf));
                 result[active_e] += mis * throughput * bsdf_val * transmitter_val;
                 // ================================================
-
-
-                // std::cout << si.shape->doppler(si) << std::endl;
-
-                // ray_time -= select(valid_ray, si.t/C_AIR, 0.f);
-                // output_wavelength = ray_wavelength - tx.get_wavelength
-                // put into mixed equation. get result.
-
-                // New class, like film But for tx.
-                // Transmitter has signal.
-                // Different types of signals with diff parameters
-                // But basically, given a time, return a wavelength/amplitude.
-                // Ideally it'd be a wdf.
-                // Can have a member, is delta. If it is, get exact result.
-
-                // The returned ray should have its time as time, and
-                // wavelength as beat wavelength.
-                // We do the AA filter later in rx.
-                // For a given time and frequency, the tx should have an amp.
-                // The signal should be analytic or texture.
-
-                // There's signal bandwidth, but also tx/rx bandwidth.
-
-                // Hardcode for now.
-                // Given a t and f, return the power; alternatively, given an t
-
-                // Wavelength f_tx(0.f);
-                // // f0 = fc - bandwidth/2;
-                // // f1 = fc + bandwidth/2;
-                // //
-                // // t1 = rise;
-                // // t2 = t1 + hold;
-                // // t3 = t2 + fall;
-                // // t4 = t3 + wait;
-                // // tn = t % t4;
-                //
-                // // Given a time, return the transmit frequency.
-                // // This means that the transmitter needs to have a signal.
-                //
-                // Wavelength f0 = 94e9 - 6e9/2;
-                // Wavelength f1 = 94e9 + 6e9/2;
-                //
-                // Float t1 = 240e-6;
-                // Float t2 = t1 + 10e-6;
-                // Float t3 = t2 + 240e-6;
-                // Float t4 = t3 + 10e-6;
-                //
-                // // std::cout << "pt in" << std::endl;
-                // Float tn = math::fmodulo(ray.time, t4);
-                // // Float tn = math::modulo(ray.time, t4);
-                // // std::cout << "pt out" << std::endl;
-                // // Float tn = ray.time;
-                //
-                // // std::cout << tn << ", " << ray.time << std::endl;
-                //
-                // if (all(tn < t1)) {
-                //     // f = 2*((f1 - f0)/(t2 - t1))*tn + f0;
-                //     // f = 2*((6e9)/(240e-6))*tn + f0;
-                //     f_tx = ((6e9)/(240e-6))*tn + f0;
-                // } else if (all(tn < t2)) {
-                //     f_tx = f1;
-                // } else if (all(tn < t3)){
-                //     // f = 2*((f0 - f1)/(t3 - t2))*tn + f1;
-                //     // f = 2*((-6e9)/(240e-6))*tn + f1;
-                //     f_tx = ((-6e9)/(240e-6))*(tn-t2) + f1;
-                // } else {
-                //     f_tx = f0;
-                // }
-
-                // Wavelength doppler() const {
-                //
-                //     // if (shape) {
-                //
-                //         // Transform4f vel = shape->velocity;
-                //         // ScalarTransform4f vel = shape->velocity();
-                //         ScalarTransform4f vel = ScalarTransform4f(shape->velocity());
-                //         // DirectionSample3f ws = m_shape->sample_wigner(ds, wavelength, active);
-                //
-                //         // return dot(wi, shape.velocity*Point3f(to_local(p)))/math::CVac<float>*wavelengths;
-                //         return dot(wi, vel*Point3f(to_local(p)))/math::CVac<float>*wavelengths;
-                //         // return dot(wi, shape.velocity*Point3f(to_local(p)))/math::CVac<float>*wavelengths;
-                //
-                //
-                //         // return dot(si.wi, m_velocity*Point3f(si.to_local(si.p)))/math::CVac<float>*si.wavelengths;
-                //
-                //     // } else {
-                //     //     return 0;
-                //     // }
-                //
-                //
-                //
-                // }
-
-                // ScalarTransform4f vel = si.instance(scene)->to_world();
-
-                // Wavelength dop = si.instance->doppler(si);
-                // Should I do active checks or non-nullptr checks?
-                // Wavelength dop = si.shape->doppler(si);
-                // const_cast<RayDifferential3f&>(ray_).wavelengths += si.shape->doppler(si);
-
-                // std::cout << dop << std::endl;
-                //
-                // f_tx += math::CVac<float>/dop;
-
-
-                // ScalarTransform4f vel = ScalarTransform4f(si.shape->velocity());
-                // ScalarTransform4f vel = si.instance->to_world();
-                // ScalarTransform4f vel = si.instance.m_to_world;
-
-                // ShapePtr *SP = si.instance;
-                // ScalarFloat SA = si.instance->surface_area();
-                // ScalarTransform4f vel = si.instance->velocity();
-
-                // const_cast<RayDifferential3f&>(ray_).wavelengths = math::CVac<double>/f_tx *1e9;
-
-                // ray.wavelengths += (100.f/math::CVac<float>)*ray.wavelengths;
-                // Imagine the tx is moving at 20 m/s
-                // f_tx += -100.f/math::CVac<float> * f_tx;
-                // f_tx += math::CVac<float>/si.shape->eval_doppler(si);
-                // f_tx += math::CVac<float>/si.doppler();
-
-                // std::cout << ray.time << " " << tn << std::endl;
-
-                // std::cout << "tx_t: " << tn * 1e6 << " rx_t: " << ray_.time * 1e6
-                //     << " tx_f: " << f_tx[0]*1e-9 << " rx_f: " << math::CVac<double>/(ray.wavelengths[0]*1e-9)*1e-9
-                //     << " d_f: " << (f_tx[0] - math::CVac<double>/(ray.wavelengths[0]*1e-9))
-                //     << " tx_λ: " << ray_.wavelengths[0]*1e-9*1e3 << " rx_λ: " << ray.wavelengths[0]*1e-9*1e3 << std::endl;
-
-                // const_cast<RayDifferential3f&>(ray_).wavelengths = 0.5*(abs(f - math::CVac<double>/(ray.wavelengths*1e-9)))*math::InvTwoPi<double>;
-                // const_cast<RayDifferential3f&>(ray_).wavelengths = (abs(f - math::CVac<double>/(ray.wavelengths*1e-9)))*math::InvTwoPi<double>;
-                // const_cast<RayDifferential3f&>(ray_).wavelengths = (abs(f_tx - math::CVac<double>/(ray.wavelengths*1e-9)));
-                // const_cast<RayDifferential3f&>(ray_).wavelengths -= ray.wavelengths;
-
-                // const_cast<RayDifferential3f&>(ray_).wavelengths = (math::CVac<double>/ray.wavelengths - math::CVac<double>/ray_.wavelengths)*1e9;
-                // const_cast<RayDifferential3f&>(ray_).wavelengths = abs(f_tx[0] - math::CVac<double>/(ray.wavelengths[0]*1e-9));
-
-                // const_cast<RayDifferential3f&>(ray_).wavelengths = abs(f_tx[0] - math::CVac<double>/(ray.wavelengths[0]*1e-9));
-
-                // const_cast<RayDifferential3f&>(ray_).wavelengths = abs(math::CVac<double>/f_tx*1e9 - ray.wavelengths);
-                // const_cast<RayDifferential3f&>(ray_).wavelengths = ray.wavelengths;
-                const_cast<RayDifferential3f&>(ray_).time = ray.time;
-
 
             }
 
@@ -467,15 +292,16 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
             si = std::move(si_bsdf);
 
             // Really not sure about this section, but it definitely does something
-            ray.time -= select(si.is_valid(), si.t / MTS_C, 0.f);
-            // if(any_or<true>(neq(si.shape, nullptr))){
-            if(any_or<true>(neq(transmitter, nullptr))){
-                // // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(transmitter, nullptr), transmitter->shape()->doppler(si, active), 0.f);
-                // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(transmitter, nullptr), transmitter->doppler(si, active), 0.f);
+            ray.update_state(-si.t);
+            // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - MTS_P;
+            // const_cast<RayDifferential3f&>(ray_).time = ray.time;
 
-
-
-            }
+            // // Another doppler?
+            // // if(any_or<true>(neq(si.shape, nullptr))){
+            // if(any_or<true>(neq(transmitter, nullptr))){
+            //     // const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(transmitter, nullptr), transmitter->shape()->doppler(si, active), 0.f);
+            //     const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(transmitter, nullptr), transmitter->doppler(si, active), 0.f);
+            // }
         }
 
         return {result, valid_ray};

@@ -6,8 +6,9 @@ add_plugin(path    path.cpp)
 
 # add_plugin(pathtime    pathtime.cpp)
 # add_plugin(pathlength    pathlength.cpp)
-add_plugin(pathrangedoppler    pathrangedoppler.cpp)
+# add_plugin(pathrangedoppler    pathrangedoppler.cpp)
 add_plugin(pathtimefrequency    pathtimefrequency.cpp)
+add_plugin(phase    phase.cpp)
 
 # add_plugin(aov     aov.cpp)
 # add_plugin(stokes  stokes.cpp)
