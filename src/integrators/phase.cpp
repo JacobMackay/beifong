@@ -105,6 +105,10 @@ public:
 
 // std::cout << math::fmodulo(ray.phase, math::TwoPi<float>) << " " << std::fmod(hsum(ray.phase), math::TwoPi<float>) << std::endl;
 
+        if (ray.phase != 0){
+            std::cout << ray.phase << std::endl;
+        }
+
         // Float phase = math::fmodulo(ray.phase, math::TwoPi<float>);
         Float phase = std::fmod(hsum(ray.phase), math::TwoPi<float>);
         phase += select(all(phase<0.f), math::TwoPi<float>, 0.f);

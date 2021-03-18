@@ -131,6 +131,7 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
         TransmitterPtr transmitter = si.transmitter(scene);
 
         ray.update_state(-si.t);
+        si.time = ray.time;
 
         // Doppler
         // if(any_or<true>(neq(si.shape, nullptr))){
@@ -141,28 +142,30 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
             // ---------------- Intersection with transmitters ----------------
             if (any_or<true>(neq(transmitter, nullptr))) {
 
-                // Advance the ray travel time ---------------------
-                // Have I updated the ray twice here? or no bc int depth 1?
-                ray.update_state(-si.t);
-                si.time = ray.time;
-                // =================================================
+                // Something weird is happening here
 
-                // Apply doppler from tx hit -----------------------
-                // if(any_or<true>(neq(si.shape, nullptr))){
-                //     const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
-                // }
-                // =================================================
-
-                // Evaluate the direct hit illumination -------------
-                result[active] +=
-                    emission_weight * throughput * transmitter->eval(si, active);
-                // these are problems. Currently our only solution without a
-                // path tracer, but have to piggyback. si.phase will be some
-                // value from the transmitter.
-                const_cast<RayDifferential3f&>(ray_).wavelengths = si.wavelengths;
-                // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - si.phase;
-                const_cast<RayDifferential3f&>(ray_).phase += ray.phase;
-                // ==================================================
+                // // Advance the ray travel time ---------------------
+                // // Have I updated the ray twice here? or no bc int depth 1?
+                // ray.update_state(-si.t);
+                // si.time = ray.time;
+                // // =================================================
+                //
+                // // Apply doppler from tx hit -----------------------
+                // // if(any_or<true>(neq(si.shape, nullptr))){
+                // //     const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
+                // // }
+                // // =================================================
+                //
+                // // Evaluate the direct hit illumination -------------
+                // result[active] +=
+                //     emission_weight * throughput * transmitter->eval(si, active);
+                // // these are problems. Currently our only solution without a
+                // // path tracer, but have to piggyback. si.phase will be some
+                // // value from the transmitter.
+                // const_cast<RayDifferential3f&>(ray_).wavelengths = si.wavelengths;
+                // // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - si.phase;
+                // const_cast<RayDifferential3f&>(ray_).phase += ray.phase;
+                // // ==================================================
             }
 
             active &= si.is_valid();
@@ -199,8 +202,8 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
             if (likely(any_or<true>(active_e))) {
 
                 // Advance the ray travel time ---------------------
-                ray.update_state(-si.t);
-                si.time = ray.time;
+                // ray.update_state(-si.t);
+                // si.time = ray.time;
                 // =================================================
 
                 // Apply doppler from bsdf->tx hit -----------------
@@ -279,6 +282,9 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
             DirectionSample3f ds(si_bsdf, si);
             ds.object = transmitter;
 
+            ray.update_state(-si_bsdf.t);
+            si_bsdf.time = ray.time;
+
             if (any_or<true>(neq(transmitter, nullptr))) {
                 Float transmitter_pdf =
                     select(neq(transmitter, nullptr) &&
@@ -292,7 +298,8 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
             si = std::move(si_bsdf);
 
             // Really not sure about this section, but it definitely does something
-            ray.update_state(-si.t);
+            // ray.update_state(-si.t);
+
             // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - MTS_P;
             // const_cast<RayDifferential3f&>(ray_).time = ray.time;
 
