@@ -146,7 +146,7 @@ public:
         // =================================
 
         // ---------------------------------
-        // Get the local wavevector
+        // // Get the local wavevector
         Transform4f trafto1;
         trafto1 = trafto1.from_frame(
             Frame3f(normalize(m_frame.s),
@@ -155,6 +155,8 @@ public:
         // Normal3f nu_hat = trafto1 * ws.d;
         Normal3f nu_hat = trafto1.transform_affine(ds.d)*rcp(wavelength[0]*1e-9);
         // =================================
+        // Normal3f nu_hat = m_to_object * ds.d;
+        // nu_hat *= rcp(wavelength[0]*1e-9);
 
         // The wigner provides a function of 1/(sr*sm)
         // Intuitively: If the object gets bigger, the directional gain at 0
@@ -175,9 +177,20 @@ public:
         //         math::sinc(math::TwoPi<Float>*nu_hat.x()*wid_x*math::tri(r_hat.x())) *
         //         math::sinc(math::TwoPi<Float>*nu_hat.y()*wid_y*math::tri(r_hat.y()));
 
-        Float gain = 4*wid_x*wid_y * math::tri(r_hat.x())*math::tri(r_hat.y()) *
-                math::sinc(math::TwoPi<Float>*nu_hat.x()*wid_x*math::tri(r_hat.x())) *
-                math::sinc(math::TwoPi<Float>*nu_hat.y()*wid_y*math::tri(r_hat.y()));
+        // Good but skipfor now
+        // Float gain = 4*wid_x*wid_y * math::tri(r_hat.x())*math::tri(r_hat.y()) *
+        //         math::sinc(
+        //             math::TwoPi<Float>*nu_hat.x()*wid_x*math::tri(r_hat.x())) *
+        //         math::sinc(
+        //             math::TwoPi<Float>*nu_hat.y()*wid_y*math::tri(r_hat.y()));
+        Float gain = 4* math::tri(r_hat.x())*math::tri(r_hat.y()) *
+                math::sinc(
+                    math::TwoPi<Float>*nu_hat.x()*wid_x*math::tri(r_hat.x())) *
+                math::sinc(
+                    math::TwoPi<Float>*nu_hat.y()*wid_y*math::tri(r_hat.y()));
+
+        // Float gain = 4*wid_x*wid_y*math::tri(r_hat.x())*math::tri(r_hat.y());
+        // Float gain = 4*wid_x*wid_y;
 
         // Float gain = math::TwoPi<Float>* 4*math::tri(r_hat.x())*math::tri(r_hat.y()) *
         //         math::sinc(math::TwoPi<Float>*nu_hat.x()*wid_x*math::tri(r_hat.x())) *

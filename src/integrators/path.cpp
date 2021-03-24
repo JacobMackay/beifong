@@ -170,7 +170,6 @@ public:
                 Float mis = select(ds.delta, 1.f, mis_weight(ds.pdf, bsdf_pdf));
                 result[active_e] += mis * throughput * bsdf_val * emitter_val;
             }
-
             // ----------------------- BSDF sampling ----------------------
 
             // Sample BSDF * cos(theta)

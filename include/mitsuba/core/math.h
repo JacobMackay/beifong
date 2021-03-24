@@ -73,6 +73,7 @@ template <typename T> T jabs(const T &x) {
 // template <typename T, typename Value = expr_t<T>> Value sinc(const T &x) {
 template <typename T> T sinc(const T &x) {
     return select(jabs(x) > Epsilon<T>, sin(x)/x, 1.f);
+    // return select(jabs(x) > Epsilon<T>, sin(x)/x, 0.f);
     // return select(abs(x) > Epsilon<T>, sin(Pi<T>*x)/(Pi<T>*x), 1.f);
 }
 

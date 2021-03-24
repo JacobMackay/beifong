@@ -17,6 +17,7 @@ NAMESPACE_BEGIN(mitsuba)
 // #  define MTS_WAVELENGTH_MIN static_cast<float>(math::CVac<double>/((94e9+6e9/2))*1e9) // 94 GHz MMW Radar
 // #  define MTS_WAVELENGTH_MIN 8292683.f // Grahams Ultrasound
 # define MTS_WAVELENGTH_MIN 7555556.f // 10 kHz narrowband ultrasound at 40kHz
+// # define MTS_WAVELENGTH_MIN 3846154.f // 76GHz TXI cascade radar
 #endif
 
 #if !defined(MTS_WAVELENGTH_MAX)
@@ -24,6 +25,7 @@ NAMESPACE_BEGIN(mitsuba)
 // #  define MTS_WAVELENGTH_MAX static_cast<float>(math::CVac<double>/((94e9-6e9/2))*1e9) // 94 GHz MMW Radar
 // #  define MTS_WAVELENGTH_MAX 8717949.f // Grahams Ultrasound
 # define MTS_WAVELENGTH_MAX 9714286.f // 10 kHz narrowband ultrasound at 40kHz
+// # define MTS_WAVELENGTH_MAX 4054055.f // 76GHz TXI cascade radar
 #endif
 
 #if !defined(MTS_C)
@@ -32,7 +34,7 @@ NAMESPACE_BEGIN(mitsuba)
 #endif
 
 #if !defined(MTS_P)
-// # define MTS_P math::Pi<Float>   // For EM reflections
+// # define MTS_P math::Pi<ScalarFloat>   // For EM reflections
 // # define MTS_P math::TwoPi<Float> // For sound reflections
 # define MTS_P 0.f // For sound reflections
 #endif
@@ -158,6 +160,11 @@ struct Spectrum<enoki::detail::MaskedArray<Value_>, Size_>
 #define MTS_CIE_MIN           7555556
 #define MTS_CIE_MAX           9714286
 #define MTS_CIE_SAMPLES       95
+
+// // 76 GHz TXI
+// #define MTS_CIE_MIN           3846154
+// #define MTS_CIE_MAX           4054055
+// #define MTS_CIE_SAMPLES       95
 
 // Grahams Ultrasound
 // #define MTS_CIE_MIN           8292683.f

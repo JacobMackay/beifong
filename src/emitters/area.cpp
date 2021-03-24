@@ -60,6 +60,7 @@ public:
             m_flags |= +EmitterFlags::SpatiallyVarying;
     }
 
+    // W/(sr * m^2)
     Spectrum eval(const SurfaceInteraction3f &si, Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointEvaluate, active);
 
@@ -70,6 +71,7 @@ public:
         );
     }
 
+    // W/sr * π, maybe just W
     std::pair<Ray3f, Spectrum> sample_ray(Float time, Float wavelength_sample,
                                           const Point2f &sample2, const Point2f &sample3,
                                           Mask active) const override {
@@ -118,6 +120,7 @@ public:
         );
     }
 
+    // W/sr *cos(θ)/r^2
     std::pair<DirectionSample3f, Spectrum>
     sample_direction(const Interaction3f &it, const Point2f &sample, Mask active) const override {
         MTS_MASKED_FUNCTION(ProfilerPhase::EndpointSampleDirection, active);

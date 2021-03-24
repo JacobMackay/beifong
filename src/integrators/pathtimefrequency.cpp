@@ -116,6 +116,8 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
 
         // MIS weight for intersected transmitters (set by prev. iteration)
         Float emission_weight(1.f);
+        // emission_weight *= ray.maxt;
+        // ray.maxt = math::Infinity<float>;
         Spectrum throughput(1.f), result(0.f);
 
 
@@ -130,43 +132,83 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
         Mask valid_ray = si.is_valid();
         TransmitterPtr transmitter = si.transmitter(scene);
 
-        ray.update_state(-si.t);
-        si.time = ray.time;
+        // ray.update_state(-si.t);
+        // si.time = ray.time;
+        // if(all(si.is_valid())){
+        //     std::cout << "Distance: " << si.t << " Phase: " << ray.phase << std::endl;
+        // }
 
         // Doppler
         // if(any_or<true>(neq(si.shape, nullptr))){
         //     const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, valid_ray), 0.f);
         // }
 
+
+
+        // This statement sharpens the range
+        if(all(si.is_valid())){
+        // if(all(active)){
+            ray.update_state(-si.t);
+            si.time = ray.time;
+        }
         for (int depth = 1;; ++depth) {
+            // if(all(si.is_valid())){
+            //     ray.update_state(-si.t);
+            //     si.time = ray.time;
+            // }
+            // ray.update_state(-si.t);
+            // si.time = ray.time;
             // ---------------- Intersection with transmitters ----------------
+            // Cancelled for some reason////////double sampling
             if (any_or<true>(neq(transmitter, nullptr))) {
 
-                // Something weird is happening here
+                // if(all(si.is_valid())){
+                // // if(all(active)){
+                //     ray.update_state(-si.t);
+                //     si.time = ray.time;
+                // }
 
-                // // Advance the ray travel time ---------------------
-                // // Have I updated the ray twice here? or no bc int depth 1?
+                // Something weird is happening here
+                // std::cout << "Hit??" << std::endl;
+
+                // Advance the ray travel time ---------------------
+                // Have I updated the ray twice here? or no bc int depth 1?
                 // ray.update_state(-si.t);
                 // si.time = ray.time;
-                // // =================================================
-                //
-                // // Apply doppler from tx hit -----------------------
-                // // if(any_or<true>(neq(si.shape, nullptr))){
-                // //     const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
-                // // }
-                // // =================================================
-                //
-                // // Evaluate the direct hit illumination -------------
-                // result[active] +=
-                //     emission_weight * throughput * transmitter->eval(si, active);
-                // // these are problems. Currently our only solution without a
-                // // path tracer, but have to piggyback. si.phase will be some
-                // // value from the transmitter.
+                // =================================================
+
+                // Apply doppler from tx hit -----------------------
+                // if(any_or<true>(neq(si.shape, nullptr))){
+                //     const_cast<RayDifferential3f&>(ray_).wavelengths += select(neq(si.shape, nullptr), si.shape->doppler(si, active), 0.f);
+                // }
+                // =================================================
+
+                // if(all(si.is_valid())){
+                //     ray.update_state(-si.t);
+                //     si.time = ray.time;
+                // }
+
+                // Evaluate the direct hit illumination -------------
+                result[active] +=
+                    emission_weight * throughput * transmitter->eval(si, active);
+
+                // if(all(si.is_valid())){
+                //     ray.update_state(-si.t);
+                //     si.time = ray.time;
+                // }
+
+                // these are problems. Currently our only solution without a
+                // path tracer, but have to piggyback. si.phase will be some
+                // value from the transmitter.
                 // const_cast<RayDifferential3f&>(ray_).wavelengths = si.wavelengths;
                 // // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - si.phase;
                 // const_cast<RayDifferential3f&>(ray_).phase += ray.phase;
-                // // ==================================================
+                // ==================================================
             }
+
+            // const_cast<RayDifferential3f&>(ray_).wavelengths = si.wavelengths;
+            // // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - si.phase;
+            // const_cast<RayDifferential3f&>(ray_).phase += ray.phase;
 
             active &= si.is_valid();
 
@@ -233,14 +275,49 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 // =================================================
 
 
+                // si is not updated here. I probably need to hit the tx first
+                // SurfaceInteraction3f si_tx = scene->ray_intersect(si.spawn_ray(si.to_world(si.to_local(ds.d))), active);
+
+                // Second bounce?
+                // Also sharpens. Is this an effect of fmcw?
+                // if(all(si.is_valid())){
+                // // if(all(active)){
+                //     ray.update_state(-si.t);
+                //     si.time = ray.time;
+                // }
+
+                // So this samples the transmitter directly?
                 auto [ds, transmitter_val] = scene->sample_transmitter_direction(
                     si, sampler->next_2d(active_e), true, active_e);
+                // ray should be updated now
+
+                // // Being here splits the bounce returns
+                // if(all(si.is_valid())){
+                //     ray.update_state(-si.t);
+                //     si.time = ray.time;
+                // }
+
+                // This is good for the main path
+                // ....and now seems useless
+
+                // ray.update_state(-ds.dist);
+                // si.time = ray.time;
+
+                // const_cast<RayDifferential3f&>(ray_).wavelengths = si.wavelengths;
+                // // // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - si.phase - MTS_P;
+                // // // std::cout << ray.phase / math::TwoPi<float> * si.wavelengths[0]*1e-9 << std::endl;
+                // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - MTS_P;
+
+                // New
+                // ray.update_state(-ds.dist);
+                // si.time = ray.time;
+                // --
                 active_e &= neq(ds.pdf, 0.f);
-                const_cast<RayDifferential3f&>(ray_).wavelengths = si.wavelengths;
-                // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - si.phase - MTS_P;
-                // std::cout << ray.phase / math::TwoPi<float> * si.wavelengths[0]*1e-9 << std::endl;
-                const_cast<RayDifferential3f&>(ray_).phase += ray.phase - MTS_P;
-                const_cast<RayDifferential3f&>(ray_).time = ray.time;
+                // const_cast<RayDifferential3f&>(ray_).wavelengths = si.wavelengths;
+                // // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - si.phase - MTS_P;
+                // // std::cout << ray.phase / math::TwoPi<float> * si.wavelengths[0]*1e-9 << std::endl;
+                // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - MTS_P;
+                // const_cast<RayDifferential3f&>(ray_).time = ray.time;
 
                 // Query the BSDF for that transmitter-sampled direction
                 Vector3f wo = si.to_local(ds.d);
@@ -252,11 +329,16 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                 Float bsdf_pdf = bsdf->pdf(ctx, si, wo, active_e);
 
                 // Evaluate the bsdf->tx illumination -------------
+                // When the bsdf IS the transmitter, its bsdfval = 0
+                // Does this mis have a huge bias and therefore effect??
                 Float mis = select(ds.delta, 1.f, mis_weight(ds.pdf, bsdf_pdf));
                 result[active_e] += mis * throughput * bsdf_val * transmitter_val;
                 // ================================================
 
             }
+
+            // This may not be necessary here, but we'll wait
+            // const_cast<RayDifferential3f&>(ray_).time = ray.time;
 
             // ----------------------- BSDF sampling ----------------------
 
@@ -272,18 +354,40 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
 
             eta *= bs.eta;
 
+            // if(all(si.is_valid())){
+            //     ray.update_state(-si.t);
+            //     si.time = ray.time;
+            // }
+
             // Intersect the BSDF ray against the scene geometry
             ray = si.spawn_ray(si.to_world(bs.wo));
             SurfaceInteraction3f si_bsdf = scene->ray_intersect(ray, active);
+
+            // Ground and generally 1st bounce
+            // if(all(si_bsdf.is_valid())){
+            if(all(active)){
+                ray.update_state(-si_bsdf.t);
+                si_bsdf.time = ray.time;
+            }
+
+            // // This is good for the main path
+            // The ghost signal disappers by changing this
+            // is it because we spawn additional rays? That still doesn't add up
+            // ray.update_state(-si_bsdf.t);
+            // si_bsdf.time = ray.time;
 
             /* Determine probability of having sampled that same
                direction using transmitter sampling. */
             transmitter = si_bsdf.transmitter(scene, active);
             DirectionSample3f ds(si_bsdf, si);
             ds.object = transmitter;
+            // if(all(si_bsdf.is_valid())){
+            //     ray.update_state(-si_bsdf.t);
+            //     si_bsdf.time = ray.time;
+            // }
 
-            ray.update_state(-si_bsdf.t);
-            si_bsdf.time = ray.time;
+            // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - MTS_P;
+            // const_cast<RayDifferential3f&>(ray_).time = ray.time;
 
             if (any_or<true>(neq(transmitter, nullptr))) {
                 Float transmitter_pdf =
@@ -293,6 +397,37 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
                            0.f);
 
                 emission_weight = mis_weight(bs.pdf, transmitter_pdf);
+
+                // if(all(si_bsdf.is_valid())){
+                //     ray.update_state(-si_bsdf.t);
+                //     si_bsdf.time = ray.time;
+                // }
+
+                // ray.update_state(-ds.dist);
+                // si_bsdf.time = ray.time;
+                // if(all(si_bsdf.is_valid())){
+                //     ray.update_state(-si_bsdf.t);
+                //     si_bsdf.time = ray.time;
+                // }
+
+                // const_cast<RayDifferential3f&>(ray_).wavelengths = si_bsdf.wavelengths;
+                // // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - si.phase - MTS_P;
+                // // std::cout << ray.phase / math::TwoPi<float> * si.wavelengths[0]*1e-9 << std::endl;
+                // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - MTS_P;
+                // const_cast<RayDifferential3f&>(ray_).time = ray.time;
+
+                // // New hacks
+                // // // If the transmitter val != 0, we have a tx hit
+                // // // Intersect the BSDF ray against the scene geometry
+                // SurfaceInteraction3f si_tx = scene->ray_intersect(si.spawn_ray(si.to_world(si.to_local(ds.d))), active);
+                // // signal_weight = si_tx.transmitter(scene, active)->eval_signal(ray.time, MTS_C/((ray_).wavelengths[0]*1e-9));
+                // Spectrum extra_weight = transmitter->eval(si_tx, active);
+                // const_cast<RayDifferential3f&>(ray_).wavelengths = si_tx.wavelengths;
+                // // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - si.phase;
+                // const_cast<RayDifferential3f&>(ray_).phase += si_tx.phase;
+                // // ray.update_state(-si_bsdf.t);
+                // // si_bsdf.time = ray.time;
+
             }
 
             si = std::move(si_bsdf);
@@ -311,6 +446,16 @@ class PathTimeFrequencyIntegrator : public MonteCarloIntegrator<Float, Spectrum>
             // }
         }
 
+        if(all(valid_ray)) {
+            const_cast<RayDifferential3f&>(ray_).time = ray.time;
+            const_cast<RayDifferential3f&>(ray_).wavelengths = si.wavelengths;
+            // const_cast<RayDifferential3f&>(ray_).phase += ray.phase - si.phase;
+            const_cast<RayDifferential3f&>(ray_).phase += ray.phase;
+        }
+
+        // This may not be right
+        // const_cast<RayDifferential3f&>(ray_).time = ray.time;
+        // result = 1.f;
         return {result, valid_ray};
     }
 

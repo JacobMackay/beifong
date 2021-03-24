@@ -92,34 +92,47 @@ public:
 
         auto result = m_integrator->sample(scene, sampler, ray, medium, aovs, active);
 
-        UnpolarizedSpectrum spec_u = depolarize(result.first);
-        Color3f xyz;
-        if constexpr (is_monochromatic_v<Spectrum>) {
-            xyz = spec_u.x();
-        } else if constexpr (is_rgb_v<Spectrum>) {
-            xyz = srgb_to_xyz(spec_u, active);
-        } else {
-            static_assert(is_spectral_v<Spectrum>);
-            xyz = spec_u.x();
-        }
-
 // std::cout << math::fmodulo(ray.phase, math::TwoPi<float>) << " " << std::fmod(hsum(ray.phase), math::TwoPi<float>) << std::endl;
 
-        if (ray.phase != 0){
-            std::cout << ray.phase << std::endl;
-        }
+        // if (all(result.second)) {
+
+        // UnpolarizedSpectrum spec_u = depolarize(result.first);
+        // Color3f xyz;
+        // if constexpr (is_monochromatic_v<Spectrum>) {
+        //     xyz = spec_u.x();
+        // } else if constexpr (is_rgb_v<Spectrum>) {
+        //     xyz = srgb_to_xyz(spec_u, active);
+        // } else {
+        //     static_assert(is_spectral_v<Spectrum>);
+        //     xyz = spec_u.x();
+        // }
+
+        // if (ray.phase != 0){
+        //     std::cout << "Phase: " << ray.phase << ", D from phase: " << ray.wavelengths[0]*1e-9*math::InvTwoPi<float>*ray.phase << std::endl;
+        // }
+
+        // problem: how is this even called?!?
 
         // Float phase = math::fmodulo(ray.phase, math::TwoPi<float>);
         Float phase = std::fmod(hsum(ray.phase), math::TwoPi<float>);
         phase += select(all(phase<0.f), math::TwoPi<float>, 0.f);
         // if (phase != 0){
-        for (int k = 0; k < m_bins; ++k){
+        for (int k = 0; k < m_bins; ++k) {
             *aovs++ = select(
                 math::rect((phase - m_bin_centres[k])/m_bin_width) > 0.f,
-                xyz.x(),
+                select(result.second, hsum(result.first), 0.f),
                 0.f);
+            // if ( all(math::rect((phase - m_bin_centres[k])/m_bin_width) > 0.f) ) {
+            //     *aovs++ = 0.f;
+            //     break;
+            // } else {
+            //     *aovs++;
+            // }
         }
+        // } else {
+        //     *aovs++ = 0.f;
         // }
+
 
         return result;
     }

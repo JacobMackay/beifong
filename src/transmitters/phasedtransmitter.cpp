@@ -44,13 +44,13 @@ transmitter shape and specify an :monosp:`area` instance as its child:
  */
 
 template <typename Float, typename Spectrum>
-class WignerTransmitter final : public Transmitter<Float, Spectrum> {
+class PhasedTransmitter final : public Transmitter<Float, Spectrum> {
 public:
     MTS_IMPORT_BASE(Transmitter, m_flags, m_shape, m_medium)//,
         // m_sig_amplitude, m_sig_repfreq, m_sig_t_ext, m_sig_f0, m_sig_is_delta)
     MTS_IMPORT_TYPES(Scene, Shape, Texture)
 
-    WignerTransmitter(const Properties &props) : Base(props) {
+    PhasedTransmitter(const Properties &props) : Base(props) {
         if (props.has_property("to_world"))
             Throw("Found a 'to_world' transformation -- this is not allowed. "
                   "The area light inherits this transformation from its parent "
@@ -62,6 +62,7 @@ public:
         if (m_antenna_texture->is_spatially_varying())
             m_flags |= +TransmitterFlags::SpatiallyVarying;
 
+        // Signal Components --------------------------------------------------
         m_signal = props.string("signaltype", "cw");
         m_resample_freq = props.bool_("resample_freq", false);
 
@@ -100,9 +101,73 @@ public:
             m_sig_is_delta = props.bool_("sig_is_delta", true);
             m_gain = props.float_("gain", 1.f);
         }
+        // ====================================================================
+
+        // Phased Components --------------------------------------------------
+        // Array Details
+        m_n_elems = props.int_("n_elems", 1);
+        ScalarVector3f steer_vec = props.vector3f("steering_vector", ScalarVector3f());
+        steer_vec = sin(steer_vec);
+        ScalarTransform4f array_to_world = props.transform("array_loc", ScalarTransform4f());
+        m_wid = props.vector3f("elem_dims", ScalarVector3f());
+
+        // These are local
+        ScalarVector3f elem_spacing = props.vector3f("elem_spacing", ScalarVector3f());
+        ScalarVector3f elem_axis = props.vector3f("elem_axis", ScalarVector3f());
+        ScalarPoint3f array_centre(0.f, 0.f, 0.f);
+
+        std::vector<ScalarPoint3f> elem_locs;
+
+        for (int i = 0; i < m_n_elems; i++) {
+            if (math::modulo(m_n_elems,2)==0) {
+                elem_locs.push_back(array_centre - elem_spacing*elem_axis*(i-(m_n_elems/2.f)+0.5));
+            } else {
+                elem_locs.push_back(array_centre - elem_spacing*elem_axis*(i-(m_n_elems-1.f)/2.f));
+            }
+        }
+
+        ScalarVector3f dp_du, dp_dv;
+        ScalarNormal3f normal;
+        ScalarVector3f r_v;
+
+        std::complex<ScalarFloat> myI(0,1);
+        for (int i = 0; i < m_n_elems; i++) {
+            for (int j = 0; j < m_n_elems; j++) {
+                r_v = (elem_locs[i] + elem_locs[j])/2;
+                m_r_dash.push_back(elem_locs[i] - elem_locs[j]);
+
+                m_velem_to_world.push_back(
+                    array_to_world *
+                    ScalarTransform4f::translate(r_v) *
+                    ScalarTransform4f::scale(ScalarVector3f(m_wid.x()/2, m_wid.y()/2, m_wid.z()))
+                );
+                m_velem_to_object.push_back(m_velem_to_world.back().inverse());
+
+                dp_du = m_velem_to_world.back() * ScalarVector3f(2.f, 0.f, 0.f);
+                dp_dv = m_velem_to_world.back() * ScalarVector3f(0.f, 2.f, 0.f);
+                normal = normalize(m_velem_to_world.back() * ScalarNormal3f(0.f, 0.f, 1.f));
+                m_velem_frame.push_back(ScalarFrame3f(dp_du, dp_dv, normal));
+
+                Transform4f trafto1;
+                m_dir_to_local_velem.push_back( trafto1.from_frame(
+                    Frame3f(normalize(m_velem_frame.back().s),
+                            normalize(m_velem_frame.back().t),
+                            normalize(m_velem_frame.back().n))) );
+
+                m_psi_dash.push_back(
+                    // exp( math::TwoPi<ScalarFloat>*myI*
+                    exp( myI*
+                    static_cast<ScalarFloat>(rcp((MTS_WAVELENGTH_MAX - MTS_WAVELENGTH_MIN)*1e-9/2))*
+                    dot(array_centre - m_r_dash.back(), steer_vec) ));
+            }
+        }
+        // ====================================================================
 
 
     }
+
+    // Signal Methods ---------------------------------------------------------
+    // ------------------------------------------------------------------------
 
     // Return the spectral flux/instantaneous signal power spectral density in
     // units V^2/Hz
@@ -188,6 +253,44 @@ public:
     }
     // ========================================================================
 
+    // ========================================================================
+    // ========================================================================
+
+    // Phased Methods ---------------------------------------------------------
+    // ------------------------------------------------------------------------
+    Spectrum W_rect_2D(const Point3f &r_hat,
+                        const Normal3f &nu_hat,
+                        const ScalarVector3f &wid) const {
+
+        return 4*wid.x()*wid.y() * math::tri(r_hat.x())*math::tri(r_hat.y()) *
+                math::sinc(math::TwoPi<ScalarFloat>*nu_hat.x()*wid.x()*math::tri(r_hat.x())) *
+                math::sinc(math::TwoPi<ScalarFloat>*nu_hat.y()*wid.y()*math::tri(r_hat.y()));
+        // return 4* math::tri(r_hat.x())*math::tri(r_hat.y()) *
+        //         math::sinc(math::TwoPi<ScalarFloat>*nu_hat.x()*wid.x()*math::tri(r_hat.x())) *
+        //         math::sinc(math::TwoPi<ScalarFloat>*nu_hat.y()*wid.y()*math::tri(r_hat.y()));
+    }
+
+    Spectrum sample_wigner(const DirectionSample3f &ds, Wavelength wavelength) const {
+        Point3f r_hat;
+        Normal3f nu_hat;
+        std::complex<Spectrum> W(0, 0);
+        std::complex<ScalarFloat> myI(0,1);
+
+        for (int i = 0; i < m_n_elems*m_n_elems; i++) {
+            r_hat = m_velem_to_object[i] * ds.p/2;
+
+            if (all(math::jabs(r_hat.x())<=0.5 & math::jabs(r_hat.y())<=0.5)) {
+                nu_hat = m_dir_to_local_velem[i].transform_affine(ds.d)*rcp(wavelength[0]*1e-9);
+
+                W += hsum(W_rect_2D(r_hat, nu_hat, m_wid)[0])
+                 * exp(math::TwoPi<ScalarFloat>*myI*hsum(dot(nu_hat, m_r_dash[i])))*m_psi_dash[i];
+            }
+        }
+        return real(W);
+    }
+    // ========================================================================
+    // ========================================================================
+
     // Return the spectral radiance of an impacting ray in [W/(sr*m^2*sm)]
     // ------------------------------------------------------------------------
     Spectrum eval(const SurfaceInteraction3f &si, Mask active) const override {
@@ -238,15 +341,18 @@ public:
 
         // 3. Evaluate the geometric gain in [1/(sr*m^2)] ------
         // 3a. Positional part from surface in [1/m^2] -
-        // Spectrum geom_gain = m_antenna_texture->eval(si, active) *
-        //     rcp(m_shape->surface_area());
-        Spectrum geom_gain = m_antenna_texture->eval(si, active);
+        // Original::
+        Spectrum geom_gain = m_antenna_texture->eval(si, active) *
+            rcp(m_shape->surface_area());
+        // // Precaution::
+        // Spectrum geom_gain = m_antenna_texture->eval(si, active);
         // =============================
         // 3b. Directional part from WDF in [1/sr] --
         DirectionSample3f ds(si);
         ds.d *= -1.f;
-        DirectionSample3f ws = m_shape->sample_wigner(ds, si.wavelengths, active);
-        geom_gain *= ws.pdf;
+        // DirectionSample3f ws = m_shape->sample_wigner(ds, si.wavelengths, active);
+        // geom_gain *= ws.pdf;
+        geom_gain *= sample_wigner(ds, si.wavelengths);
         // =============================
 
         // Extent because mitsuba is inconsistent
@@ -263,8 +369,12 @@ public:
         // The last statement shouldn't be necessary, but its fucked atm
         return select(
             Frame3f::cos_theta(si.wi) > 0.f,
+            // Dodgy
             // signal_power * transmission_gain * geom_gain * rcp(m_shape->surface_area()),
-            signal_power * transmission_gain * geom_gain * math::TwoPi<Float>,
+            // // Precaution:
+            // signal_power * transmission_gain * geom_gain * math::TwoPi<Float>,
+            // Original:
+            signal_power * transmission_gain * geom_gain,
             0.f
         );
         // ======================================================
@@ -335,11 +445,12 @@ public:
         DirectionSample3f ds(si);
         // ds.d = si.to_world(warp::square_to_cosine_hemisphere(direction_sample));
         ds.d = warp::square_to_cosine_hemisphere(direction_sample);
+        // // DirectionSample3f ws =
+        // //     m_shape->sample_wigner(ds, si.wavelengths, active);
         // DirectionSample3f ws =
-        //     m_shape->sample_wigner(ds, si.wavelengths, active);
-        DirectionSample3f ws =
-            m_shape->sample_wigner(ds, wavelength, active);
-        Spectrum geom_gain = ws.pdf * pdf;
+        //     m_shape->sample_wigner(ds, wavelength, active);
+        // Spectrum geom_gain = ws.pdf * pdf;
+        Spectrum geom_gain = sample_wigner(ds, wavelength) * pdf;
         // ===========================================
         // ====================================================
 
@@ -499,11 +610,17 @@ public:
         // }
         // =============================
         // 3b. Directional part from WDF in [1/sr] --
+        // ds.d *= -1.f;
+        // DirectionSample3f ws = m_shape->sample_wigner(ds, it.wavelengths, active);
+        // ds.d *= -1.f;
+        // geom_gain *= ws.pdf;
+        // ds.pdf *= ws.pdf;
         ds.d *= -1.f;
-        DirectionSample3f ws = m_shape->sample_wigner(ds, it.wavelengths, active);
+        Spectrum Wgain = sample_wigner(ds, it.wavelengths);
         ds.d *= -1.f;
-        geom_gain *= ws.pdf;
-        ds.pdf *= ws.pdf;
+        geom_gain *= Wgain;
+        ds.pdf *= Wgain[0];
+        ds.pdf = sqrt(ds.pdf * ds.pdf);
         // =============================
 
         // 4. Evaluate various extents to find ds radiance -----
@@ -515,7 +632,10 @@ public:
         // Maybe keep dsdist because this magically goes to tx, rather than naturally
         // Spectrum extents = rcp(m_shape->surface_area())*rcp(m_shape->surface_area())*rcp(m_shape->surface_area());
         // Spectrum extents = rcp(m_shape->surface_area())*rcp(m_shape->surface_area());
-        Spectrum extents = rcp(m_shape->surface_area())*math::TwoPi<Float>;
+        // // Precaution:
+        // Spectrum extents = rcp(m_shape->surface_area())*math::TwoPi<Float>;
+        // Original:
+        Float extents = 1.f;
         // extents *= math::Pi<float>;
         // ====================================================
 
@@ -562,18 +682,23 @@ public:
         // 1b. Directional part from WDF in [1/sr] --
         DirectionSample3f ds_ = ds;
         ds_.d *= -1.f;
-        DirectionSample3f ws = m_shape->sample_wigner(ds_, it.wavelengths, active);
-        value *= ws.pdf;
+        // DirectionSample3f ws = m_shape->sample_wigner(ds_, it.wavelengths, active);
+        // value *= ws.pdf;
+        value *= sample_wigner(ds_, it.wavelengths)[0];
+        value = sqrt(value*value);
         // =============================
 
         // 2. Evaluate various extents to find ds probability -----
-        Float extents = math::Pi<Float>;
+        // // Precaution:
+        // Float extents = math::Pi<Float>;
+        // Original:
+        Float extents = 1.f;
         // ====================================================
 
         // value = 1.f;
 
-        // return select(active, value*extents, 0.f);
-        return select(active, value, 0.f);
+        return select(active, value*extents, 0.f);
+        // return select(active, value, 0.f);
     }
     // ========================================================================
 
@@ -585,7 +710,7 @@ public:
 
     std::string to_string() const override {
         std::ostringstream oss;
-        oss << "WignerTransmitter[" << std::endl
+        oss << "PhasedTransmitter[" << std::endl
             << "  antenna_texture = " << string::indent(m_antenna_texture) << "," << std::endl
             << "  surface_area = ";
         if (m_shape) oss << m_shape->surface_area();
@@ -610,8 +735,19 @@ private:
     Float m_sig_f_ext;
     Float m_sig_phi0;
     bool m_sig_is_delta;
+
+    int m_n_elems;
+    ScalarVector3f m_wid;
+    ScalarFrame3f m_array_frame;
+
+    std::vector<ScalarTransform4f> m_velem_to_world;
+    std::vector<Transform4f> m_dir_to_local_velem;
+    std::vector<ScalarTransform4f> m_velem_to_object;
+    std::vector<ScalarFrame3f> m_velem_frame;
+    std::vector<std::complex<ScalarFloat>> m_psi_dash;
+    std::vector<ScalarVector3f> m_r_dash;
 };
 
-MTS_IMPLEMENT_CLASS_VARIANT(WignerTransmitter, Transmitter)
-MTS_EXPORT_PLUGIN(WignerTransmitter, "Wigner transmitter")
+MTS_IMPLEMENT_CLASS_VARIANT(PhasedTransmitter, Transmitter)
+MTS_EXPORT_PLUGIN(PhasedTransmitter, "Phased transmitter")
 NAMESPACE_END(mitsuba)

@@ -1582,6 +1582,9 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       Vector2f tf;
       // ==========================================
 
+     // ray_weight = 1.f;
+     // ray.maxt = ray_weight[0];
+
       if (receiver->receive_type() == "mix_resample") {
           // Save the receive frequency -----------
           Wavelength f_rx = MTS_C*rcp(ray.wavelengths*1e-9);
@@ -1596,6 +1599,7 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
           // Find the tf/beat freq ----------------
           tf[0] = time - receiver->adc_sampling_start();
           tf[1] = abs(MTS_C*rcp(ray.wavelengths[0]*1e-9)-f_rx[0]);
+          // std::cout << tf << std::endl;
           // ======================================
 
       } else if (receiver->receive_type() == "raw") {
@@ -1635,19 +1639,26 @@ MTS_VARIANT void SamplingIntegrator<Float, Spectrum>::
       tf *= receiver->adc()->size() / receiver->adc()->bandwidth();
       // ==========================================
 
-      result.first = ray_weight * result.first;
-      UnpolarizedSpectrum spec_u = depolarize(result.first);
-      Color3f xyz;
-      if constexpr (is_monochromatic_v<Spectrum>) {
-          xyz = spec_u.x();
-      } else if constexpr (is_rgb_v<Spectrum>) {
-          xyz = srgb_to_xyz(spec_u, active);
-      } else {
-          static_assert(is_spectral_v<Spectrum>);
-          xyz = spec_u.x();
-      }
+      // Ignore receiver weight for now
+      result.first = abs(ray_weight) * result.first;
+      // result.first = ray_weight * result.first;
 
-      aovs[0] = xyz.x();
+      // result.first = abs(ray_weight * result.first);
+      // result.first = 1.f * result.first;
+
+      // UnpolarizedSpectrum spec_u = depolarize(result.first);
+      // Color3f xyz;
+      // if constexpr (is_monochromatic_v<Spectrum>) {
+      //     xyz = spec_u.x();
+      // } else if constexpr (is_rgb_v<Spectrum>) {
+      //     xyz = srgb_to_xyz(spec_u, active);
+      // } else {
+      //     static_assert(is_spectral_v<Spectrum>);
+      //     xyz = spec_u.x();
+      // }
+      // aovs[0] = xyz.x();
+
+      aovs[0] = select(result.second, hsum(result.first), Float(0.f));
       aovs[1] = select(result.second, Float(1.f), Float(0.f));
       aovs[2] = 1.f;
 

@@ -40,12 +40,14 @@ simply instantiate the desired sensor shape and specify an
     </shape>
 */
 
-MTS_VARIANT class Wignerreceiver final : public Receiver<Float, Spectrum> {
+// template <typename Float, typename Spectrum>
+// template <typename Float, typename Spectrum>
+MTS_VARIANT class Phasedreceiver final : public Receiver<Float, Spectrum> {
 public:
     MTS_IMPORT_BASE(Receiver, m_adc, m_world_transform, m_shape, m_receive_type)
     MTS_IMPORT_TYPES(Shape)
 
-    Wignerreceiver(const Properties &props) : Base(props) {
+    Phasedreceiver(const Properties &props) : Base(props) {
         if (props.has_property("to_world"))
             Throw("Found a 'to_world' transformation -- this is not allowed. "
                   "The wigner receiver inherits this transformation "
@@ -61,55 +63,119 @@ public:
 
                // m_receive_type = props.string("signaltype", "raw");
 
-               if (m_receive_type == "raw") {
-                   m_sig_f_centre = props.float_("freq_centre", 1.f);
-                   m_sig_f_ext = props.float_("freq_ext", 1.f);
-                   m_gain = props.float_("gain", 1.f);
-               } else if (m_receive_type == "raw_resample") {
-                   m_sig_f_centre = props.float_("freq_centre", 1.f);
-                   m_sig_f_ext = props.float_("freq_ext", 1.f);
-                   m_gain = props.float_("gain", 1.f);
-               } else if (m_receive_type == "mix_resample") {
-                   m_signal = props.string("signaltype", "cw");
+        // Signal Components --------------------------------------------------
+       if (m_receive_type == "raw") {
+           m_sig_f_centre = props.float_("freq_centre", 1.f);
+           m_sig_f_ext = props.float_("freq_ext", 1.f);
+           m_gain = props.float_("gain", 1.f);
+       } else if (m_receive_type == "raw_resample") {
+           m_sig_f_centre = props.float_("freq_centre", 1.f);
+           m_sig_f_ext = props.float_("freq_ext", 1.f);
+           m_gain = props.float_("gain", 1.f);
+       } else if (m_receive_type == "mix_resample") {
+           m_signal = props.string("signaltype", "cw");
 
-                   if (m_signal == "linfmcw"){
-                       m_sig_amplitude = props.float_("amplitude", 1.f);
-                       m_sig_repfreq = props.float_("crf", 1.f);
-                       m_sig_t_ext = props.float_("chirp_len", 1.f);
-                       m_sig_f_centre = props.float_("freq_centre", 1.f);
-                       m_sig_f_ext = props.float_("freq_sweep", 1.f);
-                       m_sig_phi0 = props.float_("phase", 0.f);
-                       m_sig_is_delta = props.bool_("sig_is_delta", true);
-                       m_gain = props.float_("gain", 1.f);
-                   } else if (m_signal == "pulse") {
-                       m_sig_amplitude = props.float_("amplitude", 1.f);
-                       m_sig_repfreq = props.float_("prf", 1.f);
-                       m_sig_t_ext = props.float_("pulse_len", 1.f);
-                       m_sig_f_centre = props.float_("freq_centre", 1.f);
-                       m_sig_f_ext = props.float_("freq_ext", 1.f);
-                       m_sig_phi0 = props.float_("phase", 0.f);
-                       m_sig_is_delta = props.bool_("sig_is_delta", false);
-                       m_gain = props.float_("gain", 1.f);
-                   } else if (m_signal == "cw"){
-                       m_sig_amplitude = props.float_("amplitude", 1.f);
-                       m_sig_f_centre = props.float_("freq_centre", 1.f);
-                       m_sig_f_ext = props.float_("freq_ext", 0.f);
-                       m_sig_phi0 = props.float_("phase", 0.f);
-                       m_sig_is_delta = props.bool_("sig_is_delta", true);
-                       m_gain = props.float_("gain", 1.f);
-                   } else {
-                       m_sig_amplitude = props.float_("amplitude", 1.f);
-                       m_sig_repfreq = props.float_("prf", 1.f);
-                       m_sig_t_ext = props.float_("pulse_len", 1.f);
-                       m_sig_f_centre = props.float_("freq_centre", 1.f);
-                       m_sig_f_ext = static_cast<Float>(rcp(m_sig_t_ext));
-                       m_sig_phi0 = props.float_("phase", 0.f);
-                       m_sig_is_delta = props.bool_("sig_is_delta", true);
-                       m_gain = props.float_("gain", 1.f);
-                   }
-               }
+           if (m_signal == "linfmcw"){
+               m_sig_amplitude = props.float_("amplitude", 1.f);
+               m_sig_repfreq = props.float_("crf", 1.f);
+               m_sig_t_ext = props.float_("chirp_len", 1.f);
+               m_sig_f_centre = props.float_("freq_centre", 1.f);
+               m_sig_f_ext = props.float_("freq_sweep", 1.f);
+               m_sig_phi0 = props.float_("phase", 0.f);
+               m_sig_is_delta = props.bool_("sig_is_delta", true);
+               m_gain = props.float_("gain", 1.f);
+           } else if (m_signal == "pulse") {
+               m_sig_amplitude = props.float_("amplitude", 1.f);
+               m_sig_repfreq = props.float_("prf", 1.f);
+               m_sig_t_ext = props.float_("pulse_len", 1.f);
+               m_sig_f_centre = props.float_("freq_centre", 1.f);
+               m_sig_f_ext = props.float_("freq_ext", 1.f);
+               m_sig_phi0 = props.float_("phase", 0.f);
+               m_sig_is_delta = props.bool_("sig_is_delta", false);
+               m_gain = props.float_("gain", 1.f);
+           } else if (m_signal == "cw"){
+               m_sig_amplitude = props.float_("amplitude", 1.f);
+               m_sig_f_centre = props.float_("freq_centre", 1.f);
+               m_sig_f_ext = props.float_("freq_ext", 0.f);
+               m_sig_phi0 = props.float_("phase", 0.f);
+               m_sig_is_delta = props.bool_("sig_is_delta", true);
+               m_gain = props.float_("gain", 1.f);
+           } else {
+               m_sig_amplitude = props.float_("amplitude", 1.f);
+               m_sig_repfreq = props.float_("prf", 1.f);
+               m_sig_t_ext = props.float_("pulse_len", 1.f);
+               m_sig_f_centre = props.float_("freq_centre", 1.f);
+               m_sig_f_ext = static_cast<Float>(rcp(m_sig_t_ext));
+               m_sig_phi0 = props.float_("phase", 0.f);
+               m_sig_is_delta = props.bool_("sig_is_delta", true);
+               m_gain = props.float_("gain", 1.f);
+           }
+        }
+       // ====================================================================
+
+       // Phased Components --------------------------------------------------
+       // Array Details
+       m_n_elems = props.int_("n_elems", 1);
+       ScalarVector3f steer_vec = props.vector3f("steering_vector", ScalarVector3f());
+       steer_vec = sin(steer_vec);
+       ScalarTransform4f array_to_world = props.transform("array_loc", ScalarTransform4f());
+       m_wid = props.vector3f("elem_dims", ScalarVector3f());
+
+       // These are local
+       ScalarVector3f elem_spacing = props.vector3f("elem_spacing", ScalarVector3f());
+       ScalarVector3f elem_axis = props.vector3f("elem_axis", ScalarVector3f());
+       ScalarPoint3f array_centre(0.f, 0.f, 0.f);
+
+       std::vector<ScalarPoint3f> elem_locs;
+
+       for (int i = 0; i < m_n_elems; i++) {
+           if (math::modulo(m_n_elems,2)==0) {
+               elem_locs.push_back(array_centre - elem_spacing*elem_axis*(i-(m_n_elems/2.f)+0.5));
+           } else {
+               elem_locs.push_back(array_centre - elem_spacing*elem_axis*(i-(m_n_elems-1.f)/2.f));
+           }
+       }
+
+       ScalarVector3f dp_du, dp_dv;
+       ScalarNormal3f normal;
+       ScalarVector3f r_v;
+
+       std::complex<ScalarFloat> myI(0,1);
+       for (int i = 0; i < m_n_elems; i++) {
+           for (int j = 0; j < m_n_elems; j++) {
+               r_v = (elem_locs[i] + elem_locs[j])/2;
+               m_r_dash.push_back(elem_locs[i] - elem_locs[j]);
+
+               m_velem_to_world.push_back(
+                   array_to_world *
+                   ScalarTransform4f::translate(r_v) *
+                   ScalarTransform4f::scale(ScalarVector3f(m_wid.x()/2, m_wid.y()/2, m_wid.z()))
+               );
+               m_velem_to_object.push_back(m_velem_to_world.back().inverse());
+
+               dp_du = m_velem_to_world.back() * ScalarVector3f(2.f, 0.f, 0.f);
+               dp_dv = m_velem_to_world.back() * ScalarVector3f(0.f, 2.f, 0.f);
+               normal = normalize(m_velem_to_world.back() * ScalarNormal3f(0.f, 0.f, 1.f));
+               m_velem_frame.push_back(ScalarFrame3f(dp_du, dp_dv, normal));
+
+               Transform4f trafto1;
+               m_dir_to_local_velem.push_back( trafto1.from_frame(
+                   Frame3f(normalize(m_velem_frame.back().s),
+                           normalize(m_velem_frame.back().t),
+                           normalize(m_velem_frame.back().n))) );
+
+               m_psi_dash.push_back(
+                   // exp( math::TwoPi<ScalarFloat>*myI*
+                   exp( myI*
+                   static_cast<ScalarFloat>(rcp((MTS_WAVELENGTH_MAX - MTS_WAVELENGTH_MIN)*1e-9/2))*
+                   dot(array_centre - m_r_dash.back(), steer_vec) ));
+           }
+       }
+       // ====================================================================
     }
 
+    // Signal Methods ---------------------------------------------------------
+    // ------------------------------------------------------------------------
     // Return the spectral flux/instantaneous signal power spectral density in
     // units V^2/Hz
     // ------------------------------------------------------------------------
@@ -201,6 +267,45 @@ public:
     }
     // ========================================================================
 
+    // ========================================================================
+    // ========================================================================
+
+    // Phased Methods ---------------------------------------------------------
+    // ------------------------------------------------------------------------
+    Spectrum W_rect_2D(const Point3f &r_hat,
+                        const Normal3f &nu_hat,
+                        const ScalarVector3f &wid) const {
+
+        return 4*wid.x()*wid.y() * math::tri(r_hat.x())*math::tri(r_hat.y()) *
+                math::sinc(math::TwoPi<ScalarFloat>*nu_hat.x()*wid.x()*math::tri(r_hat.x())) *
+                math::sinc(math::TwoPi<ScalarFloat>*nu_hat.y()*wid.y()*math::tri(r_hat.y()));
+        // return 4* math::tri(r_hat.x())*math::tri(r_hat.y()) *
+        //         math::sinc(math::TwoPi<ScalarFloat>*nu_hat.x()*wid.x()*math::tri(r_hat.x())) *
+        //         math::sinc(math::TwoPi<ScalarFloat>*nu_hat.y()*wid.y()*math::tri(r_hat.y()));
+    }
+
+    Spectrum sample_wigner(const DirectionSample3f &ds, Wavelength wavelength) const {
+        Point3f r_hat;
+        Normal3f nu_hat;
+        std::complex<Spectrum> W(0, 0);
+        std::complex<ScalarFloat> myI(0,1);
+
+        for (int i = 0; i < m_n_elems*m_n_elems; i++) {
+            r_hat = m_velem_to_object[i] * ds.p/2;
+
+            if (all(math::jabs(r_hat.x())<=0.5 & math::jabs(r_hat.y())<=0.5)) {
+                nu_hat = m_dir_to_local_velem[i].transform_affine(ds.d)*rcp(wavelength[0]*1e-9);
+
+                W += hsum(W_rect_2D(r_hat, nu_hat, m_wid)[0])
+                 * exp(math::TwoPi<ScalarFloat>*myI*hsum(dot(nu_hat, m_r_dash[i])))*m_psi_dash[i];
+            }
+        }
+        return real(W);
+    }
+    // ========================================================================
+    // ========================================================================
+
+
 
     // Sample a ray and return the power
     // emanating at a position, in a direction and with a wavelength
@@ -242,9 +347,10 @@ public:
         DirectionSample3f ds(si);
         // ds.d = si.to_world(warp::square_to_cosine_hemisphere(direction_sample));
         ds.d = warp::square_to_cosine_hemisphere(direction_sample);
-        DirectionSample3f ws =
-            m_shape->sample_wigner(ds, wavelength, active);
-        Spectrum geom_gain = ws.pdf * pdf;
+        // DirectionSample3f ws =
+        //     m_shape->sample_wigner(ds, wavelength, active);
+        // Spectrum geom_gain = ws.pdf * pdf;
+        Spectrum geom_gain = sample_wigner(ds, wavelength) * pdf * (1 - dot(ds.d, ds.n)* dot(ds.d, ds.n)* dot(ds.d, ds.n)* dot(ds.d, ds.n));
         // ===========================================
         // ====================================================
 
@@ -291,7 +397,7 @@ public:
 
     std::string to_string() const override {
         std::ostringstream oss;
-        oss << "Wignerreceiver[" << std::endl
+        oss << "Phasedreceiver[" << std::endl
             << "  shape = " << m_shape << "," << std::endl
             << "  ADC = " << m_adc << "," << std::endl
             << "]";
@@ -311,8 +417,19 @@ private:
     Float m_sig_phi0;
     bool m_sig_is_delta;
     // ref<Texture> m_antenna_texture;
+
+    int m_n_elems;
+    ScalarVector3f m_wid;
+    ScalarFrame3f m_array_frame;
+
+    std::vector<ScalarTransform4f> m_velem_to_world;
+    std::vector<Transform4f> m_dir_to_local_velem;
+    std::vector<ScalarTransform4f> m_velem_to_object;
+    std::vector<ScalarFrame3f> m_velem_frame;
+    std::vector<std::complex<ScalarFloat>> m_psi_dash;
+    std::vector<ScalarVector3f> m_r_dash;
 };
 
-MTS_IMPLEMENT_CLASS_VARIANT(Wignerreceiver, Receiver)
-MTS_EXPORT_PLUGIN(Wignerreceiver, "Wignerreceiver");
+MTS_IMPLEMENT_CLASS_VARIANT(Phasedreceiver, Receiver)
+MTS_EXPORT_PLUGIN(Phasedreceiver, "Phasedreceiver");
 NAMESPACE_END(mitsuba)

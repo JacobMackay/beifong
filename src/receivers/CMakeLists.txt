@@ -8,6 +8,7 @@ set(MTS_PLUGIN_PREFIX "receivers")
 
 add_plugin(omnidirectional   omnidirectional.cpp)
 add_plugin(wignerreceiver   wignerreceiver.cpp)
+add_plugin(phasedreceiver   phasedreceiver.cpp)
 
 # Register the test directory
 add_tests(${CMAKE_CURRENT_SOURCE_DIR}/tests)

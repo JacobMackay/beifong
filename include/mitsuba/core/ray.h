@@ -88,7 +88,8 @@ template <typename Point_, typename Spectrum_> struct Ray {
 
     void update_state(const Float &t){
         time += t / MTS_C;
-        phase += math::TwoPi<Float>*t/(wavelengths[0]*1e-9);
+        // phase += math::TwoPi<Float>*t/(wavelengths[0]*1e-9);
+        phase += math::TwoPi<Float>*t/((MTS_WAVELENGTH_MAX-MTS_WAVELENGTH_MIN)/2*1e-9);
     }
 
     /// Return the position of a point along the ray
