@@ -1,3 +1,8 @@
+Beifong is a fork of the mitsuba2 renderer for rendering radar signals. This is active research code with frequent changes! The name is inspired by the character Toph Beifong from ATLA who senses her environment through wave pulses.
+
+
+
+
 <img src="https://github.com/mitsuba-renderer/mitsuba2/raw/master/docs/images/logo_plain.png" width="120" height="120" alt="Mitsuba logo">
 
 # Mitsuba Renderer 2
